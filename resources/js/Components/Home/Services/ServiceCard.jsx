@@ -1,23 +1,43 @@
+// resources/js/Components/Home/Services/ServiceCard.jsx
 import React from "react";
 import { Link } from "@inertiajs/react";
 import "./ServiceCard.css";
 
-const ServiceCard = ({ title, description, image, link, icon: Icon }) => {
+function buildHref({ link, slug, basePath = "/services" }) {
+    if (link) return link; // tam verilen link öncelikli
+    if (!slug) return basePath; // güvenli fallback
+    if (slug.startsWith("/")) return slug; // mutlak slug
+    return `${basePath}/${slug}`.replace(/([^:]\/)\/+/g, "$1");
+}
+
+const ServiceCard = ({
+    title,
+    image,
+    icon: Icon,
+    description,
+    link,
+    slug,
+    basePath,
+}) => {
     const imageRef = React.useRef(null);
     const [isLoaded, setIsLoaded] = React.useState(false);
 
     React.useEffect(() => {
-        if (imageRef.current && imageRef.current.complete) {
-            setIsLoaded(true);
-        }
+        if (imageRef.current && imageRef.current.complete) setIsLoaded(true);
     }, []);
 
+    const href = buildHref({ link, slug, basePath });
+
     return (
-        <div className="service-card group">
+        <Link
+            href={href}
+            className="service-card group"
+            aria-label={`Mehr über ${title} erfahren`}
+        >
             <div className="service-card__image-wrapper">
                 {!isLoaded && (
                     <div className="service-card__skeleton" aria-hidden="true">
-                        <div className="service-card__skeleton-wave"></div>
+                        <div className="service-card__skeleton-wave" />
                     </div>
                 )}
                 <img
@@ -39,18 +59,12 @@ const ServiceCard = ({ title, description, image, link, icon: Icon }) => {
 
             <div className="service-card__content">
                 <h3 className="service-card__title">{title}</h3>
-
-                <Link
-                    href={link}
-                    className="service-card__button"
-                    aria-label={`Mehr über ${title} erfahren`}
-                >
+                <span className="service-card__button">
                     <span>Details</span>
                     <svg
                         className="service-card__arrow"
                         viewBox="0 0 24 24"
                         fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
                     >
                         <path
                             d="M5 12H19M19 12L12 5M19 12L12 19"
@@ -60,9 +74,9 @@ const ServiceCard = ({ title, description, image, link, icon: Icon }) => {
                             strokeLinejoin="round"
                         />
                     </svg>
-                </Link>
+                </span>
             </div>
-        </div>
+        </Link>
     );
 };
 

@@ -274,7 +274,7 @@ const Header = ({ currentRoute }) => {
         {
             name: "Kontakt",
             route: "contact",
-            url: "/#contact",
+            url: "/contact",
             icon: <FaPaperPlane aria-hidden="true" />,
         },
     ];
@@ -313,8 +313,8 @@ const Header = ({ currentRoute }) => {
                             </div>
                             <div className="topbar__right">
                                 <a
-                                    href="/#contact"
-                                    onClick={navigate("/#contact")}
+                                    href="/contact"
+                                    onClick={navigate("/contact")}
                                     className="btn btn--ghost"
                                 >
                                     Termin vereinbaren

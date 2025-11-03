@@ -1,4 +1,4 @@
-/* === Offer Dock (ikon yok, premium görünüm) ============================== */
+
 :root {
   --odock-bg: rgba(32, 99, 255, 0.85);  /* mavi cam */
   --odock-bg-blur: 8px;
@@ -13,10 +13,7 @@
   --odock-focus: 0 0 0 3px rgba(255,255,255,.4);
 }
 
-/* Kökte JS'den şunlar gelir:
-   --panel-w : panel genişliği (örn 280px)
-   --tab-w   : ok genişliği     (örn 40px)
-   --panel-x : panelin translateX değeri (0px veya negatif) */
+
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -32,11 +29,11 @@
   top: 50%;
   transform: translateY(-50%);
   z-index: 60;
-  pointer-events: none; /* dış tıklamalar geçsin */
-  /* genişliği panel kadar değil; yerleşimi left:0’a sabit */
+  pointer-events: none;
+
 }
 
-/* Panel */
+
 .odock__panel {
   position: absolute;
   left: 0;
@@ -56,11 +53,11 @@
   -webkit-backdrop-filter: blur(var(--odock-bg-blur));
   box-shadow: var(--odock-shadow);
   border: 1px solid var(--odock-border);
-  border-right-color: transparent; /* birleşimde çizgi olmasın */
+  border-right-color: transparent;
   transition: transform .28s cubic-bezier(.2,.8,.2,1);
 }
 
-/* içerik */
+
 .odock__body {
   display: flex;
   align-items: center;
@@ -72,7 +69,7 @@
 .odock__sub { font-size: 12.5px; opacity: .9; margin-top: 2px; }
 .odock__body > .odock__group { display: flex; flex-direction: column; margin-right: 6px; width: 30%; }
 
-/* CTA */
+
 .odock__cta {
   appearance: none; border: 0; outline: none;
   background: var(--odock-cta-bg); color: var(--odock-cta-text);
@@ -85,13 +82,10 @@
 .odock__cta:active { transform: translateY(1px); }
 .odock__cta:focus-visible { box-shadow: var(--odock-focus); }
 
-/* Ok sekmesi (panelden BAĞIMSIZ) */
+
 .odock__tab {
   position: absolute;
   top: 50%;
-  /* Sekmenin x konumu panelin görünür sağ kenarına bağlanır:
-     expanded: left = panel-w - tab-w
-     collapsed: left = 0 */
   left: calc(var(--panel-w, 280px) + var(--panel-x, 0px) - var(--tab-w, 40px));
   transform: translateY(-50%);
   width: var(--tab-w, 40px);
@@ -113,7 +107,6 @@
 .odock__tab:active { transform: translateY(-50%) scale(.98); }
 .odock__tab:focus-visible { box-shadow: var(--odock-focus); }
 
-/* küçük ekranlar */
 @media (max-width: 420px) {
   .odock__panel { height: 86px; }
   .odock__tab   { height: 80px; }

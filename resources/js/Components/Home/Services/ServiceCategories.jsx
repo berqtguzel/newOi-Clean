@@ -5,10 +5,6 @@ import { FaHotel, FaBuilding, FaTools } from "react-icons/fa";
 import Aurora from "@/Components/ReactBits/Backgrounds/Aurora";
 import "./ServiceCategories.css";
 
-/**
- * Kategori verileri: gradient için hex kullanıyoruz
- * (Tailwind 'from-.. to-..' yerine).
- */
 const categories = [
     {
         title: "Hotelreinigung & Housekeeping",
@@ -16,7 +12,7 @@ const categories = [
             "Von der Zimmerreinigung bis zur Spülküche – perfekte Hygiene und effiziente Abläufe in jedem Bereich Ihres Hotels.",
         icon: FaHotel,
         url: "/dienstleistungen/hotel",
-        gradient: ["#2563EB", "#60A5FA"], // blue-600 -> blue-400
+        gradient: ["#2563EB", "#60A5FA"],
     },
     {
         title: "Professionelle Gebäudereinigung",
@@ -24,7 +20,7 @@ const categories = [
             "Büros, Gewerbeflächen, Bauendreinigung und Spezialreinigungen – wir lassen Ihre Immobilien glänzen.",
         icon: FaBuilding,
         url: "/dienstleistungen/gebaeude",
-        gradient: ["#334155", "#64748B"], // slate-700 -> slate-500
+        gradient: ["#334155", "#64748B"],
     },
     {
         title: "Renovierung, Reparatur & Instandhaltung",
@@ -32,7 +28,7 @@ const categories = [
             "Maler-, Spachtel- und Trockenbauarbeiten sowie Bodenverlegung und kleinere Reparaturen.",
         icon: FaTools,
         url: "/dienstleistungen/renovierung",
-        gradient: ["#CA8A04", "#F59E0B"], // yellow-600 -> yellow-500
+        gradient: ["#CA8A04", "#F59E0B"],
     },
 ];
 

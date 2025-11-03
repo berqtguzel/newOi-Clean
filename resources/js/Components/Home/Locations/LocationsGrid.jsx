@@ -1,3 +1,4 @@
+// resources/js/Components/Home/Locations/LocationsGrid.jsx
 import React from "react";
 import { Head } from "@inertiajs/react";
 import "../../../../css/LocationsGrid.css";
@@ -16,7 +17,7 @@ const defaultLocations = [
             "Hausmeisterdienste",
         ],
         coordinates: { lat: 50.5558, lng: 9.6808 },
-        link: "/standorte/fulda",
+        // link: kalktı → LocationCard otomatik /standorte/fulda yapacak
     },
     {
         id: 2,
@@ -25,7 +26,7 @@ const defaultLocations = [
         image: "/images/aalen.jpg",
         services: ["Gebäudereinigung", "Grundreinigung", "Unterhaltsreinigung"],
         coordinates: { lat: 49.4478, lng: 11.8516 },
-        link: "/standorte/aalen",
+        // link: kalktı → otomatik /standorte/amberg
     },
     {
         id: 3,
@@ -34,13 +35,12 @@ const defaultLocations = [
         image: "/images/aalen.jpg",
         services: ["Gebäudereinigung", "Glasreinigung", "Büroreinigung"],
         coordinates: { lat: 49.9769, lng: 9.1495 },
-        link: "/standorte/aschaffenburg",
+        // link: kalktı → otomatik /standorte/aschaffenburg
     },
 ];
 
 const LocationsGrid = ({ locations = [] }) => {
     const items = locations && locations.length ? locations : defaultLocations;
-    const mapRef = React.useRef(null);
     const [activeLocation, setActiveLocation] = React.useState(null);
 
     const schemaData = {
@@ -126,7 +126,6 @@ const LocationsGrid = ({ locations = [] }) => {
                     ))}
                 </div>
 
-                {/* CTA Bölümü */}
                 <div className="locations-cta">
                     <a
                         href="/kontakt"
@@ -138,7 +137,6 @@ const LocationsGrid = ({ locations = [] }) => {
                             className="locations-arrow-icon"
                             viewBox="0 0 24 24"
                             fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
                         >
                             <path
                                 d="M5 12H19M19 12L12 5M19 12L12 19"

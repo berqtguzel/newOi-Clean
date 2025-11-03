@@ -1,6 +1,6 @@
 :root{
-  --brand-600:#0284c7; /* sky-600 */
-  --brand-700:#0369a1; /* sky-700 */
+  --brand-600:#0284c7;
+  --brand-700:#0369a1;
   --brand-50:#f0f9ff;
 
   --ink-900:#0f172a;
@@ -17,17 +17,17 @@
   --radius-lg:20px;
   --h-desktop:80px;
 
-  /* UI tokens */
+
   --ghost-bg: rgba(255,255,255,.15);
   --dropdown-bg: #ffffff;
   --dropdown-border: #e2e8f0;
   --btn-icon-border: #e2e8f0;
 }
 
-/* ---------------- Container helper ---------------- */
+
 .container{max-width:1200px;margin-inline:auto;padding-inline:20px;}
 
-/* ---------------- ReactBits placeholder background ---------------- */
+
 .rbits-bg{
   position:absolute;inset:-40% -10% 0 -10%;z-index:-1;
   filter:blur(40px) saturate(1.05);
@@ -42,10 +42,9 @@
   100%{transform:translateY(4%) translateX(2%) scale(1.05);}
 }
 
-/* ---------------- Header ---------------- */
 .site-header{position:sticky;top:0;z-index:100;background:transparent;}
 
-/* ---------------- Top bar ---------------- */
+
 .topbar{display:none;background:linear-gradient(90deg,var(--brand-700),var(--brand-600));color:#fff;font-size:14px;}
 @media (min-width:768px){.topbar{display:block}}
 .topbar__inner{display:flex;align-items:center;justify-content:space-between;padding:10px 0;}
@@ -57,7 +56,7 @@
 @media (min-width:1024px){.topbar__tagline{display:inline}}
 .topbar__right{display:flex;align-items:center;gap:10px}
 
-/* ---------------- Buttons ---------------- */
+
 .btn{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:10px 16px;font-weight:600;border:1px solid transparent;cursor:pointer;text-decoration:none;transition:.2s ease;}
 .btn--primary{background:var(--brand-600);color:#fff}
 .btn--primary:hover{background:var(--brand-700)}
@@ -67,13 +66,13 @@
 .btn--circle{border-radius:999px;padding:2px 10px}
 .btn--block{width:100%;justify-content:center}
 
-/* ---------------- Glass nav wrapper ---------------- */
+
 .navwrap{backdrop-filter:saturate(1.1) blur(8px);background:var(--glass);box-shadow:0 1px 0 rgba(2,6,23,.04)}
 .navwrap__inner{display:flex;align-items:center;justify-content:space-between;height:var(--h-desktop);}
 .brand{display:flex;align-items:center;gap:10px;border-radius:12px;outline:0}
 .brand--sm .brand__logo{height:40px}
 
-/* ---------------- Desktop nav ---------------- */
+
 .nav--desktop{display:none;align-items:center;gap:8px}
 @media (min-width:1024px){.nav--desktop{display:flex}}
 .nav__item{position:relative}
@@ -84,7 +83,7 @@
 .nav__icon{display:inline-flex}
 .nav__chev{opacity:.7;font-size:11px}
 
-/* ---------------- Dropdowns ---------------- */
+
 .dropdown{
   position:absolute;left:0;top:calc(100% + 12px);
   background:var(--dropdown-bg);
@@ -93,7 +92,6 @@
 }
 .dropdown--mega{width:820px;padding:24px}
 
-/* ---------------- Mega menu ---------------- */
 .mega{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
 .mega__title{text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--ink-500);margin-bottom:10px}
 .mega__list{list-style:none;margin:0;padding:0}
@@ -101,7 +99,7 @@
 .mega__link:hover{background:var(--brand-50);color:var(--brand-700)}
 .mega__footer{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--dropdown-border);padding-top:16px}
 
-/* ---------------- Simple menu + submenu ---------------- */
+
 .menu{padding:6px}
 .menu__item{position:relative}
 .menu__link{display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px;padding:10px 12px;border-radius:10px;text-decoration:none;color:var(--ink-700);background:transparent;border:none;cursor:pointer;font:inherit}
@@ -118,11 +116,11 @@
 .submenu__link{display:block;padding:10px 12px;border-radius:10px;color:var(--ink-700);text-decoration:none}
 .submenu__link:hover{background:var(--brand-50);color:var(--brand-700)}
 
-/* ---------------- Hamburger ---------------- */
+
 .hamburger{display:inline-flex;align-items:center;justify-content:center;padding:10px;border-radius:12px;border:1px solid var(--btn-icon-border);background:var(--surface);color:var(--ink-700)}
 @media (min-width:1024px){.hamburger{display:none}}
 
-/* ---------------- Drawer ---------------- */
+
 .drawer{position:fixed;inset:0;z-index:110;pointer-events:none}
 .drawer.is-open{pointer-events:auto}
 .drawer__backdrop{position:absolute;inset:0;background:rgba(0,0,0,.32);opacity:0;transition:opacity .2s ease}
@@ -132,7 +130,7 @@
 .drawer__head{display:flex;align-items:center;justify-content:space-between;height:80px;padding:0 20px;border-bottom:1px solid #e2e8f0}
 .drawer__body{padding:16px;display:flex;flex-direction:column;gap:12px;overflow:auto;height:calc(100% - 80px)}
 
-/* ---------------- Accordion (mobile) ---------------- */
+
 .acc{
   border:1px solid var(--dropdown-border);
   border-radius:16px;
@@ -140,7 +138,7 @@
   overflow:hidden;
 }
 
-/* Başlık */
+
 .acc__toggle{
   width:100%;
   display:flex;align-items:center;justify-content:space-between;
@@ -151,7 +149,7 @@
 }
 .acc__left{display:inline-flex;align-items:center;gap:10px}
 
-/* Chevron: sadece açıkken görünür */
+
 .acc__chev{
   opacity:0; visibility:hidden;
   transition:transform .22s ease, opacity .18s ease, visibility .18s;
@@ -161,7 +159,7 @@
 }
 .acc__chev.rot{transform:rotate(180deg)}
 
-/* İçerik – max-height animasyonu, tamamen açılsın */
+
 .acc__content{
   max-height:0;
   opacity:0;
@@ -171,12 +169,12 @@
   transition:max-height .28s ease, opacity .22s ease, visibility .22s linear;
 }
 .acc__content.open{
-  max-height:85vh;    /* geniş alan; drawer gövdesi scroll'lu */
+  max-height:85vh;
   opacity:1;
   visibility:visible;
 }
 
-/* İç bloklar */
+
 .acc__menu,.acc__mega{padding:8px 12px}
 .acc__link{
   display:block;padding:10px 12px;border-radius:10px;
@@ -184,7 +182,7 @@
 }
 .acc__link:hover{background:var(--brand-50);color:var(--brand-700)}
 
-/* Nested submenu (details/summary) caret */
+
 .acc__details{border:1px solid var(--dropdown-border);border-radius:12px;overflow:hidden}
 .acc__details summary{
   cursor:pointer;padding:10px 12px;font-weight:600;list-style:none;position:relative;padding-right:26px;
@@ -198,13 +196,13 @@
 .acc__details[open] summary::after{transform:translateY(-50%) rotate(225deg);}
 .acc__submenu{padding:8px 8px 12px}
 
-/* Dark */
+
 .dark .acc{border-color:#1e293b;background:var(--surface);}
 
-/* ---------------- Theme Toggle ---------------- */
+
 .drawer__theme-toggle{display:flex;justify-content:center;padding:16px 0;border-top:1px solid var(--dropdown-border);border-bottom:1px solid var(--dropdown-border);margin:8px 0}
 
-/* ---------------- Dark Mode Tokens ---------------- */
+
 :root[class~="dark"]{
   --brand-600:#38bdf8;
   --brand-700:#0ea5e9;
@@ -225,7 +223,6 @@
   --ghost-bg:rgba(255,255,255,.06);
 }
 
-/* ---------------- Dark Mode Blocks ---------------- */
 .dark .navwrap{background:var(--glass);}
 .dark .btn--icon{border-color:#1e293b;}
 .dark .acc{border-color:#1e293b;background:var(--surface);}
@@ -259,7 +256,7 @@
 .dark .mega__title{color:#94a3b8;}
 .dark .mega__footer{border-top-color:var(--dropdown-border);}
 
-/* ---------------- Utilities ---------------- */
+
 @media (pointer:fine){
   .nav__link::after{
     content:"";position:absolute;left:12px;right:12px;bottom:6px;height:2px;
@@ -268,7 +265,7 @@
   .nav__link:hover::after{transform:scaleX(1)}
 }
 
-/* ---------------- Language switcher (desktop) ---------------- */
+
 .lang-switch{position:relative;display:inline-flex;align-items:center}
 .lang-switch__btn{padding:8px 12px;border-radius:999px;background:transparent;border:1px solid transparent}
 .lang-switch__btn:hover{background:var(--brand-50)}
@@ -282,12 +279,12 @@
 .lang-switch__item.is-active{font-weight:700;color:var(--brand-700)}
 .dark .lang-switch__list{background:var(--surface);border-color:#1e293b;}
 
-/* Drawer language area */
+
 .drawer__lang{padding:8px 12px;border-top:1px solid #f1f5f9}
 .drawer__lang-label{display:block;font-size:12px;color:var(--ink-500);margin-bottom:8px}
 .drawer__lang-buttons{display:flex;gap:8px}
 
-/* Light/Dark logo switch */
+
 .brand__logo--dark { display: none; }
 .brand__logo--light { display: block; }
 .dark .brand__logo--light { display: none; }

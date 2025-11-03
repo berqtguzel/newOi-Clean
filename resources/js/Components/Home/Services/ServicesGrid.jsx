@@ -1,3 +1,4 @@
+// resources/js/Components/Home/Services/ServicesGrid.jsx
 import React from "react";
 import ServiceCard from "./ServiceCard";
 import "./ServicesGrid.css";
@@ -12,25 +13,20 @@ import {
     FaBrush,
     FaCouch,
 } from "react-icons/fa";
-
 import LiquidEther from "@/Components/ReactBits/Backgrounds/LiquidEther";
 
-/* --- Tema durumu ( .dark class ) dinlemek için küçük yardımcı hook --- */
 function useIsDark() {
     const get = () => document.documentElement.classList.contains("dark");
     const [isDark, setIsDark] = React.useState(get());
-
     React.useEffect(() => {
         const el = document.documentElement;
         const obs = new MutationObserver(() => setIsDark(get()));
         obs.observe(el, { attributes: true, attributeFilter: ["class"] });
         return () => obs.disconnect();
     }, []);
-
     return isDark;
 }
 
-/* --- Lazy load animasyonu --- */
 const useIntersectionObserver = (ref) => {
     React.useEffect(() => {
         const observer = new IntersectionObserver(
@@ -47,119 +43,109 @@ const useIntersectionObserver = (ref) => {
 
         const current = ref.current;
         if (current) observer.observe(current);
-
         return () => {
             if (current) observer.unobserve(current);
         };
     }, [ref]);
 };
 
+// Artık slug kullanıyoruz
 const defaultServices = [
     {
         id: 1,
         title: "Wohnungsrenovierung",
-        description:
-            "Professionelle Renovierungsarbeiten für Ihr Zuhause mit höchster Qualität und Sorgfalt.",
+        description: "Professionelle Renovierungsarbeiten …",
         image: "/images/Wohnungsrenovierung.jpg",
-        link: "/services/wohnungsrenovierung",
+        slug: "wohnungsrenovierung",
         icon: FaHome,
     },
     {
         id: 2,
         title: "Wohnungsreinigung",
-        description:
-            "Gründliche und zuverlässige Reinigungsservices für ein sauberes und hygienisches Zuhause.",
+        description: "Gründliche und zuverlässige Reinigungsservices …",
         image: "/images/Wohnungsrenovierung.jpg",
-        link: "/wohnungsreinigung",
+        slug: "wohnungsreinigung",
         icon: FaBroom,
     },
     {
         id: 3,
         title: "Wärmedämmung",
-        description:
-            "Energieeffiziente Dämmungslösungen für optimalen Wohnkomfort und Kosteneinsparung.",
+        description: "Energieeffiziente Dämmungslösungen …",
         image: "/images/Wohnungsrenovierung.jpg",
-        link: "/warmedammung",
+        slug: "warmedammung",
         icon: FaTemperatureHigh,
     },
     {
         id: 4,
         title: "Verputz – Verputzarbeiten",
-        description:
-            "Hochwertige Verputzarbeiten für perfekte Wandoberflächen und langanhaltende Qualität.",
+        description: "Hochwertige Verputzarbeiten …",
         image: "/images/Wohnungsrenovierung.jpg",
-        link: "/verputzarbeiten",
+        slug: "verputzarbeiten",
         icon: FaPaintRoller,
     },
     {
         id: 5,
         title: "Türen und Fensterbau",
-        description:
-            "Maßgefertigte Türen und Fenster für mehr Komfort und Energieeffizienz.",
+        description: "Maßgefertigte Türen und Fenster …",
         image: "/images/Wohnungsrenovierung.jpg",
-        link: "/Wohnungsrenovierung.jpg",
+        slug: "tueren-und-fensterbau",
         icon: FaWindowMaximize,
     },
     {
         id: 6,
-        title: "Trockenbau – Wohnungsrenovierung.jpg",
-        description:
-            "Innovative Trockenbaulösungen für flexible Raumgestaltung und moderne Innenarchitektur.",
+        title: "Trockenbau",
+        description: "Innovative Trockenbaulösungen …",
         image: "/images/Wohnungsrenovierung.jpg",
-        link: "/trockenbau",
+        slug: "trockenbau",
         icon: FaTools,
     },
     {
         id: 7,
         title: "Teppichreinigung",
-        description:
-            "Professionelle Teppichreinigung für frische und hygienisch saubere Teppiche.",
+        description: "Professionelle Teppichreinigung …",
         image: "/images/Wohnungsrenovierung.jpg",
-        link: "/teppichreinigung",
+        slug: "teppichreinigung",
         icon: FaBrush,
     },
     {
         id: 8,
         title: "Teppich Verlegen",
-        description:
-            "Fachgerechtes Verlegen von Teppichen für ein perfektes Finish und lange Haltbarkeit.",
+        description: "Fachgerechtes Verlegen von Teppichen …",
         image: "/images/Wohnungsrenovierung.jpg",
-        link: "/teppich-verlegen",
+        slug: "teppich-verlegen",
         icon: FaCouch,
     },
     {
         id: 9,
         title: "Tapezieren – Tapezierarbeiten",
-        description:
-            "Kreative Wandgestaltung durch professionelle Tapezierarbeiten.",
+        description: "Kreative Wandgestaltung …",
         image: "/images/Wohnungsrenovierung.jpg",
-        link: "/services/tapezieren",
+        slug: "tapezieren",
         icon: FaPaintRoller,
     },
 ];
+
+const BASE_PATH = "/services"; // istersen "/dienstleistungen" yap
 
 const ServicesGrid = ({ services = defaultServices }) => {
     const gridRef = React.useRef(null);
     useIntersectionObserver(gridRef);
 
-    const servicesToRender =
-        services && services.length ? services : defaultServices;
+    const servicesToRender = services?.length ? services : defaultServices;
 
-    // Dark/light paletleri (LiquidEther için)
     const isDark = useIsDark();
     const lightColors = ["#085883", "#0C9FE2", "#2EA7E0"];
-    const darkColors = ["#47B3FF", "#7CCBFF", "#B5E3FF"]; // daha açık/parlak
+    const darkColors = ["#47B3FF", "#7CCBFF", "#B5E3FF"];
 
-    // SEO için JSON-LD
     const schemaData = {
         "@context": "https://schema.org",
         "@type": "ItemList",
-        itemListElement: servicesToRender.map((service, index) => ({
+        itemListElement: servicesToRender.map((s, i) => ({
             "@type": "Service",
-            position: index + 1,
-            name: service.title,
-            description: service.description,
-            url: `https://oi-clean.de${service.link}`,
+            position: i + 1,
+            name: s.title,
+            description: s.description,
+            url: `https://oi-clean.de${s.link || `${BASE_PATH}/${s.slug}`}`,
             provider: {
                 "@type": "Organization",
                 name: "O&I CLEAN group GmbH",
@@ -191,7 +177,6 @@ const ServicesGrid = ({ services = defaultServices }) => {
                 </script>
             </Head>
 
-            {/* Arka plan */}
             <div className="absolute inset-0 z-10 liquid-ether-bg">
                 <LiquidEther
                     className="w-full h-full"
@@ -205,7 +190,7 @@ const ServicesGrid = ({ services = defaultServices }) => {
                     iterationsPoisson={32}
                     resolution={0.6}
                     isBounce={false}
-                    autoDemo={true}
+                    autoDemo
                     autoSpeed={0.4}
                     autoIntensity={1.6}
                     takeoverDuration={0.45}
@@ -214,7 +199,6 @@ const ServicesGrid = ({ services = defaultServices }) => {
                 />
             </div>
 
-            {/* İçerik */}
             <div className="services-container relative z-10">
                 <div className="services-header">
                     <h2 id="services-title" className="services-title">
@@ -227,14 +211,16 @@ const ServicesGrid = ({ services = defaultServices }) => {
                 </div>
 
                 <div ref={gridRef} className="services-grid">
-                    {servicesToRender.map((service) => (
+                    {servicesToRender.map((s) => (
                         <ServiceCard
-                            key={service.id}
-                            title={service.title}
-                            description={service.description}
-                            image={service.image}
-                            link={service.link}
-                            icon={service.icon}
+                            key={s.id}
+                            title={s.title}
+                            description={s.description}
+                            image={s.image}
+                            icon={s.icon}
+                            slug={s.slug} // << slug
+                            link={s.link} // opsiyonel: varsa kullanılır
+                            basePath={BASE_PATH} // "/services"
                         />
                     ))}
                 </div>
@@ -250,7 +236,6 @@ const ServicesGrid = ({ services = defaultServices }) => {
                             className="services-arrow-icon"
                             viewBox="0 0 24 24"
                             fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
                         >
                             <path
                                 d="M5 12H19M19 12L12 5M19 12L12 19"

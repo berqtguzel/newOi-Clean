@@ -105,11 +105,11 @@ export default function Footer() {
                             </li>
                             <li>
                                 <Link
-                                    href="/karriere"
+                                    href="/contact"
                                     className="hover:text-white"
-                                    aria-label="Karriere"
+                                    aria-label="Contact"
                                 >
-                                    Karriere
+                                    Contact
                                 </Link>
                             </li>
                             <li>
@@ -184,13 +184,6 @@ export default function Footer() {
                                     aria-label="Datenschutz"
                                 >
                                     Datenschutz
-                                </Link>
-                                <Link
-                                    href="/agb"
-                                    className="text-sm hover:underline"
-                                    aria-label="AGB"
-                                >
-                                    AGB
                                 </Link>
                             </div>
                         </div>

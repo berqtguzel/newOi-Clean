@@ -1,0 +1,196 @@
+/* =========================================================
+   Contact Map – Light/Dark tam uyumlu, erişilebilir stil
+   ========================================================= */
+
+/* ---------- Temel Değişkenler (Light) ---------- */
+:root {
+  --cmap-ink: #0f172a;                 /* ana metin (slate-900) */
+  --cmap-ink-soft: #475569;            /* ikincil metin (slate-600) */
+  --cmap-surface: #ffffff;             /* kart/zemin */
+  --cmap-border: rgba(15,23,42,.10);   /* çerçeve */
+  --cmap-shadow: 0 20px 50px rgba(2,6,23,.12);
+
+  --cmap-primary: #0ea5e9;             /* buton/ana renk */
+  --cmap-primary-hover: #0284c7;
+  --cmap-ring: rgba(14,165,233,.25);   /* focus halkası */
+
+  --cmap-card-bg: rgba(255,255,255,.92);
+  --cmap-card-border: rgba(15,23,42,.10);
+
+  --cmap-skeleton-a: #f1f5f9;          /* skeleton degrade */
+  --cmap-skeleton-b: #f8fafc;
+
+  --cmap-radius: 18px;
+  --cmap-radius-sm: 14px;
+}
+
+/* ---------- Dark Override (Tailwind .dark) ---------- */
+.dark :root {
+  --cmap-ink: #e5e7eb;                 /* slate-200 */
+  --cmap-ink-soft: #cbd5e1;            /* slate-300 */
+  --cmap-surface: #0f172a;             /* koyu yüzey */
+  --cmap-border: rgba(148,163,184,.18);
+  --cmap-shadow: 0 20px 50px rgba(0,0,0,.45);
+
+  --cmap-primary: #38bdf8;
+  --cmap-primary-hover: #0ea5e9;
+  --cmap-ring: rgba(56,189,248,.28);
+
+  --cmap-card-bg: rgba(2,6,23,.86);    /* cam efekti */
+  --cmap-card-border: rgba(148,163,184,.22);
+
+  --cmap-skeleton-a: #0b1220;
+  --cmap-skeleton-b: #0f172a;
+}
+
+/* ---------- Sistem Teması Fallback (opsiyonel) ---------- */
+/* .dark sınıfı yoksa sistem temasını kullanmak için */
+@media (prefers-color-scheme: dark) {
+  :root:not(.force-light) {
+    --cmap-ink: #e5e7eb;
+    --cmap-ink-soft: #cbd5e1;
+    --cmap-surface: #0f172a;
+    --cmap-border: rgba(148,163,184,.18);
+    --cmap-shadow: 0 20px 50px rgba(0,0,0,.45);
+
+    --cmap-primary: #38bdf8;
+    --cmap-primary-hover: #0ea5e9;
+    --cmap-ring: rgba(56,189,248,.28);
+
+    --cmap-card-bg: rgba(2,6,23,.86);
+    --cmap-card-border: rgba(148,163,184,.22);
+
+    --cmap-skeleton-a: #0b1220;
+    --cmap-skeleton-b: #0f172a;
+  }
+}
+
+/* ---------- Bölüm ve Container ---------- */
+.cmap-section { margin-top: 5rem; }
+.cmap-container { max-width: 72rem; margin: 0 auto; padding: 0 1rem; }
+
+/* ---------- Başlık ---------- */
+.cmap-head { margin-bottom: 1.25rem; }
+.cmap-title {
+  margin: 0 0 .25rem;
+  font-size: clamp(1.5rem, 2.6vw, 1.9rem);
+  font-weight: 800;
+  color: var(--cmap-ink);
+}
+.cmap-sub {
+  margin: 0;
+  color: var(--cmap-ink-soft);
+}
+
+/* ---------- Harita Kutu ---------- */
+.cmap-wrap {
+  position: relative;
+  border: 1px solid var(--cmap-border);
+  border-radius: var(--cmap-radius);
+  background: var(--cmap-surface);
+  box-shadow: var(--cmap-shadow);
+  overflow: hidden;
+}
+
+/* 16:9 oran koruyucu */
+.cmap-aspect { position: relative; width: 100%; padding-top: 56.25%; }
+.cmap-iframe {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  border: 0;
+}
+
+/* ---------- Skeleton ---------- */
+.cmap-skeleton {
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(90deg, var(--cmap-skeleton-a), var(--cmap-skeleton-b), var(--cmap-skeleton-a));
+  background-size: 200% 100%;
+  animation: cmapShine 1.2s linear infinite;
+}
+@keyframes cmapShine {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ---------- Overlay Kart ---------- */
+.cmap-card {
+  position: absolute;
+  left: 16px; right: 16px; bottom: 16px;
+  display: grid; grid-template-columns: 1fr auto; gap: 10px;
+  border: 1px solid var(--cmap-card-border);
+  background: var(--cmap-card-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: var(--cmap-radius-sm);
+  padding: 12px 12px 12px 10px;
+}
+@media (min-width: 640px) {
+  .cmap-card { max-width: 560px; right: auto; }
+}
+
+.cmap-card-row { display: flex; gap: 10px; align-items: center; }
+
+.cmap-card-ico {
+  width: 42px; height: 42px; border-radius: 12px;
+  display: grid; place-items: center;
+  color: var(--cmap-primary);
+  background: color-mix(in oklab, var(--cmap-primary) 14%, transparent);
+}
+.cmap-card-ico svg { width: 26px; height: 26px; }
+
+.cmap-card-body { display: grid; gap: 2px; }
+.cmap-card-title { font-weight: 800; color: var(--cmap-ink); }
+.cmap-card-text { color: var(--cmap-ink-soft); font-size: .95rem; }
+
+/* ---------- Aksiyonlar ---------- */
+.cmap-actions { display: flex; align-items: center; gap: 8px; }
+
+/* ---------- Butonlar (erişilebilir odak) ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: .45rem;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  cursor: pointer; text-decoration: none;
+  transition: transform .06s ease, background .18s ease, box-shadow .18s ease;
+}
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--cmap-ring);
+}
+.btn:active { transform: translateY(1px); }
+
+.btn--primary {
+  background: var(--cmap-primary);
+  color: #fff; border-color: transparent;
+  box-shadow: 0 10px 24px color-mix(in oklab, var(--cmap-primary) 22%, transparent);
+}
+.btn--primary:hover { background: var(--cmap-primary-hover); }
+
+/* Ok simgesi */
+.cmap-arrow { width: 18px; height: 18px; }
+
+/* ---------- Alt Not ---------- */
+.cmap-note {
+  margin-top: .75rem;
+  color: var(--cmap-ink-soft);
+  font-size: .95rem;
+}
+
+/* ---------- Hareketi Azalt (Erişilebilirlik) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .cmap-skeleton { animation: none; }
+  .btn,
+  .cmap-wrap { transition: none; }
+}
+
+/* ---------- Küçük Ekran İyileştirmeleri ---------- */
+@media (max-width: 380px) {
+  .cmap-card {
+    grid-template-columns: 1fr;
+    row-gap: 8px;
+  }
+  .cmap-actions { justify-content: flex-start; }
+}

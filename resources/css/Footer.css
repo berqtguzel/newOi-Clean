@@ -1,31 +1,30 @@
 :root{
-  --footer-bg-start: #0f172a; /* fallback */
+  --footer-bg-start: #0f172a;
 }
 
-/* Component-level container isolation */
+
 .footer{
   isolation: isolate;
 }
 
-/* Decorative SVG wrapper tweaks to ensure sharp rendering */
+
 .footer-svg{
   transform: translateZ(0);
   will-change: transform;
 }
 
-/* Brand badge minor tweak (keeps Tailwind classes but centralizes possible overrides) */
 .brand-badge{
   background-color: rgba(255,255,255,0.04);
 }
 
-/* Logo sizing inside brand-badge */
+
 .brand-logo{
   display: block;
-  height: 2rem; /* 8 */
+  height: 2rem;
   width: auto;
 }
 
-/* Back-to-top button positioning (kept here so markup is cleaner) */
+
 .footer-backtop{
   position: absolute;
   right: 1.5rem;
@@ -39,12 +38,10 @@
   }
 }
 
-/* Small accessibility nicety: focus outline for icon-only links */
+
 a.inline-icon:focus{
   outline: 2px solid rgba(255,255,255,0.12);
   outline-offset: 2px;
-  border-radius: 0.375rem; /* match rounded-md */
+  border-radius: 0.375rem;
 }
-
-/* Ensure address line spacing doesn't collapse in some browsers */
 .footer address > div{ display: flex; align-items: center; }
