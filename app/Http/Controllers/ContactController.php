@@ -20,14 +20,14 @@ class ContactController extends Controller
     public function submit(ContactFormRequest $request)
     {
         try {
-            // Dashboard API'ye gönder
+
             $response = $this->dashboardService->submitContact($request->validated());
 
             if (!$response) {
                 throw new \Exception('Dashboard API error');
             }
 
-            // E-posta gönderimi (yedek olarak)
+
             if (config('dashboard.send_backup_email', true)) {
                 Mail::to(config('mail.admin_email', 'info@oi-clean.de'))
                     ->send(new ContactFormMail($request->validated()));

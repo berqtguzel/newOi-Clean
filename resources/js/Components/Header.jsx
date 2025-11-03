@@ -1,4 +1,3 @@
-// resources/js/Components/Header.jsx
 import "../../css/header.css";
 import React, { useEffect, useRef, useState } from "react";
 import { router } from "@inertiajs/react";
@@ -23,9 +22,7 @@ function cx(...args) {
 }
 const BitsBackground = () => <div aria-hidden className="rbits-bg" />;
 
-/* ---------- Smooth scroll helpers ---------- */
 const getOffset = () => {
-    // sabit header yüksekliğini telafi et (gerekiyorsa ayarla)
     const el = document.querySelector(".site-header");
     const h = el ? el.offsetHeight : 0;
     return Math.max(0, h - 4);
@@ -38,7 +35,7 @@ const smoothScrollTo = (hash) => {
     const rect = el.getBoundingClientRect();
     const top = rect.top + window.pageYOffset - headerOffset;
     window.scrollTo({ top, behavior: "smooth" });
-    // URL hash'i güncelle (yenileme olmadan)
+
     history.replaceState(null, "", `${location.pathname}#${id}`);
 };
 const isHashOnly = (url) => /^#/.test(url);
@@ -48,7 +45,6 @@ const splitPathHash = (url) => {
 };
 
 const Header = ({ currentRoute }) => {
-    /* ---------- active path ---------- */
     const currentPath =
         typeof window !== "undefined"
             ? window.location.pathname.replace(/\/+$/, "")
@@ -59,7 +55,6 @@ const Header = ({ currentRoute }) => {
         return list.some((u) => u && currentPath === u.replace(/\/+$/, ""));
     };
 
-    /* ---------- states ---------- */
     const [isTopBarVisible, setIsTopBarVisible] = useState(true);
     const [openMenu, setOpenMenu] = useState(false);
     const [openDropdown, setOpenDropdown] = useState(null);
@@ -67,7 +62,6 @@ const Header = ({ currentRoute }) => {
     const [mobileAccordions, setMobileAccordions] = useState({});
     const headerRef = useRef(null);
 
-    /* ---------- hover-intent ---------- */
     const closeTimer = useRef(null);
     const subCloseTimer = useRef(null);
     const HOVER_INTENT = 160;
@@ -106,7 +100,6 @@ const Header = ({ currentRoute }) => {
         );
     };
 
-    /* ---------- outside click + ESC ---------- */
     const [isLangOpen, setIsLangOpen] = useState(false);
     useEffect(() => {
         const onDocClick = (e) => {
@@ -140,7 +133,6 @@ const Header = ({ currentRoute }) => {
             return nextOpen ? { [key]: true } : {};
         });
 
-    /* ---------- language ---------- */
     const [languages, setLanguages] = useState([
         { code: "de", label: "DE" },
         { code: "en", label: "EN" },
@@ -173,12 +165,11 @@ const Header = ({ currentRoute }) => {
         );
     };
 
-    /* ---------- unified navigation (no page reload) ---------- */
     const navigate =
         (url, close = false) =>
         (e) => {
             if (!url) return;
-            // aynı sayfa içi hash
+
             if (isHashOnly(url)) {
                 e.preventDefault();
                 setOpenDropdown(null);
@@ -187,7 +178,7 @@ const Header = ({ currentRoute }) => {
                 smoothScrollTo(url);
                 return;
             }
-            // /path#hash
+
             if (/#/.test(url)) {
                 e.preventDefault();
                 const { path, hash } = splitPathHash(url);
@@ -206,7 +197,7 @@ const Header = ({ currentRoute }) => {
                 }
                 return;
             }
-            // normal sayfa
+
             e.preventDefault();
             setOpenDropdown(null);
             setOpenSubmenu(null);
@@ -214,7 +205,6 @@ const Header = ({ currentRoute }) => {
             router.visit(url);
         };
 
-    /* ---------- nav items ---------- */
     const navItems = [
         {
             name: "Startseite",
@@ -283,7 +273,6 @@ const Header = ({ currentRoute }) => {
         <header ref={headerRef} className="site-header">
             <BitsBackground />
 
-            {/* TOP BAR */}
             {isTopBarVisible && (
                 <div className="topbar">
                     <div className="container">
@@ -332,7 +321,6 @@ const Header = ({ currentRoute }) => {
                 </div>
             )}
 
-            {/* MAIN NAV */}
             <div className="navwrap">
                 <div className="container">
                     <div className="navwrap__inner">
@@ -342,13 +330,12 @@ const Header = ({ currentRoute }) => {
                             className="brand"
                             aria-label="Startseite"
                         >
-                            {/* Light tema için */}
                             <img
                                 src="/images/logo/Logo.png"
                                 alt="O&I CLEAN Logo"
                                 className="brand__logo brand__logo--light"
                             />
-                            {/* Dark tema için */}
+
                             <img
                                 src="/images/logo/darkLogo.png"
                                 alt="O&I CLEAN Logo (Dark)"
@@ -356,7 +343,6 @@ const Header = ({ currentRoute }) => {
                             />
                         </a>
 
-                        {/* Desktop nav */}
                         <nav
                             className="nav nav--desktop"
                             aria-label="Hauptnavigation"
@@ -408,7 +394,7 @@ const Header = ({ currentRoute }) => {
                                             }
                                             onClick={
                                                 hasDropdown
-                                                    ? navigate(item.url) // parent tıklanınca da gider
+                                                    ? navigate(item.url)
                                                     : navigate(item.url)
                                             }
                                         >
@@ -576,7 +562,7 @@ const Header = ({ currentRoute }) => {
 
                             <div className="nav__cta">
                                 <ThemeToggle />
-                                {/* Language switch */}
+
                                 <div className="lang-switch" ref={langRef}>
                                     <button
                                         type="button"
@@ -626,7 +612,6 @@ const Header = ({ currentRoute }) => {
                             </div>
                         </nav>
 
-                        {/* Mobile trigger */}
                         <button
                             className="hamburger"
                             onClick={() => setOpenMenu(true)}
@@ -638,7 +623,6 @@ const Header = ({ currentRoute }) => {
                 </div>
             </div>
 
-            {/* MOBILE DRAWER */}
             <div
                 className={cx("drawer", openMenu && "is-open")}
                 aria-hidden={!openMenu}
@@ -650,7 +634,6 @@ const Header = ({ currentRoute }) => {
                 <aside className="drawer__panel" role="dialog" aria-modal>
                     <div className="drawer__head">
                         <a href="/" className="brand brand--sm">
-                            {/* light/dark logo switch */}
                             <img
                                 src="/images/logo/Logo.png"
                                 alt="O&I CLEAN Logo"
@@ -695,7 +678,6 @@ const Header = ({ currentRoute }) => {
                                             {item.name}
                                         </span>
 
-                                        {/* OK sadece dropdown’ı olanlarda ve AÇIKKEN görünür */}
                                         {hasDropdown && (
                                             <FaChevronDown
                                                 className={cx(
@@ -722,7 +704,6 @@ const Header = ({ currentRoute }) => {
                                                             className="acc__item"
                                                         >
                                                             {subItem.submenu ? (
-                                                                /* Nested submenu: details/summary ile aç-kapa */
                                                                 <details className="acc__details">
                                                                     <summary className="acc__summary">
                                                                         {
@@ -795,7 +776,6 @@ const Header = ({ currentRoute }) => {
                         <div className="drawer__theme-toggle">
                             <ThemeToggle />
                         </div>
-                        {/* ... dil butonları ve Impressum aynen devam ... */}
                     </div>
                 </aside>
             </div>

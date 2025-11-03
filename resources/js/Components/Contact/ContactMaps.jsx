@@ -10,7 +10,7 @@ export default function ContactMap({
     const [loaded, setLoaded] = React.useState(false);
 
     const q = encodeURIComponent(query);
-    // Eski tip embed, API key gerekmez:
+
     const src = `https://maps.google.com/maps?q=${q}&t=&z=${zoom}&ie=UTF8&iwloc=&output=embed`;
     const openLink = `https://maps.google.com/?q=${q}`;
 
@@ -25,14 +25,12 @@ export default function ContactMap({
                 </div>
 
                 <div className="cmap-wrap">
-                    {/* Skeleton */}
                     {!loaded && (
                         <div className="cmap-skeleton" aria-hidden="true">
                             <div className="cmap-skeleton-wave" />
                         </div>
                     )}
 
-                    {/* Harita */}
                     <div className="cmap-aspect">
                         <iframe
                             title={title}
@@ -45,7 +43,6 @@ export default function ContactMap({
                         />
                     </div>
 
-                    {/* Adres/CTA Kartı (overlay) */}
                     <div className="cmap-card">
                         <div className="cmap-card-row">
                             <div className="cmap-card-ico" aria-hidden>
@@ -103,7 +100,6 @@ export default function ContactMap({
                     </div>
                 </div>
 
-                {/* Alt bilgi (opsiyonel) */}
                 <div className="cmap-note">
                     <span>
                         Tipp: Klicken Sie auf „Route planen“, um die Navigation

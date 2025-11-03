@@ -191,7 +191,6 @@ export default function Footer() {
                 </div>
             </div>
 
-            {/* Back to top */}
             <div className="footer-backtop">
                 <a
                     href="#top"
