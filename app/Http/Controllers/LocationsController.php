@@ -9,7 +9,7 @@ class LocationsController extends Controller
 {
     public function show(Request $request, string $slug)
     {
-        // Şehir verileri — örnekleri çoğaltabilirsin
+
         $locations = [
             'fulda' => [
                 'city' => 'Fulda',
@@ -67,7 +67,7 @@ class LocationsController extends Controller
 
         $page = $locations[$slug];
 
-        // JSON-LD LocalBusiness (isteğe bağlı SEO)
+
         $structured = [
             '@context' => 'https://schema.org',
             '@type'    => 'LocalBusiness',

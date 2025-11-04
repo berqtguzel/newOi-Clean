@@ -1,6 +1,6 @@
 
 :root {
-  --odock-bg: rgba(32, 99, 255, 0.85);  /* mavi cam */
+  --odock-bg: rgba(32, 99, 255, 0.85);  
   --odock-bg-blur: 8px;
   --odock-border: rgba(255,255,255,0.25);
   --odock-text: #fff;

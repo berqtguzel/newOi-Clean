@@ -1,15 +1,10 @@
-/* =====================================================
-   QUOTE MODAL (light + dark theme)
-   Author: O&I CLEAN
-   ===================================================== */
 
-/* ---------- LIGHT THEME (varsayılan) ---------- */
 :root {
   --qd-ink: #0f172a;
   --qd-ink-soft: #334155;
   --qd-border: rgba(15,23,42,.12);
 
-  /* Dialog (arka plan bulanıkken kontrast güçlü kalsın) */
+
   --qd-surface-1: #ffffff;
   --qd-surface-2: rgba(255,255,255,.98);
   --qd-scrim: rgba(2,6,23,0.62);
@@ -32,8 +27,7 @@
   --qd-ghost-fg: #334155;
   --qd-ghost-hover: rgba(51,65,85,.06);
 }
-/* ---- DARK TEMA OVERRIDES (class tabanlı) ---- */
-/* html.dark ya da :root.dark ikisi de çalışır */
+
 :root.dark,
 html.dark,
 body.dark {
@@ -65,7 +59,7 @@ body.dark {
 }
 
 
-/* ---------- Modal Genel ---------- */
+
 .qdock {
   position: fixed;
   inset: 0;
@@ -163,16 +157,16 @@ body.dark {
 .qdock__field textarea:focus {
   border-color: var(--qd-input-focus-border);
   box-shadow: 0 0 0 4px var(--qd-input-focus-ring);
-  background: var(--qd-input-bg); /* <-- düzeltildi */
+  background: var(--qd-input-bg);
 }
 
-/* Placeholder uyumu */
+
 .qdock__field input::placeholder,
 .qdock__field textarea::placeholder {
   color: color-mix(in oklab, var(--qd-ink-soft) 70%, white);
 }
 
-/* ---------- Onay Kutusu ---------- */
+
 .qdock__check {
   display: flex; gap: 10px; align-items: flex-start;
   margin-top: 10px;
@@ -181,7 +175,7 @@ body.dark {
 }
 .qdock__check a { color: var(--qd-primary); }
 
-/* ---------- Butonlar ---------- */
+
 .qdock__actions {
   display: flex; gap: 10px; justify-content: flex-end;
   margin-top: 14px;
@@ -214,7 +208,6 @@ body.dark {
 }
 .btn--primary:hover { background: var(--qd-primary-hover); }
 
-/* ---------- Success Ekranı ---------- */
 .qdock__ok {
   padding: 24px 18px 26px;
   text-align: center;

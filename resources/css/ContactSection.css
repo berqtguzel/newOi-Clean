@@ -1,8 +1,4 @@
-/* ===========================
-   ContactSection – Light & Dark (Premium)
-   =========================== */
 
-/* -- TEMEL BÖLÜM -- */
 .contact-section{
   position:relative;
   padding:6rem 1rem;
@@ -10,7 +6,7 @@
   overflow:hidden;
 }
 
-/* Soft grid deseni (light) */
+
 .contact-section::before{
   content:"";
   position:absolute; inset:0;
@@ -19,7 +15,7 @@
   pointer-events:none;
 }
 
-/* Blur blob (light) */
+
 .contact-section::after{
   content:"";
   position:absolute; inset:auto -10% -25% -10%; height:420px;
@@ -41,7 +37,7 @@
 }
 @media (min-width:1024px){ .contact-content{ grid-template-columns:1fr 1.5fr; }}
 
-/* -- SOL KOLON -- */
+
 .contact-info{ padding-right:2rem; }
 .contact-title{ font-size:2.25rem; line-height:2.5rem; font-weight:700; color:#1e293b; margin-bottom:1.5rem; }
 .contact-description{ color:#64748b; margin-bottom:3rem; font-size:1.125rem; line-height:1.75rem; }
@@ -58,7 +54,7 @@
 .contact-hours h3{ font-weight:600; color:#1e293b; margin-bottom:.5rem; }
 .contact-hours p{ color:#64748b; }
 
-/* -- FORM KOLONU -- */
+
 .contact-form{
   background:#f8fafc;
   padding:2rem;
@@ -110,16 +106,13 @@
 }
 @keyframes spin{ to{ transform:rotate(360deg);} }
 
-/* Küçük geçişler */
+
 .contact-content,.contact-form,
 .form-group input,.form-group select,.form-group textarea{
   transition: background-color .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease;
 }
 
-/* ======================
-   DARK THEME OVERRIDES
-   Kökte .dark varsa aktif
-   ====================== */
+
 
 .dark .contact-section{
   background:
@@ -189,27 +182,26 @@
 .dark .submit-button:hover{ filter:saturate(1.05); }
 .dark .submit-button:disabled{ background:#1e3a8a; color:#9aa1ad; box-shadow:none; }
 
-/* Karanlık modda scrollbar */
+
 .dark *{ scrollbar-color:#2a2f37 #0f1216; }
-/* ReactBits DotGrid arka plan katmanları */
+
 .rbits-section { position: relative; }
 .rbits-bg-wrap {
   position: absolute;
   inset: 0;
-  z-index: 0;            /* içerik üstte kalsın */
-  pointer-events: none;  /* tıklamayı engellemesin */
+  z-index: 0;
+  pointer-events: none;
   overflow: hidden;
 }
 
-/* DotGrid'in konumlandırılması */
 .rbits-dotgrid {
   position: absolute !important;
   inset: -10% -10% -10% -10%;
-  opacity: .8;           /* light */
+  opacity: .8;
 }
 .dark .rbits-dotgrid { opacity: .6; }
 
-/* Yumuşak degrade overlay (light/dark uyumlu) */
+
 .rbits-overlay-grad{
   position:absolute; inset:0;
   background:
@@ -223,7 +215,7 @@
     radial-gradient(700px 500px at 92% 5%, rgba(56,189,248,.14), transparent 60%);
 }
 
-/* Vignette ile kenarları yumuşat */
+
 .rbits-vignette{
   position:absolute; inset:0;
   background: radial-gradient(120% 90% at 50% 20%,
@@ -234,5 +226,5 @@
     transparent 55%, rgba(0,0,0,.35) 80%, rgba(0,0,0,.5) 100%);
 }
 
-/* DotGrid arkada, içerik önde */
+
 .contact-container { position: relative; z-index: 1; }

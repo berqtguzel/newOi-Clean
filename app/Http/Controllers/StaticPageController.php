@@ -9,9 +9,9 @@ class StaticPageController extends Controller
 {
     public function show(string $slug)
     {
-        // NOT: Hero görsellerini public/images/heroes altına koy; dosya adını below 'image' alanlarında değiştirirsin.
+
         $pages = [
-            // ÜBER UNS
+
             'uber-uns' => [
                 'title'    => 'Über uns',
                 'subtitle' => 'Über 25 Jahre Erfahrung in der professionellen Gebäudereinigung.',
@@ -35,7 +35,7 @@ class StaticPageController extends Controller
                 ],
             ],
 
-            // QUALITÄTSMANAGEMENT
+
             'qualitatsmanagement' => [
                 'title'    => 'Qualitätsmanagement',
                 'subtitle' => 'Qualität ist bei uns mehr als ein Wort – sie ist unsere Verpflichtung.',
@@ -51,7 +51,7 @@ class StaticPageController extends Controller
                 ],
             ],
 
-            // MITARBEITER SCHULUNGEN
+
             'mitarbeiter-schulungen' => [
                 'title'    => 'Mitarbeiter Schulungen',
                 'subtitle' => 'Regelmäßige Schulungen und Weiterbildungen für soziale und fachliche Kompetenzen.',
@@ -67,7 +67,7 @@ class StaticPageController extends Controller
                 ],
             ],
 
-            // FAQ
+
             'faq' => [
                 'title'    => 'Häufig gestellte Fragen (FAQ)',
                 'subtitle' => 'Antworten auf die häufigsten Fragen rund um unsere Reinigungsleistungen.',
@@ -95,7 +95,7 @@ class StaticPageController extends Controller
                 ],
             ],
 
-            // DATENSCHUTZ
+
             'datenschutz' => [
                 'title'    => 'Datenschutzhinweise',
                 'subtitle' => 'Der Schutz Ihrer persönlichen Daten ist uns ein besonderes Anliegen.',
@@ -119,7 +119,6 @@ class StaticPageController extends Controller
                 ],
             ],
 
-            // STOCKFOTOS
             'stockfotos' => [
                 'title'    => 'Stockfotos',
                 'subtitle' => 'Informationen zu den auf unserer Website verwendeten Bildern.',
