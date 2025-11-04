@@ -1,4 +1,3 @@
-// resources/js/Pages/Service/Show.jsx
 import React from "react";
 import { Head, Link } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
@@ -34,7 +33,6 @@ export default function ServiceShow({ slug, page = {} }) {
                 </script>
             </Head>
 
-            {/* HERO */}
             <section
                 className={`svx-hero ${heroImage ? "svx-hero--hasimg" : ""}`}
             >
@@ -75,10 +73,8 @@ export default function ServiceShow({ slug, page = {} }) {
                 </div>
             </section>
 
-            {/* CONTENT */}
             <section className="svx-content">
                 <div className="container">
-                    {/* intro kart */}
                     {(!sections || sections.length === 0) && (
                         <article className="svx-card svx-fadeup">
                             <p className="svx-muted">
@@ -87,10 +83,9 @@ export default function ServiceShow({ slug, page = {} }) {
                         </article>
                     )}
 
-                    {/* section’lar */}
                     {sections.map((s, i) => {
                         const hasImg = !!s.image;
-                        const reversed = i % 2 === 1; // sırayla ters düzen
+                        const reversed = i % 2 === 1;
                         const items = Array.isArray(s.items) ? s.items : [];
 
                         return (
@@ -145,7 +140,6 @@ export default function ServiceShow({ slug, page = {} }) {
                         );
                     })}
 
-                    {/* CTA kartı */}
                     <div className="svx-cta svx-fadeup">
                         <div className="svx-cta__left">
                             <h3>Beratung gewünscht?</h3>

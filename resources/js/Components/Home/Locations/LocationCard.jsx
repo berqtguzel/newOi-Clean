@@ -1,4 +1,3 @@
-// resources/js/Components/Home/Locations/LocationCard.jsx
 import React from "react";
 import { Link } from "@inertiajs/react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
@@ -16,7 +15,7 @@ const toSlug = (s = "") =>
 
 const LocationCard = ({ location, onHover, isActive }) => {
     const slug = location.slug || toSlug(location.city || location.title);
-    // location.link varsa onu kullan, yoksa /standorte/{slug}
+
     const href =
         location.link && location.link.trim().length > 0
             ? location.link
@@ -37,7 +36,7 @@ const LocationCard = ({ location, onHover, isActive }) => {
                     width={400}
                     height={300}
                 />
-                {/* overlay artık tıklamayı YUTMAYACAK */}
+
                 <div className="location-card-overlay" aria-hidden="true">
                     <h2 className="location-card-title">{location.title}</h2>
                 </div>
@@ -50,7 +49,6 @@ const LocationCard = ({ location, onHover, isActive }) => {
                         className="location-card-button"
                         aria-label={`Mehr über unsere Reinigungsservices in ${location.city} erfahren`}
                         onClick={(e) => {
-                            // Kartın başka katmanları click'i engellemesin
                             e.stopPropagation();
                         }}
                     >

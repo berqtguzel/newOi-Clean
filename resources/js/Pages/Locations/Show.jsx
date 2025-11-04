@@ -44,7 +44,6 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
                 </div>
             </section>
 
-            {/* CONTENT */}
             <section className="locx-content">
                 <div className="container">
                     {(page?.sections || []).map((s, i) => {

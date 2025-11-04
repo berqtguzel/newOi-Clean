@@ -14,18 +14,16 @@ createInertiaApp({
     title: (title) => `${title} - ${appName}`,
 
     resolve: (name) => {
-        // Tüm React sayfalarını tek seferde yükle
         const pages = import.meta.glob("./Pages/**/*.{jsx,tsx}", {
             eager: true,
         });
 
-        // Örn: name = "StaticPage" => ./Pages/StaticPage.jsx|.tsx
         const keyJsx = `./Pages/${name}.jsx`;
         const keyTsx = `./Pages/${name}.tsx`;
         const page = pages[keyJsx] || pages[keyTsx];
 
         if (!page) {
-            console.error("Inertia page keys:", Object.keys(pages)); // teşhis için
+            console.error("Inertia page keys:", Object.keys(pages));
             throw new Error(`Page not found: ${keyJsx} (or ${keyTsx})`);
         }
         return page;

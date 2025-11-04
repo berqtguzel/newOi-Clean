@@ -42,62 +42,6 @@ export default function ContactMap({
                             onLoad={() => setLoaded(true)}
                         />
                     </div>
-
-                    <div className="cmap-card">
-                        <div className="cmap-card-row">
-                            <div className="cmap-card-ico" aria-hidden>
-                                <svg viewBox="0 0 24 24">
-                                    <path
-                                        d="M12 22s7-7.58 7-12a7 7 0 10-14 0c0 4.42 7 12 7 12z"
-                                        fill="currentColor"
-                                        opacity=".12"
-                                    />
-                                    <circle
-                                        cx="12"
-                                        cy="10"
-                                        r="3.2"
-                                        fill="currentColor"
-                                    />
-                                    <path
-                                        d="M3 21h18"
-                                        stroke="currentColor"
-                                        strokeWidth="1.6"
-                                        strokeLinecap="round"
-                                    />
-                                </svg>
-                            </div>
-                            <div className="cmap-card-body">
-                                <div className="cmap-card-title">Adresse</div>
-                                <div className="cmap-card-text">{query}</div>
-                            </div>
-                        </div>
-
-                        <div className="cmap-actions">
-                            <a
-                                href={openLink}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="btn btn--primary"
-                                aria-label="Route planen in Google Maps"
-                            >
-                                Route planen
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    className="cmap-arrow"
-                                    aria-hidden
-                                >
-                                    <path
-                                        d="M5 12h14M13 5l7 7-7 7"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    />
-                                </svg>
-                            </a>
-                        </div>
-                    </div>
                 </div>
 
                 <div className="cmap-note">

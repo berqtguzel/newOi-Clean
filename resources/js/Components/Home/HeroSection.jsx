@@ -17,7 +17,6 @@ const item = {
 export default function HeroSection({ content }) {
     return (
         <div className="relative min-h-[70svh] md:min-h-[600px] lg:min-h-[720px] overflow-hidden flex items-center justify-center text-white px-4 py-16 sm:py-20">
-            {/* Arkaplan video */}
             <motion.video
                 autoPlay
                 loop
@@ -34,7 +33,6 @@ export default function HeroSection({ content }) {
                 Ihr Browser unterstützt das Video-Tag nicht.
             </motion.video>
 
-            {/* Karanlık/gradient örtü — mobilde biraz daha yoğun */}
             <motion.div
                 className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70 md:from-black/50 md:via-black/40 md:to-black/50"
                 initial={{ opacity: 0 }}
@@ -42,7 +40,6 @@ export default function HeroSection({ content }) {
                 transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
             />
 
-            {/* İçerik */}
             <motion.div
                 className="relative z-10 text-center"
                 variants={container}

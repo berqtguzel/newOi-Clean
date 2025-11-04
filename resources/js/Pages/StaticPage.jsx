@@ -110,7 +110,6 @@ export default function StaticPage({ slug, page = {}, meta = {} }) {
                 </div>
             </section>
 
-            {/* CONTACT */}
             <ContactSection />
         </AppLayout>
     );

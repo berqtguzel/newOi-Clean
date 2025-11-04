@@ -213,14 +213,14 @@ const ServicesGrid = ({ services = defaultServices }) => {
                 <div ref={gridRef} className="services-grid">
                     {servicesToRender.map((s) => (
                         <ServiceCard
-                            key={s.id}
+                            key={s.slug || s.link || s.title}
                             title={s.title}
                             description={s.description}
                             image={s.image}
                             icon={s.icon}
-                            slug={s.slug} // << slug
-                            link={s.link} // opsiyonel: varsa kullanılır
-                            basePath={BASE_PATH} // "/services"
+                            slug={s.slug}
+                            link={s.link}
+                            basePath={BASE_PATH}
                         />
                     ))}
                 </div>

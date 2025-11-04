@@ -1,4 +1,3 @@
-// resources/js/Components/Home/Locations/LocationsGrid.jsx
 import React from "react";
 import { Head } from "@inertiajs/react";
 import "../../../../css/LocationsGrid.css";
@@ -17,7 +16,6 @@ const defaultLocations = [
             "Hausmeisterdienste",
         ],
         coordinates: { lat: 50.5558, lng: 9.6808 },
-        // link: kalktı → LocationCard otomatik /standorte/fulda yapacak
     },
     {
         id: 2,
@@ -26,7 +24,6 @@ const defaultLocations = [
         image: "/images/aalen.jpg",
         services: ["Gebäudereinigung", "Grundreinigung", "Unterhaltsreinigung"],
         coordinates: { lat: 49.4478, lng: 11.8516 },
-        // link: kalktı → otomatik /standorte/amberg
     },
     {
         id: 3,
@@ -35,7 +32,14 @@ const defaultLocations = [
         image: "/images/aalen.jpg",
         services: ["Gebäudereinigung", "Glasreinigung", "Büroreinigung"],
         coordinates: { lat: 49.9769, lng: 9.1495 },
-        // link: kalktı → otomatik /standorte/aschaffenburg
+    },
+    {
+        id: 3,
+        city: "Aschaffenburg",
+        title: "Gebäudereinigung in Aschaffenburg",
+        image: "/images/aalen.jpg",
+        services: ["Gebäudereinigung", "Glasreinigung", "Büroreinigung"],
+        coordinates: { lat: 49.9769, lng: 9.1495 },
     },
 ];
 

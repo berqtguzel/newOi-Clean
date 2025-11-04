@@ -23,7 +23,6 @@ class HomeController extends Controller
             'contact_button' => 'Angebot anfordern',
             'nav_services' => 'Dienstleistungen',
             'nav_about' => 'Über uns',
-
             'nav_contact' => 'Kontakt',
             'footer_title' => 'Ihr Experte für Reinigung und Wartung Ihres Unternehmens.',
         ];

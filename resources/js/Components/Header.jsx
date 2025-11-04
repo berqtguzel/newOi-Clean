@@ -2,17 +2,11 @@ import "../../css/header.css";
 import React, { useEffect, useRef, useState } from "react";
 import { router } from "@inertiajs/react";
 import {
-    FaHome,
-    FaBuilding,
-    FaBroom,
-    FaMapMarkerAlt,
-    FaPaperPlane,
     FaChevronDown,
     FaChevronRight,
     FaPhoneAlt,
     FaBars,
     FaTimes,
-    FaQuestionCircle,
 } from "react-icons/fa";
 import ThemeToggle from "./ThemeToggle";
 import DecryptedText from "./ReactBits/Texts/DescryptedText";
@@ -35,13 +29,22 @@ const smoothScrollTo = (hash) => {
     const rect = el.getBoundingClientRect();
     const top = rect.top + window.pageYOffset - headerOffset;
     window.scrollTo({ top, behavior: "smooth" });
-
     history.replaceState(null, "", `${location.pathname}#${id}`);
 };
 const isHashOnly = (url) => /^#/.test(url);
 const splitPathHash = (url) => {
     const [path, hash] = url.split("#");
     return { path: path || "/", hash: hash ? `#${hash}` : "" };
+};
+
+const dedupeByKey = (items = [], keyA = "url", keyB = "name") => {
+    const seen = new Set();
+    return (items || []).filter((it) => {
+        const k = (it?.[keyA] || it?.[keyB] || "").trim();
+        if (!k || seen.has(k)) return false;
+        seen.add(k);
+        return true;
+    });
 };
 
 const Header = ({ currentRoute }) => {
@@ -129,7 +132,6 @@ const Header = ({ currentRoute }) => {
     const toggleMobileAccordion = (key) =>
         setMobileAccordions((prev) => {
             const nextOpen = !prev[key];
-
             return nextOpen ? { [key]: true } : {};
         });
 
@@ -169,7 +171,6 @@ const Header = ({ currentRoute }) => {
         (url, close = false) =>
         (e) => {
             if (!url) return;
-
             if (isHashOnly(url)) {
                 e.preventDefault();
                 setOpenDropdown(null);
@@ -178,7 +179,6 @@ const Header = ({ currentRoute }) => {
                 smoothScrollTo(url);
                 return;
             }
-
             if (/#/.test(url)) {
                 e.preventDefault();
                 const { path, hash } = splitPathHash(url);
@@ -190,14 +190,12 @@ const Header = ({ currentRoute }) => {
                 } else {
                     router.visit(path, {
                         preserveScroll: true,
-                        onSuccess: () => {
-                            requestAnimationFrame(() => smoothScrollTo(hash));
-                        },
+                        onSuccess: () =>
+                            requestAnimationFrame(() => smoothScrollTo(hash)),
                     });
                 }
                 return;
             }
-
             e.preventDefault();
             setOpenDropdown(null);
             setOpenSubmenu(null);
@@ -210,14 +208,12 @@ const Header = ({ currentRoute }) => {
             name: "Startseite",
             route: "home",
             url: "/",
-            icon: <FaHome aria-hidden="true" />,
             isActive: () => isPathActive("/"),
         },
         {
             name: "Über uns",
             route: "about",
             url: "/uber-uns",
-            icon: <FaBuilding aria-hidden="true" />,
             dropdownKey: "about",
             dropdown: [
                 { name: "Über uns", url: "/uber-uns" },
@@ -226,6 +222,8 @@ const Header = ({ currentRoute }) => {
                     name: "Mitarbeiter Schulungen",
                     url: "/mitarbeiter-schulungen",
                 },
+
+                { name: "Häufig gestellte Fragen (FAQ)", url: "/faq" },
                 {
                     name: "Rechtliches",
                     submenuKey: "legal",
@@ -235,7 +233,6 @@ const Header = ({ currentRoute }) => {
                         { name: "Stockfotos", url: "/stockfotos" },
                     ],
                 },
-                { name: "Häufig gestellte Fragen (FAQ)", url: "/faq" },
             ],
             isActive: () =>
                 isPathActive([
@@ -252,20 +249,17 @@ const Header = ({ currentRoute }) => {
             name: "Reinigungsleistungen",
             route: "services",
             url: "/#services",
-            icon: <FaBroom aria-hidden="true" />,
             dropdownKey: "services",
         },
         {
             name: "Standorte",
             route: "locations",
             url: "/#location",
-            icon: <FaMapMarkerAlt aria-hidden="true" />,
         },
         {
             name: "Kontakt",
             route: "contact",
             url: "/contact",
-            icon: <FaPaperPlane aria-hidden="true" />,
         },
     ];
 
@@ -335,7 +329,6 @@ const Header = ({ currentRoute }) => {
                                 alt="O&I CLEAN Logo"
                                 className="brand__logo brand__logo--light"
                             />
-
                             <img
                                 src="/images/logo/darkLogo.png"
                                 alt="O&I CLEAN Logo (Dark)"
@@ -392,15 +385,8 @@ const Header = ({ currentRoute }) => {
                                                 hasDropdown &&
                                                 scheduleCloseDrop()
                                             }
-                                            onClick={
-                                                hasDropdown
-                                                    ? navigate(item.url)
-                                                    : navigate(item.url)
-                                            }
+                                            onClick={navigate(item.url)}
                                         >
-                                            <span className="nav__icon">
-                                                {item.icon}
-                                            </span>
                                             <span className="nav__label">
                                                 {item.name}
                                             </span>
@@ -427,7 +413,9 @@ const Header = ({ currentRoute }) => {
                                                     <div className="mega" />
                                                 ) : (
                                                     <div className="menu">
-                                                        {item.dropdown.map(
+                                                        {dedupeByKey(
+                                                            item.dropdown
+                                                        ).map(
                                                             (subItem, idx) => {
                                                                 const hasSub =
                                                                     !!subItem.submenu;
@@ -470,10 +458,6 @@ const Header = ({ currentRoute }) => {
                                                                                 }
                                                                             >
                                                                                 <span className="menu__label">
-                                                                                    <FaQuestionCircle
-                                                                                        className="menu__ico"
-                                                                                        aria-hidden
-                                                                                    />
                                                                                     {
                                                                                         subItem.name
                                                                                     }
@@ -559,59 +543,53 @@ const Header = ({ currentRoute }) => {
                                     </div>
                                 );
                             })}
-
-                            <div className="nav__cta">
-                                <ThemeToggle />
-
-                                <div className="lang-switch" ref={langRef}>
-                                    <button
-                                        type="button"
-                                        className="btn btn--ghost ml-3 lang-switch__btn"
-                                        aria-haspopup="true"
-                                        aria-expanded={isLangOpen}
-                                        onClick={toggleLang}
-                                    >
-                                        {currentLang.toUpperCase()}
-                                    </button>
-                                    {isLangOpen && (
-                                        <ul
-                                            className="lang-switch__list"
-                                            role="menu"
-                                        >
-                                            {languages.map((l) => (
-                                                <li key={l.code}>
-                                                    <button
-                                                        type="button"
-                                                        className={cx(
-                                                            "lang-switch__item",
-                                                            l.code ===
-                                                                currentLang &&
-                                                                "is-active"
-                                                        )}
-                                                        onClick={() =>
-                                                            changeLanguage(
-                                                                l.code
-                                                            )
-                                                        }
-                                                    >
-                                                        {l.label}
-                                                    </button>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </div>
-
-                                <a
-                                    href="/impressum"
-                                    onClick={navigate("/impressum")}
-                                    className="btn btn--primary ml-4"
-                                >
-                                    Impressum
-                                </a>
-                            </div>
                         </nav>
-
+                        <div className="nav__cta">
+                            <ThemeToggle />
+                            <div className="lang-switch" ref={langRef}>
+                                <button
+                                    type="button"
+                                    className="btn btn--ghost ml-3 lang-switch__btn"
+                                    aria-haspopup="true"
+                                    aria-expanded={isLangOpen}
+                                    onClick={toggleLang}
+                                >
+                                    {currentLang.toUpperCase()}
+                                </button>
+                                {isLangOpen && (
+                                    <ul
+                                        className="lang-switch__list"
+                                        role="menu"
+                                    >
+                                        {languages.map((l) => (
+                                            <li key={l.code}>
+                                                <button
+                                                    type="button"
+                                                    className={cx(
+                                                        "lang-switch__item",
+                                                        l.code ===
+                                                            currentLang &&
+                                                            "is-active"
+                                                    )}
+                                                    onClick={() =>
+                                                        changeLanguage(l.code)
+                                                    }
+                                                >
+                                                    {l.label}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
+                            <a
+                                href="/impressum"
+                                onClick={navigate("/impressum")}
+                                className="btn btn--primary ml-4"
+                            >
+                                Impressum
+                            </a>
+                        </div>
                         <button
                             className="hamburger"
                             onClick={() => setOpenMenu(true)}
@@ -633,7 +611,11 @@ const Header = ({ currentRoute }) => {
                 />
                 <aside className="drawer__panel" role="dialog" aria-modal>
                     <div className="drawer__head">
-                        <a href="/" className="brand brand--sm">
+                        <a
+                            href="/"
+                            className="brand brand--sm"
+                            onClick={navigate("/", true)}
+                        >
                             <img
                                 src="/images/logo/Logo.png"
                                 alt="O&I CLEAN Logo"
@@ -665,11 +647,13 @@ const Header = ({ currentRoute }) => {
                                     <button
                                         className="acc__toggle"
                                         aria-expanded={expanded}
-                                        onClick={() =>
-                                            hasDropdown
-                                                ? toggleMobileAccordion(key)
-                                                : setOpenMenu(false)
-                                        }
+                                        onClick={(e) => {
+                                            if (hasDropdown) {
+                                                toggleMobileAccordion(key);
+                                            } else {
+                                                navigate(item.url, true)(e);
+                                            }
+                                        }}
                                     >
                                         <span className="acc__left">
                                             <span className="acc__icon">
@@ -677,7 +661,6 @@ const Header = ({ currentRoute }) => {
                                             </span>
                                             {item.name}
                                         </span>
-
                                         {hasDropdown && (
                                             <FaChevronDown
                                                 className={cx(
@@ -689,7 +672,7 @@ const Header = ({ currentRoute }) => {
                                         )}
                                     </button>
 
-                                    {hasDropdown ? (
+                                    {hasDropdown && (
                                         <div
                                             className={cx(
                                                 "acc__content",
@@ -697,7 +680,7 @@ const Header = ({ currentRoute }) => {
                                             )}
                                         >
                                             <div className="acc__menu">
-                                                {item.dropdown?.map(
+                                                {dedupeByKey(item.dropdown).map(
                                                     (subItem, i) => (
                                                         <div
                                                             key={i}
@@ -724,9 +707,14 @@ const Header = ({ currentRoute }) => {
                                                                                         inner.url
                                                                                     }
                                                                                     className="acc__link"
-                                                                                    onClick={() =>
-                                                                                        setOpenMenu(
-                                                                                            false
+                                                                                    onClick={(
+                                                                                        e
+                                                                                    ) =>
+                                                                                        navigate(
+                                                                                            inner.url,
+                                                                                            true
+                                                                                        )(
+                                                                                            e
                                                                                         )
                                                                                     }
                                                                                 >
@@ -744,10 +732,13 @@ const Header = ({ currentRoute }) => {
                                                                         subItem.url
                                                                     }
                                                                     className="acc__link"
-                                                                    onClick={() =>
-                                                                        setOpenMenu(
-                                                                            false
-                                                                        )
+                                                                    onClick={(
+                                                                        e
+                                                                    ) =>
+                                                                        navigate(
+                                                                            subItem.url,
+                                                                            true
+                                                                        )(e)
                                                                     }
                                                                 >
                                                                     {
@@ -760,21 +751,34 @@ const Header = ({ currentRoute }) => {
                                                 )}
                                             </div>
                                         </div>
-                                    ) : (
-                                        <a
-                                            href={item.url}
-                                            className="acc__link"
-                                            onClick={() => setOpenMenu(false)}
-                                        >
-                                            Öffnen
-                                        </a>
                                     )}
                                 </div>
                             );
                         })}
 
+                        {/* Drawer alt bölümü: tema ve dil */}
                         <div className="drawer__theme-toggle">
                             <ThemeToggle />
+                        </div>
+
+                        <div className="drawer__lang">
+                            <span className="drawer__lang-label">Sprache</span>
+                            <div className="drawer__lang-buttons">
+                                {languages.map((l) => (
+                                    <button
+                                        key={l.code}
+                                        type="button"
+                                        className={cx(
+                                            "btn btn--ghost",
+                                            l.code === currentLang &&
+                                                "is-active"
+                                        )}
+                                        onClick={() => changeLanguage(l.code)}
+                                    >
+                                        {l.label}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </aside>

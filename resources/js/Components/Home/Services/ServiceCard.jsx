@@ -4,9 +4,9 @@ import { Link } from "@inertiajs/react";
 import "./ServiceCard.css";
 
 function buildHref({ link, slug, basePath = "/services" }) {
-    if (link) return link; // tam verilen link öncelikli
-    if (!slug) return basePath; // güvenli fallback
-    if (slug.startsWith("/")) return slug; // mutlak slug
+    if (link) return link;
+    if (!slug) return basePath;
+    if (slug.startsWith("/")) return slug;
     return `${basePath}/${slug}`.replace(/([^:]\/)\/+/g, "$1");
 }
 

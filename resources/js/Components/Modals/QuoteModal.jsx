@@ -8,7 +8,6 @@ export default function QuoteModal() {
     const [submitting, setSubmitting] = useState(false);
     const [ok, setOk] = useState(false);
 
-    // Basit form state
     const [form, setForm] = useState({
         name: "",
         email: "",
@@ -19,9 +18,8 @@ export default function QuoteModal() {
     });
 
     const dialogRef = useRef(null);
-    const openerRef = useRef(null); // focus'u geri vermek için
+    const openerRef = useRef(null);
 
-    // Tek sefer mount edildiğinde event dinle
     useEffect(() => {
         const openHandler = () => {
             openerRef.current = document.activeElement;
