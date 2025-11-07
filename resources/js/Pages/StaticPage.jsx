@@ -1,20 +1,100 @@
-// resources/js/Pages/StaticPage.jsx
 import React from "react";
 import { Head, Link } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import ContactSection from "@/Components/Home/Contact/ContactSection";
 import "@/../css/static-page.css";
 
+import parse, { domToReact, Element } from "html-react-parser";
+import DOMPurify from "isomorphic-dompurify";
+
+function safeParse(html, options) {
+    const clean = DOMPurify.sanitize(html || "", {
+        ALLOWED_TAGS: [
+            "p",
+            "strong",
+            "em",
+            "a",
+            "ul",
+            "ol",
+            "li",
+            "br",
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "h6",
+            "blockquote",
+            "img",
+            "iframe",
+            "div",
+            "span",
+            "small",
+            "code",
+            "figure",
+            "figcaption",
+        ],
+        ALLOWED_ATTR: [
+            "href",
+            "title",
+            "target",
+            "rel",
+            "src",
+            "alt",
+            "width",
+            "height",
+            "loading",
+            "allow",
+            "allowfullscreen",
+            "class",
+            "id",
+        ],
+    });
+
+    const replace = (node) => {
+        if (node instanceof Element && node.name === "a") {
+            const props = node.attribs || {};
+            const href = props.href || "";
+            const isExternal = /^https?:\/\//i.test(href);
+            if (isExternal) {
+                return (
+                    <a {...props} target="_blank" rel="noopener noreferrer">
+                        {domToReact(node.children)}
+                    </a>
+                );
+            }
+        }
+        if (
+            node instanceof Element &&
+            (node.name === "script" || node.name === "style")
+        ) {
+            return <></>;
+        }
+        return undefined;
+    };
+
+    return parse(clean, { replace, ...(options || {}) });
+}
+
 export default function StaticPage({ slug, page = {}, meta = {} }) {
     const title = meta?.title || page?.title || "";
     const description = meta?.description || page?.subtitle || title;
 
-    const schema = {
+    const currentUrl =
+        typeof window !== "undefined"
+            ? window.location.href
+            : meta?.canonical || "https://oi-clean.de/" + (slug || "");
+    const originUrl =
+        typeof window !== "undefined"
+            ? window.location.origin
+            : "https://oi-clean.de/";
+
+    const schemaWebPage = {
         "@context": "https://schema.org",
         "@type": "WebPage",
         name: title,
         description,
-        url: typeof window !== "undefined" ? window.location.href : undefined,
+        url: currentUrl,
     };
 
     const heroImage = page?.hero?.image;
@@ -23,13 +103,61 @@ export default function StaticPage({ slug, page = {}, meta = {} }) {
     return (
         <AppLayout>
             <Head>
+                {/* --- Temel meta --- */}
                 <title>{title}</title>
                 <meta name="description" content={description} />
-                {meta?.canonical && (
-                    <link rel="canonical" href={meta.canonical} />
-                )}
+                <meta
+                    name="robots"
+                    content="index,follow,max-image-preview:large"
+                />
+                <meta
+                    name="viewport"
+                    content="width=device-width, initial-scale=1"
+                />
+                <meta name="theme-color" content="#0f172a" />
+
+                {/* --- Canonical --- */}
+                <link rel="canonical" href={meta?.canonical || currentUrl} />
+
+                {/* --- Open Graph --- */}
+                <meta property="og:type" content="website" />
+                <meta property="og:title" content={title} />
+                <meta property="og:description" content={description} />
+                <meta property="og:url" content={currentUrl} />
+                {heroImage && <meta property="og:image" content={heroImage} />}
+                <meta property="og:site_name" content="O&I CLEAN group GmbH" />
+
+                {/* --- Twitter --- */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={title} />
+                <meta name="twitter:description" content={description} />
+                {heroImage && <meta name="twitter:image" content={heroImage} />}
+
+                {/* --- JSON-LD: WebPage --- */}
                 <script type="application/ld+json">
-                    {JSON.stringify(schema)}
+                    {JSON.stringify(schemaWebPage)}
+                </script>
+
+                {/* --- JSON-LD: Breadcrumbs --- */}
+                <script type="application/ld+json">
+                    {JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "BreadcrumbList",
+                        itemListElement: [
+                            {
+                                "@type": "ListItem",
+                                position: 1,
+                                name: "Startseite",
+                                item: originUrl,
+                            },
+                            {
+                                "@type": "ListItem",
+                                position: 2,
+                                name: title || "Seite",
+                                item: currentUrl,
+                            },
+                        ],
+                    })}
                 </script>
             </Head>
 
@@ -54,7 +182,6 @@ export default function StaticPage({ slug, page = {}, meta = {} }) {
 
                 <div className="sp-hero__inner container">
                     <nav className="sp-crumbs"></nav>
-
                     <h1 className="sp-title">{page?.title || "Static Page"}</h1>
                     {page?.subtitle && (
                         <p className="sp-subtitle">{page.subtitle}</p>
@@ -80,15 +207,15 @@ export default function StaticPage({ slug, page = {}, meta = {} }) {
                                     {s.heading && (
                                         <h2 className="sp-h2">{s.heading}</h2>
                                     )}
+
+                                    {/* body: HTML olabilir → sanitize + parse */}
                                     {s.body && (
                                         <div className="sp-prose">
-                                            {s.body
-                                                .split("\n")
-                                                .map((line, k) => (
-                                                    <p key={k}>{line}</p>
-                                                ))}
+                                            {safeParse(s.body)}
                                         </div>
                                     )}
+
+                                    {/* items: düz liste */}
                                     {Array.isArray(s.items) &&
                                         s.items.length > 0 && (
                                             <ul className="sp-list">
