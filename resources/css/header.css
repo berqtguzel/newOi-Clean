@@ -1,8 +1,11 @@
-:root{
-  --brand-600:#0284c7;
-  --brand-700:#0369a1;
-  --brand-50:#f0f9ff;
-  --ink-900:#0f172a;
+:root {
+  /* Dashboard'dan gelen değişkenler */
+  --brand-600: var(--site-primary-color, #0284c7);
+  --brand-700: var(--site-secondary-color, #0369a1);
+  --brand-50:  var(--site-accent-color, #f0f9ff);
+  --ink-900:   var(--text-color, #0f172a);
+
+  /* Kalan statik renkler */
   --ink-700:#334155;
   --ink-600:#475569;
   --ink-500:#64748b;
@@ -17,6 +20,24 @@
   --dropdown-bg: #ffffff;
   --dropdown-border: #e2e8f0;
   --btn-icon-border: #e2e8f0;
+}
+
+/* Topbar artık dashboard rengini kullanıyor */
+.topbar {
+  display: none;
+  background: var(--header-background-color, var(--brand-700));
+  color: var(--text-color, #fff);
+  font-size: 14px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+@media (min-width:768px) {
+  .topbar { display:block; }
+}
+
+/* Footer da dinamik hale gelsin */
+footer {
+  background: var(--footer-background-color, #f8f9fa);
+  color: var(--text-color, #333);
 }
 
 .container{max-width:1200px;margin-inline:auto;padding-inline:20px;}

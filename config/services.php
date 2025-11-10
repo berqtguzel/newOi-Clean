@@ -30,5 +30,10 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
+    'omr' => [
+    'base'      => env('OMR_API_BASE', 'https://omerdogan.de/api'),
+    'timeout'   => env('OMR_API_TIMEOUT', 10),
+    'talent_id' => env('OMR_TALENT_ID', ''),
+],
 
 ];

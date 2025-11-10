@@ -332,7 +332,7 @@ const ContactSection = () => {
 
                         <button
                             type="submit"
-                            className="submit-button"
+                            className="submit-button bg-button"
                             disabled={processing || isSubmitting}
                         >
                             {processing ? (

@@ -1,6 +1,7 @@
+// resources/js/Components/Header.jsx
 import "../../css/header.css";
-import React, { useEffect, useRef, useState } from "react";
-import { router } from "@inertiajs/react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { router, usePage } from "@inertiajs/react";
 import {
     FaChevronDown,
     FaChevronRight,
@@ -11,6 +12,7 @@ import {
 import ThemeToggle from "./ThemeToggle";
 import DecryptedText from "./ReactBits/Texts/DescryptedText";
 
+/* ----------------------------- helpers ----------------------------- */
 function cx(...args) {
     return args.filter(Boolean).join(" ");
 }
@@ -47,6 +49,40 @@ const dedupeByKey = (items = [], keyA = "url", keyB = "name") => {
     });
 };
 
+/** OMR websites içinden aktif siteyi belirler */
+function pickOmrSite(websites = [], { host, talentId } = {}) {
+    if (!Array.isArray(websites)) return null;
+
+    // 1) Alan adına göre
+    const byHost =
+        host &&
+        websites.find((w) => {
+            const domains = []
+                .concat(w?.domains || [])
+                .map((d) =>
+                    String(d || "")
+                        .toLowerCase()
+                        .trim()
+                )
+                .filter(Boolean);
+            return domains.includes(String(host).toLowerCase());
+        });
+    if (byHost) return byHost;
+
+    // 2) talentId ile
+    if (talentId) {
+        const byTalent = websites.find(
+            (w) =>
+                String(w?.talentId || w?.talent_id || "") === String(talentId)
+        );
+        if (byTalent) return byTalent;
+    }
+
+    // 3) fallback: ilk kayıt
+    return websites[0] || null;
+}
+
+/* ----------------------------- component ----------------------------- */
 const Header = ({ currentRoute }) => {
     const currentPath =
         typeof window !== "undefined"
@@ -135,10 +171,67 @@ const Header = ({ currentRoute }) => {
             return nextOpen ? { [key]: true } : {};
         });
 
-    const [languages, setLanguages] = useState([
-        { code: "de", label: "DE" },
-        { code: "en", label: "EN" },
-    ]);
+    /* -------------------------- OMR global props -------------------------- */
+    const { props } = usePage(); // Inertia global props
+    const omrWebsites = props?.global?.websites || [];
+    const omrTalentId = props?.global?.talentId || "";
+
+    const currentHost =
+        typeof window !== "undefined" ? window.location.hostname : "";
+
+    const site = useMemo(
+        () =>
+            pickOmrSite(omrWebsites, {
+                host: currentHost,
+                talentId: omrTalentId,
+            }),
+        [omrWebsites, omrTalentId, currentHost]
+    );
+
+    // Site’den gelen alanlar (fallback’li)
+    const siteName = site?.name || "O&I CLEAN";
+    const sitePhone = site?.contact?.phone || "+49 000 0000 000";
+    const topbarTagline =
+        site?.content?.topbarTagline ||
+        "Sauberkeit, auf die Sie sich verlassen können — 24/7 Service";
+
+    const cta = site?.cta || {
+        href: "/contact",
+        label: "Termin vereinbaren",
+    };
+
+    const siteLogos = {
+        light: site?.branding?.logoLight || "/images/logo/Logo.png",
+        dark: site?.branding?.logoDark || "/images/logo/darkLogo.png",
+    };
+
+    const siteLanguagesRaw =
+        Array.isArray(site?.languages) && site.languages.length
+            ? site.languages
+            : [
+                  { code: "de", label: "DE" },
+                  { code: "en", label: "EN" },
+              ];
+
+    const [languages, setLanguages] = useState(
+        siteLanguagesRaw.map((l) => ({
+            code: l.code,
+            label: l.label || l.code.toUpperCase(),
+        }))
+    );
+
+    useEffect(() => {
+        setLanguages(
+            (Array.isArray(siteLanguagesRaw) ? siteLanguagesRaw : []).map(
+                (l) => ({
+                    code: l.code,
+                    label: l.label || l.code?.toUpperCase() || "DE",
+                })
+            )
+        );
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [site?.languages]);
+
     const [currentLang, setCurrentLang] = useState(() => {
         try {
             return localStorage.getItem("locale") || "de";
@@ -149,7 +242,13 @@ const Header = ({ currentRoute }) => {
     const langRef = useRef(null);
     useEffect(() => {
         const onUpdateLangs = (e) => {
-            if (e?.detail && Array.isArray(e.detail)) setLanguages(e.detail);
+            if (e?.detail && Array.isArray(e.detail))
+                setLanguages(
+                    e.detail.map((l) => ({
+                        code: l.code,
+                        label: l.label || l.code?.toUpperCase() || l,
+                    }))
+                );
         };
         window.addEventListener("update-languages", onUpdateLangs);
         return () =>
@@ -167,6 +266,7 @@ const Header = ({ currentRoute }) => {
         );
     };
 
+    /* ------------------------------ navigate ------------------------------ */
     const navigate =
         (url, close = false) =>
         (e) => {
@@ -203,6 +303,7 @@ const Header = ({ currentRoute }) => {
             router.visit(url);
         };
 
+    /* ------------------------------ nav items ----------------------------- */
     const navItems = [
         {
             name: "Startseite",
@@ -222,7 +323,6 @@ const Header = ({ currentRoute }) => {
                     name: "Mitarbeiter Schulungen",
                     url: "/mitarbeiter-schulungen",
                 },
-
                 { name: "Häufig gestellte Fragen (FAQ)", url: "/faq" },
                 {
                     name: "Rechtliches",
@@ -263,6 +363,7 @@ const Header = ({ currentRoute }) => {
         },
     ];
 
+    /* ------------------------------- render ------------------------------- */
     return (
         <header ref={headerRef} className="site-header">
             <BitsBackground />
@@ -274,9 +375,14 @@ const Header = ({ currentRoute }) => {
                             <div className="topbar__left">
                                 <span className="topbar__phone">
                                     <FaPhoneAlt aria-hidden="true" />
-                                    <a href="tel:+490000000">
+                                    <a
+                                        href={`tel:${sitePhone.replace(
+                                            /\s+/g,
+                                            ""
+                                        )}`}
+                                    >
                                         <DecryptedText
-                                            text="+49 000 0000 000"
+                                            text={sitePhone}
                                             animateOn="view"
                                             speed={100}
                                             revealDirection="center"
@@ -286,7 +392,7 @@ const Header = ({ currentRoute }) => {
                                 <span className="topbar__tagline">
                                     <div style={{ marginTop: 0 }}>
                                         <DecryptedText
-                                            text="Sauberkeit, auf die Sie sich verlassen können — 24/7 Service"
+                                            text={topbarTagline}
                                             animateOn="view"
                                             speed={100}
                                             revealDirection="center"
@@ -296,11 +402,11 @@ const Header = ({ currentRoute }) => {
                             </div>
                             <div className="topbar__right">
                                 <a
-                                    href="/contact"
-                                    onClick={navigate("/contact")}
+                                    href={cta.href}
+                                    onClick={navigate(cta.href)}
                                     className="btn btn--ghost"
                                 >
-                                    Termin vereinbaren
+                                    {cta.label}
                                 </a>
                                 <button
                                     className="btn btn--ghost btn--circle"
@@ -325,13 +431,13 @@ const Header = ({ currentRoute }) => {
                             aria-label="Startseite"
                         >
                             <img
-                                src="/images/logo/Logo.png"
-                                alt="O&I CLEAN Logo"
+                                src={siteLogos.light}
+                                alt={`${siteName} Logo`}
                                 className="brand__logo brand__logo--light"
                             />
                             <img
-                                src="/images/logo/darkLogo.png"
-                                alt="O&I CLEAN Logo (Dark)"
+                                src={siteLogos.dark}
+                                alt={`${siteName} Logo (Dark)`}
                                 className="brand__logo brand__logo--dark"
                             />
                         </a>
@@ -544,6 +650,7 @@ const Header = ({ currentRoute }) => {
                                 );
                             })}
                         </nav>
+
                         <div className="nav__cta">
                             <ThemeToggle />
                             <div className="lang-switch" ref={langRef}>
@@ -585,11 +692,12 @@ const Header = ({ currentRoute }) => {
                             <a
                                 href="/impressum"
                                 onClick={navigate("/impressum")}
-                                className="btn btn--primary ml-4"
+                                className="btn bg-button btn--primary ml-4"
                             >
                                 Impressum
                             </a>
                         </div>
+
                         <button
                             className="hamburger"
                             onClick={() => setOpenMenu(true)}
@@ -617,13 +725,13 @@ const Header = ({ currentRoute }) => {
                             onClick={navigate("/", true)}
                         >
                             <img
-                                src="/images/logo/Logo.png"
-                                alt="O&I CLEAN Logo"
+                                src={siteLogos.light}
+                                alt={`${siteName} Logo`}
                                 className="brand__logo brand__logo--light"
                             />
                             <img
-                                src="/images/logo/darkLogo.png"
-                                alt="O&I CLEAN Logo"
+                                src={siteLogos.dark}
+                                alt={`${siteName} Logo`}
                                 className="brand__logo brand__logo--dark"
                             />
                         </a>

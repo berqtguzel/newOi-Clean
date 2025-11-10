@@ -57,7 +57,7 @@ export default function OfferDock() {
 
                     <button
                         type="button"
-                        className="odock__cta"
+                        className="odock__cta bg-button"
                         onClick={openQuoteModal}
                     >
                         Anfordern
@@ -67,7 +67,7 @@ export default function OfferDock() {
 
             <button
                 type="button"
-                className="odock__tab"
+                className="odock__tab bg-button"
                 aria-label={
                     collapsed
                         ? "Angebot-Leiste öffnen"

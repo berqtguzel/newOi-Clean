@@ -8,15 +8,46 @@ import { createRoot, hydrateRoot } from "react-dom/client";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 import route from "../../vendor/tightenco/ziggy/dist/index.m.js";
 import { ThemeProvider } from "./Context/ThemeContext";
+// window.__SITE_COLORS__ Laravel'den geliyor
+function applyCssVarsFromColors(colors = {}) {
+    Object.entries(colors).forEach(([key, val]) => {
+        if (!val) return;
+        document.documentElement.style.setProperty(
+            `--${key.replace(/_/g, "-")}`,
+            val
+        );
+    });
+}
 
-// Uygulama adı sabit – <title inertia> DOM’undan okumaya gerek yok
+if (typeof window !== "undefined" && window.__SITE_COLORS__) {
+    try {
+        applyCssVarsFromColors(window.__SITE_COLORS__);
+    } catch (e) {
+        console.error("Renkleri uygularken hata:", e);
+    }
+}
+
+// 🌈 1️⃣ Backend'den gelen renkleri global değişkenlere uygula
+if (window.__SITE_COLORS__) {
+    const root = document.documentElement;
+    const colors = window.__SITE_COLORS__;
+
+    Object.entries(colors).forEach(([key, value]) => {
+        if (typeof value === "string" && value.startsWith("#")) {
+            const cssVar = `--${key.replace(/_/g, "-")}`;
+            root.style.setProperty(cssVar, value);
+        }
+    });
+}
+
+// 🏷️ Uygulama adı
 const APP_NAME = "O&I CLEAN group GmbH";
 
-// İstemci tarafında başlangıç teması: localStorage > system > light
+// 💡 Başlangıç temasını belirle
 function getInitialTheme() {
     if (typeof window === "undefined") return "light";
     try {
-        const saved = localStorage.getItem("theme"); // "dark" | "light" | null
+        const saved = localStorage.getItem("theme");
         if (saved === "dark" || saved === "light") return saved;
         const prefersDark = window.matchMedia?.(
             "(prefers-color-scheme: dark)"
@@ -27,6 +58,7 @@ function getInitialTheme() {
     }
 }
 
+// ⚛️ Inertia uygulaması
 createInertiaApp({
     title: (title) => (title ? `${title} - ${APP_NAME}` : APP_NAME),
 
@@ -37,7 +69,7 @@ createInertiaApp({
         }),
 
     setup({ el, App, props }) {
-        // Ziggy: global route() fonksiyonu
+        // 🔗 Ziggy route fonksiyonu global olarak tanımla
         const ziggy = props.initialPage?.props?.ziggy;
         if (ziggy) {
             window.route = (name, params, absolute) =>
@@ -47,9 +79,10 @@ createInertiaApp({
                 });
         }
 
-        // Başlangıç temasını belirle
+        // 🌙 Tema belirle
         const initialTheme = getInitialTheme();
 
+        // 🧩 React kökü
         const Root = (
             <ThemeProvider initial={initialTheme}>
                 <App {...props} />
@@ -63,5 +96,5 @@ createInertiaApp({
         }
     },
 
-    progress: { color: "#4B5563" },
+    progress: { color: "var(--site-primary-color)" }, // 🚀 progress bar da temaya göre renklenir
 });

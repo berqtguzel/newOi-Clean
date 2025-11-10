@@ -23,7 +23,6 @@ export default function HeroSection({ content }) {
                 muted
                 playsInline
                 preload="metadata"
-                poster="/images/headerPoster.jpg"
                 className="absolute inset-0 w-full h-full object-cover"
                 initial={{ opacity: 0, scale: 1.05 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -69,7 +68,7 @@ export default function HeroSection({ content }) {
                 >
                     <a
                         href="#services"
-                        className="w-full sm:w-auto bg-yellow-400 text-gray-900 font-bold py-3 px-6 sm:px-8 rounded-full hover:bg-yellow-500 transition duration-300"
+                        className="w-full sm:w-auto bg-button text-gray-900 font-bold py-3 px-6 sm:px-8 rounded-full hover:bg-button transition duration-300"
                     >
                         Unsere Leistungen entdecken
                     </a>
