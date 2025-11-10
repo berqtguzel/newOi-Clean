@@ -1,9 +1,17 @@
 {
   "name": "oi-clean",
   "private": true,
+  "overrides": {
+    "jsdom": {
+      "parse5": "6.0.1"
+    },
+    "parse5": "6.0.1"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && vite build --ssr",
+    "build:client": "vite build",
+    "build:ssr": "vite build --ssr",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -20,7 +20,6 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
                 )}
             </Head>
 
-            {/* HERO */}
             <section className="locx-hero">
                 <div className="locx-hero__media">
                     {page?.hero?.image ? (

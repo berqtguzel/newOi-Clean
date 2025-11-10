@@ -16,19 +16,34 @@ import {
 import LiquidEther from "@/Components/ReactBits/Backgrounds/LiquidEther";
 
 function useIsDark() {
-    const get = () => document.documentElement.classList.contains("dark");
-    const [isDark, setIsDark] = React.useState(get());
+    const [isDark, setIsDark] = React.useState(false);
+
     React.useEffect(() => {
+        if (typeof document === "undefined") return;
+
+        const get = () => document.documentElement.classList.contains("dark");
+        setIsDark(get());
+
         const el = document.documentElement;
         const obs = new MutationObserver(() => setIsDark(get()));
         obs.observe(el, { attributes: true, attributeFilter: ["class"] });
         return () => obs.disconnect();
     }, []);
+
     return isDark;
 }
 
+/* -------------------------------------------------------------------------- */
+/* 👁️ IntersectionObserver Hook (SSR-safe)                                   */
+/* -------------------------------------------------------------------------- */
 const useIntersectionObserver = (ref) => {
     React.useEffect(() => {
+        if (
+            typeof window === "undefined" ||
+            !("IntersectionObserver" in window)
+        )
+            return;
+
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
@@ -49,7 +64,9 @@ const useIntersectionObserver = (ref) => {
     }, [ref]);
 };
 
-// Artık slug kullanıyoruz
+/* -------------------------------------------------------------------------- */
+/* 🔧 Varsayılan Servisler                                                    */
+/* -------------------------------------------------------------------------- */
 const defaultServices = [
     {
         id: 1,
@@ -127,6 +144,9 @@ const defaultServices = [
 
 const BASE_PATH = "/services"; // istersen "/dienstleistungen" yap
 
+/* -------------------------------------------------------------------------- */
+/* 🧩 Ana Bileşen                                                             */
+/* -------------------------------------------------------------------------- */
 const ServicesGrid = ({ services = defaultServices }) => {
     const gridRef = React.useRef(null);
     useIntersectionObserver(gridRef);
@@ -137,29 +157,32 @@ const ServicesGrid = ({ services = defaultServices }) => {
     const lightColors = ["#085883", "#0C9FE2", "#2EA7E0"];
     const darkColors = ["#47B3FF", "#7CCBFF", "#B5E3FF"];
 
-    const schemaData = {
-        "@context": "https://schema.org",
-        "@type": "ItemList",
-        itemListElement: servicesToRender.map((s, i) => ({
-            "@type": "Service",
-            position: i + 1,
-            name: s.title,
-            description: s.description,
-            url: `https://oi-clean.de${s.link || `${BASE_PATH}/${s.slug}`}`,
-            provider: {
-                "@type": "Organization",
-                name: "O&I CLEAN group GmbH",
-                image: "https://oi-clean.de/images/logo.svg",
-                address: {
-                    "@type": "PostalAddress",
-                    streetAddress: "Spaldingstr. 77–79",
-                    addressLocality: "Hamburg",
-                    postalCode: "20097",
-                    addressCountry: "DE",
+    const schemaData = React.useMemo(
+        () => ({
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            itemListElement: servicesToRender.map((s, i) => ({
+                "@type": "Service",
+                position: i + 1,
+                name: s.title,
+                description: s.description,
+                url: `https://oi-clean.de${s.link || `${BASE_PATH}/${s.slug}`}`,
+                provider: {
+                    "@type": "Organization",
+                    name: "O&I CLEAN group GmbH",
+                    image: "https://oi-clean.de/images/logo.svg",
+                    address: {
+                        "@type": "PostalAddress",
+                        streetAddress: "Spaldingstr. 77–79",
+                        addressLocality: "Hamburg",
+                        postalCode: "20097",
+                        addressCountry: "DE",
+                    },
                 },
-            },
-        })),
-    };
+            })),
+        }),
+        [servicesToRender]
+    );
 
     return (
         <section
@@ -172,32 +195,38 @@ const ServicesGrid = ({ services = defaultServices }) => {
                     name="description"
                     content="Professionelle Reinigung, Renovierung und Gebäudemanagement in Hamburg. ★ Expertise ★ Deutsche Qualität ★ Zuverlässiger Service"
                 />
-                <script type="application/ld+json">
-                    {JSON.stringify(schemaData)}
-                </script>
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify(schemaData),
+                    }}
+                />
             </Head>
 
-            <div className="absolute inset-0 z-10 liquid-ether-bg">
-                <LiquidEther
-                    className="w-full h-full"
-                    style={{ pointerEvents: "auto" }}
-                    colors={isDark ? darkColors : lightColors}
-                    mouseForce={35}
-                    cursorSize={140}
-                    isViscous={false}
-                    viscous={25}
-                    iterationsViscous={32}
-                    iterationsPoisson={32}
-                    resolution={0.6}
-                    isBounce={false}
-                    autoDemo
-                    autoSpeed={0.4}
-                    autoIntensity={1.6}
-                    takeoverDuration={0.45}
-                    autoResumeDelay={4000}
-                    autoRampDuration={0.8}
-                />
-            </div>
+            {/* 🫧 Background animasyonu (SSR korumalı) */}
+            {typeof window !== "undefined" && (
+                <div className="absolute inset-0 z-10 liquid-ether-bg">
+                    <LiquidEther
+                        className="w-full h-full"
+                        style={{ pointerEvents: "auto" }}
+                        colors={isDark ? darkColors : lightColors}
+                        mouseForce={35}
+                        cursorSize={140}
+                        isViscous={false}
+                        viscous={25}
+                        iterationsViscous={32}
+                        iterationsPoisson={32}
+                        resolution={0.6}
+                        isBounce={false}
+                        autoDemo
+                        autoSpeed={0.4}
+                        autoIntensity={1.6}
+                        takeoverDuration={0.45}
+                        autoResumeDelay={4000}
+                        autoRampDuration={0.8}
+                    />
+                </div>
+            )}
 
             <div className="services-container relative z-10">
                 <div className="services-header">

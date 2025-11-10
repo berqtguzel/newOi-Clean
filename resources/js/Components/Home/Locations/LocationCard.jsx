@@ -1,9 +1,20 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "@inertiajs/react";
-import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
 import "../../../../css/LocationCard.css";
 
+// 🚀 LazyLoadImage'ı SSR-safe şekilde dinamik import ediyoruz
+let LazyLoadImageComponent = (props) => <img {...props} />; // SSR fallback
+
+// Client tarafında modülü dinamik olarak yükle
+if (typeof window !== "undefined") {
+    import("react-lazy-load-image-component").then((mod) => {
+        LazyLoadImageComponent =
+            mod.LazyLoadImage || mod.default?.LazyLoadImage;
+    });
+}
+
+// 🔠 Slug helper
 const toSlug = (s = "") =>
     s
         .toString()
@@ -13,9 +24,21 @@ const toSlug = (s = "") =>
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)+/g, "");
 
-const LocationCard = ({ location, onHover, isActive }) => {
-    const slug = location.slug || toSlug(location.city || location.title);
+// 🧩 LocationCard component
+export default function LocationCard({ location, onHover, isActive }) {
+    const [Img, setImg] = useState(() => LazyLoadImageComponent);
 
+    // Client’ta modül geldikten sonra state’i güncelle
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            import("react-lazy-load-image-component").then((mod) => {
+                const Lazy = mod.LazyLoadImage || mod.default?.LazyLoadImage;
+                if (Lazy) setImg(() => Lazy);
+            });
+        }
+    }, []);
+
+    const slug = location.slug || toSlug(location.city || location.title);
     const href =
         location.link && location.link.trim().length > 0
             ? location.link
@@ -28,7 +51,7 @@ const LocationCard = ({ location, onHover, isActive }) => {
             onFocus={onHover}
         >
             <div className="location-card-media">
-                <LazyLoadImage
+                <Img
                     src={location.image}
                     alt={`Reinigungsservice in ${location.city}`}
                     effect="blur"
@@ -36,7 +59,6 @@ const LocationCard = ({ location, onHover, isActive }) => {
                     width={400}
                     height={300}
                 />
-
                 <div className="location-card-overlay" aria-hidden="true">
                     <h2 className="location-card-title">{location.title}</h2>
                 </div>
@@ -48,9 +70,7 @@ const LocationCard = ({ location, onHover, isActive }) => {
                         href={href}
                         className="location-card-button"
                         aria-label={`Mehr über unsere Reinigungsservices in ${location.city} erfahren`}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                        }}
+                        onClick={(e) => e.stopPropagation()}
                     >
                         Mehr erfahren
                         <svg
@@ -71,6 +91,4 @@ const LocationCard = ({ location, onHover, isActive }) => {
             </div>
         </article>
     );
-};
-
-export default LocationCard;
+}

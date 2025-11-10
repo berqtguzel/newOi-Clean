@@ -1,4 +1,3 @@
-// resources/js/Pages/Home.jsx
 import React from "react";
 import { Head } from "@inertiajs/react";
 import HeroSection from "@/Components/Home/HeroSection";
@@ -36,7 +35,6 @@ export default function Home({
 
     const logoUrl = settings?.brand?.logoUrl || `${originUrl}/logo.png`;
 
-    // JSON-LD: WebSite
     const schemaWebSite = {
         "@context": "https://schema.org",
         "@type": "WebSite",
@@ -50,7 +48,6 @@ export default function Home({
         },
     };
 
-    // JSON-LD: Organization (temel)
     const schemaOrganization = {
         "@context": "https://schema.org",
         "@type": "Organization",
@@ -62,7 +59,6 @@ export default function Home({
         sameAs: settings?.company?.socials || [],
     };
 
-    // JSON-LD: Breadcrumbs (Anasayfa tek aşama)
     const schemaBreadcrumbs = {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
@@ -76,7 +72,6 @@ export default function Home({
         ],
     };
 
-    // JSON-LD: LocalBusiness (özet; her lokasyon için)
     const schemaLocations =
         Array.isArray(locations) && locations.length > 0
             ? {
@@ -100,7 +95,6 @@ export default function Home({
               }
             : null;
 
-    // JSON-LD: Service listesi (özet)
     const schemaServices =
         Array.isArray(services) && services.length > 0
             ? {
@@ -130,7 +124,6 @@ export default function Home({
             currentRoute={currentRoute}
             settings={settings}
         >
-            {/* ----- SEO HEAD (fragment yok!) ----- */}
             <Head>
                 <title>{title}</title>
                 <meta name="description" content={description} />
@@ -140,7 +133,6 @@ export default function Home({
                 />
                 <link rel="canonical" href={currentUrl} />
 
-                {/* Open Graph */}
                 <meta property="og:type" content="website" />
                 <meta property="og:site_name" content={siteName} />
                 <meta property="og:title" content={title} />
@@ -153,7 +145,6 @@ export default function Home({
                     />
                 )}
 
-                {/* Twitter */}
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:title" content={title} />
                 <meta name="twitter:description" content={description} />
@@ -164,7 +155,6 @@ export default function Home({
                     />
                 )}
 
-                {/* JSON-LD */}
                 <script type="application/ld+json">
                     {JSON.stringify(schemaWebSite)}
                 </script>
@@ -186,7 +176,6 @@ export default function Home({
                 )}
             </Head>
 
-            {/* ----- Sayfa içerikleri ----- */}
             <HeroSection content={content} />
             <ServiceCategories content={content} />
             <ServicesGrid services={services} />

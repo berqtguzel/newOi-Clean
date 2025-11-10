@@ -103,7 +103,6 @@ export default function StaticPage({ slug, page = {}, meta = {} }) {
     return (
         <AppLayout>
             <Head>
-                {/* --- Temel meta --- */}
                 <title>{title}</title>
                 <meta name="description" content={description} />
                 <meta
@@ -116,10 +115,8 @@ export default function StaticPage({ slug, page = {}, meta = {} }) {
                 />
                 <meta name="theme-color" content="#0f172a" />
 
-                {/* --- Canonical --- */}
                 <link rel="canonical" href={meta?.canonical || currentUrl} />
 
-                {/* --- Open Graph --- */}
                 <meta property="og:type" content="website" />
                 <meta property="og:title" content={title} />
                 <meta property="og:description" content={description} />
@@ -127,18 +124,15 @@ export default function StaticPage({ slug, page = {}, meta = {} }) {
                 {heroImage && <meta property="og:image" content={heroImage} />}
                 <meta property="og:site_name" content="O&I CLEAN group GmbH" />
 
-                {/* --- Twitter --- */}
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:title" content={title} />
                 <meta name="twitter:description" content={description} />
                 {heroImage && <meta name="twitter:image" content={heroImage} />}
 
-                {/* --- JSON-LD: WebPage --- */}
                 <script type="application/ld+json">
                     {JSON.stringify(schemaWebPage)}
                 </script>
 
-                {/* --- JSON-LD: Breadcrumbs --- */}
                 <script type="application/ld+json">
                     {JSON.stringify({
                         "@context": "https://schema.org",
@@ -208,14 +202,12 @@ export default function StaticPage({ slug, page = {}, meta = {} }) {
                                         <h2 className="sp-h2">{s.heading}</h2>
                                     )}
 
-                                    {/* body: HTML olabilir → sanitize + parse */}
                                     {s.body && (
                                         <div className="sp-prose">
                                             {safeParse(s.body)}
                                         </div>
                                     )}
 
-                                    {/* items: düz liste */}
                                     {Array.isArray(s.items) &&
                                         s.items.length > 0 && (
                                             <ul className="sp-list">

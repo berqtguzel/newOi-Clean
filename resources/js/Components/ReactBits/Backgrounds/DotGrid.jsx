@@ -1,10 +1,18 @@
 "use client";
 import { useRef, useEffect, useCallback, useMemo } from "react";
 import { gsap } from "gsap";
-import { InertiaPlugin } from "gsap/InertiaPlugin";
+
+// 🧠 SSR güvenli InertiaPlugin import
+let InertiaPlugin = null;
+if (typeof window !== "undefined") {
+    import("gsap/InertiaPlugin.js").then((pkg) => {
+        // bazı GSAP sürümlerinde default export olabilir
+        InertiaPlugin = pkg.InertiaPlugin || pkg.default?.InertiaPlugin;
+        if (InertiaPlugin) gsap.registerPlugin(InertiaPlugin);
+    });
+}
 
 import "../../../../css/ReactBits/Backgrounds/DotGrid.css";
-gsap.registerPlugin(InertiaPlugin);
 
 const throttle = (func, limit) => {
     let lastCall = 0;
@@ -68,6 +76,7 @@ const DotGrid = ({
     }, [dotSize]);
 
     const buildGrid = useCallback(() => {
+        if (typeof window === "undefined") return;
         const wrap = wrapperRef.current;
         const canvas = canvasRef.current;
         if (!wrap || !canvas) return;
@@ -113,7 +122,7 @@ const DotGrid = ({
     }, [dotSize, gap]);
 
     useEffect(() => {
-        if (!circlePath) return;
+        if (typeof window === "undefined" || !circlePath) return;
 
         let rafId;
         const proxSq = proximity * proximity;
@@ -165,6 +174,7 @@ const DotGrid = ({
     }, [proximity, baseColor, activeRgb, baseRgb, circlePath]);
 
     useEffect(() => {
+        if (typeof window === "undefined") return;
         buildGrid();
         let ro = null;
         if ("ResizeObserver" in window) {
@@ -180,6 +190,8 @@ const DotGrid = ({
     }, [buildGrid]);
 
     useEffect(() => {
+        if (typeof window === "undefined") return;
+
         const onMove = (e) => {
             const now = performance.now();
             const pr = pointerRef.current;
@@ -211,7 +223,8 @@ const DotGrid = ({
                 if (
                     speed > speedTrigger &&
                     dist < proximity &&
-                    !dot._inertiaApplied
+                    !dot._inertiaApplied &&
+                    InertiaPlugin
                 ) {
                     dot._inertiaApplied = true;
                     gsap.killTweensOf(dot);
@@ -239,7 +252,11 @@ const DotGrid = ({
             const cy = e.clientY - rect.top;
             for (const dot of dotsRef.current) {
                 const dist = Math.hypot(dot.cx - cx, dot.cy - cy);
-                if (dist < shockRadius && !dot._inertiaApplied) {
+                if (
+                    dist < shockRadius &&
+                    !dot._inertiaApplied &&
+                    InertiaPlugin
+                ) {
                     dot._inertiaApplied = true;
                     gsap.killTweensOf(dot);
                     const falloff = Math.max(0, 1 - dist / shockRadius);

@@ -1,7 +1,6 @@
-// resources/js/Layouts/AppLayout.jsx
+import React from "react";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
-import React from "react";
 import OfferDock from "../Components/OfferDock";
 import QuoteModal from "../Components/Modals/QuoteModal";
 

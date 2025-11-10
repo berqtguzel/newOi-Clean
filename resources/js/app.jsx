@@ -6,16 +6,30 @@ import React from "react";
 import { createInertiaApp } from "@inertiajs/react";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
-import route from "../../vendor/tightenco/ziggy/dist/index.m.js"; // Ziggy (client)
+import route from "../../vendor/tightenco/ziggy/dist/index.m.js";
 import { ThemeProvider } from "./Context/ThemeContext";
 
-const appName =
-    window.document.getElementsByTagName("title")[0]?.innerText || "Laravel";
+// Uygulama adı sabit – <title inertia> DOM’undan okumaya gerek yok
+const APP_NAME = "O&I CLEAN group GmbH";
+
+// İstemci tarafında başlangıç teması: localStorage > system > light
+function getInitialTheme() {
+    if (typeof window === "undefined") return "light";
+    try {
+        const saved = localStorage.getItem("theme"); // "dark" | "light" | null
+        if (saved === "dark" || saved === "light") return saved;
+        const prefersDark = window.matchMedia?.(
+            "(prefers-color-scheme: dark)"
+        )?.matches;
+        return prefersDark ? "dark" : "light";
+    } catch {
+        return "light";
+    }
+}
 
 createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    title: (title) => (title ? `${title} - ${APP_NAME}` : APP_NAME),
 
-    // Hem .jsx hem .tsx sayfalarını yakala
     resolve: (name) =>
         resolvePageComponent(`./Pages/${name}.jsx`, {
             ...import.meta.glob("./Pages/**/*.jsx", { eager: true }),
@@ -23,7 +37,7 @@ createInertiaApp({
         }),
 
     setup({ el, App, props }) {
-        // Ziggy'yi window.route olarak sağlayalım (client tarafı)
+        // Ziggy: global route() fonksiyonu
         const ziggy = props.initialPage?.props?.ziggy;
         if (ziggy) {
             window.route = (name, params, absolute) =>
@@ -33,17 +47,19 @@ createInertiaApp({
                 });
         }
 
-        const app = (
-            <ThemeProvider>
+        // Başlangıç temasını belirle
+        const initialTheme = getInitialTheme();
+
+        const Root = (
+            <ThemeProvider initial={initialTheme}>
                 <App {...props} />
             </ThemeProvider>
         );
 
-        // SSR açıksa hydrate, değilse createRoot
         if (el.hasChildNodes()) {
-            hydrateRoot(el, app);
+            hydrateRoot(el, Root);
         } else {
-            createRoot(el).render(app);
+            createRoot(el).render(Root);
         }
     },
 

@@ -2,13 +2,22 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+/* =========================
+   THEME TOKENS (HSL)
+   ========================= */
+
 /* Light Theme Variables */
 :root {
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
+
+  /* sayfa/bölüm yüzeyleri için ek değişkenler */
+  --section: 210 20% 98%;   /* büyük bölüm zeminleri (hero altı, grid alanları) */
+  --surface: 0 0% 100%;     /* kart/panel zemini */
+
+  --card: var(--surface);
   --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
+  --popover: var(--surface);
   --popover-foreground: 222.2 84% 4.9%;
   --primary: 221.2 83.2% 53.3%;
   --primary-foreground: 210 40% 98%;
@@ -30,9 +39,14 @@
 .dark {
   --background: 222.2 84% 4.9%;
   --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
+
+  /* koyu zeminler */
+  --section: 222 47% 8%;    /* sayfa/bölüm arkaplanı (slate-900 benzeri) */
+  --surface: 224 40% 12%;   /* kart/panel zemini (slate-800 benzeri) */
+
+  --card: var(--surface);
   --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
+  --popover: var(--surface);
   --popover-foreground: 210 40% 98%;
   --primary: 217.2 91.2% 59.8%;
   --primary-foreground: 222.2 47.4% 11.2%;
@@ -49,14 +63,63 @@
   --ring: 224.3 76.3% 48%;
 }
 
+/* =========================
+   GLOBAL BASE
+   ========================= */
 
-* {
-  border-color: hsl(var(--border));
-}
+* { border-color: hsl(var(--border)); }
+
+html { color-scheme: light dark; }
 
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
 }
 
+/* Scroll ve overflow */
 html, body { overflow-x: hidden; scroll-behavior: smooth; }
+
+/* =========================
+   SECTION BACKGROUNDS
+   Sabit beyaz zeminleri değişkene bağla
+   ========================= */
+
+.svc-section,
+.services-section,
+.locations-section,
+.contact-section,
+.rbits-section,
+.map-container,
+.services-container {
+  background-color: hsl(var(--section)) !important;
+}
+
+/* Koyu modda açık overlay/degradeleri yumuşat (örnek seçiciler, sende farklı olabilir) */
+.dark .svc-aurora,
+.dark .rbits-bg,
+.dark .rbits-overlay-grad {
+  background: transparent;
+}
+
+/* =========================
+   CARDS / SURFACES
+   (kart/panel zeminleri)
+   ========================= */
+
+.svc-card,
+.service-card,
+.location-card,
+.odock__panel,
+.drawer__panel,
+.popover,
+.modal,
+.card {
+  background-color: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+}
+
+/* Bazı bileşen CSS’lerinde #fff sabit kullanıldıysa bu yardımcı kalkan olur */
+.dark .bg-white { background-color: hsl(var(--card)) !important; }
+html, body { overflow-x: hidden; scroll-behavior: smooth; }
+body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); }
+* { border-color: hsl(var(--border)); }

@@ -49,7 +49,6 @@ function safeParse(html, options) {
         ],
     });
 
-    // Dış linkleri yeni sekmede aç + güvenlik attrib’leri
     const replace = (node) => {
         if (node instanceof Element && node.name === "a") {
             const props = node.attribs || {};
@@ -63,7 +62,7 @@ function safeParse(html, options) {
                 );
             }
         }
-        // <script> ve <style> gibi istenmeyenleri yok say (DOMPurify zaten filtreliyor ama ekstra emniyet)
+
         if (
             node instanceof Element &&
             (node.name === "script" || node.name === "style")
@@ -215,7 +214,6 @@ export default function ContactIndex({
                                         <div key={i}>{line}</div>
                                     ))}
 
-                                    {/* Lokasyon özel HTML bloğu (opsiyonel) */}
                                     {detailsParsed && (
                                         <div className="mt-2 text-sm text-slate-600 dark:text-slate-300 prose prose-sm">
                                             {detailsParsed}

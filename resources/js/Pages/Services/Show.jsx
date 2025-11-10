@@ -1,7 +1,7 @@
 import React from "react";
 import { Head, Link } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
-import "../../../css/service-show.css"; // << yeni CSS
+import "../../../css/service-show.css";
 import ContactSection from "@/Components/Home/Contact/ContactSection";
 
 export default function ServiceShow({ slug, page = {} }) {

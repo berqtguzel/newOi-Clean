@@ -10,9 +10,12 @@ export default defineConfig({
         'resources/css/app.css',
         'resources/js/app.jsx',
       ],
-        ssr: 'resources/js/ssr.jsx',
-
-      refresh: true,
+         ssr: "resources/js/ssr.jsx",
+         refresh: true,
     }),
   ],
+     ssr: {
+        noExternal: ["@inertiajs/react"],
+        external: ['gsap']
+    },
 })

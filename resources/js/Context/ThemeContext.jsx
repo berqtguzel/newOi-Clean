@@ -1,39 +1,83 @@
-import React from "react";
-import { createContext, useContext, useState, useEffect } from "react";
+// resources/js/providers/ThemeProvider.jsx
+import React, {
+    createContext,
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
+} from "react";
 
-const ThemeContext = createContext();
+const ThemeContext = createContext({
+    theme: "light",
+    setTheme: (_t) => {},
+    toggleTheme: () => {},
+});
 
-export function ThemeProvider({ children }) {
-    const [theme, setTheme] = useState(() => {
-        if (typeof window !== "undefined") {
-            const savedTheme = localStorage.getItem("theme");
-            return savedTheme || "light";
+export const useTheme = () => useContext(ThemeContext);
+
+// SSR-safe: SSR'de dokümana dokunmaz, client'ta senkronlar
+export const ThemeProvider = ({ children, initial = "system" }) => {
+    const getInitial = () => {
+        if (typeof window === "undefined") {
+            // SSR: sadece "light" ya da gönderdiysen "initial"
+            return initial === "dark" ? "dark" : "light";
+        }
+        // CSR: localStorage > system preference > light
+        const saved = localStorage.getItem("theme");
+        if (saved === "light" || saved === "dark") return saved;
+        if (
+            initial === "dark" ||
+            (initial === "system" &&
+                window.matchMedia &&
+                window.matchMedia("(prefers-color-scheme: dark)").matches)
+        ) {
+            return "dark";
         }
         return "light";
-    });
-
-    useEffect(() => {
-        const root = window.document.documentElement;
-        root.classList.remove("light", "dark");
-        root.classList.add(theme);
-        localStorage.setItem("theme", theme);
-    }, [theme]);
-
-    const toggleTheme = () => {
-        setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
     };
 
-    return (
-        <ThemeContext.Provider value={{ theme, toggleTheme }}>
-            {children}
-        </ThemeContext.Provider>
-    );
-}
+    const [theme, setThemeState] = useState(getInitial);
 
-export function useTheme() {
-    const context = useContext(ThemeContext);
-    if (context === undefined) {
-        throw new Error("useTheme must be used within a ThemeProvider");
-    }
-    return context;
-}
+    // documentElement.classList'i yönet
+    useEffect(() => {
+        if (typeof document === "undefined") return;
+        const root = document.documentElement;
+        const isDark = theme === "dark";
+        root.classList.toggle("dark", isDark);
+        // Tailwind color-scheme ipucu
+        root.style.colorScheme = isDark ? "dark" : "light";
+        try {
+            localStorage.setItem("theme", theme);
+        } catch {}
+    }, [theme]);
+
+    // sistem teması değişirse (kullanıcı işletim sisteminden değiştirirse)
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        const mq = window.matchMedia("(prefers-color-scheme: dark)");
+        const onChange = () => {
+            const saved = localStorage.getItem("theme");
+            if (!saved || saved === "system") {
+                setThemeState(mq.matches ? "dark" : "light");
+            }
+        };
+        mq.addEventListener?.("change", onChange);
+        return () => mq.removeEventListener?.("change", onChange);
+    }, []);
+
+    const setTheme = (next) => {
+        if (next !== "light" && next !== "dark") return;
+        setThemeState(next);
+        try {
+            localStorage.setItem("theme", next);
+        } catch {}
+    };
+
+    const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
+
+    const value = useMemo(() => ({ theme, setTheme, toggleTheme }), [theme]);
+
+    return (
+        <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+    );
+};
