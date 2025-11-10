@@ -19,9 +19,9 @@
 
   {{-- LIGHT & DARK tokenları --}}
   <style>
-    /* ----- BASE (dashboard’dan gelen ham değerler) ----- */
+
     :root{
-      /* base (değiştirme) */
+
       --brand-base: {{ $c['site_primary_color'] ?? '#0284c7' }};
       --secondary-base: {{ $c['site_secondary_color'] ?? '#6c757d' }};
       --accent-base: {{ $c['site_accent_color'] ?? '#f59e0b' }};

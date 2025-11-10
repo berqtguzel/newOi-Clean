@@ -1,4 +1,3 @@
-// resources/js/Components/Header.jsx
 import "../../css/header.css";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { router, usePage } from "@inertiajs/react";
