@@ -1,6 +1,7 @@
 // resources/js/app.jsx
 import "./bootstrap";
 import "../css/app.css";
+import "../css/theme.css";
 
 import React from "react";
 import { createInertiaApp } from "@inertiajs/react";

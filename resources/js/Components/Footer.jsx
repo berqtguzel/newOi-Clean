@@ -11,33 +11,24 @@ import {
 } from "react-icons/fa";
 import "../../css/Footer.css";
 
-export default function Footer() {
+export default function Footer({ settings }) {
     const year = new Date().getFullYear();
+    const brand = settings?.branding || {};
+    const contact = settings?.contact || {};
+    const social = settings?.social || {};
 
     return (
         <footer
-            className="footer relative text-slate-100 bg-gradient-to-b from-sky-900 via-sky-800 to-sky-900 overflow-hidden"
+            className="footer relative overflow-hidden"
             aria-labelledby="footer-heading"
         >
             <h2 id="footer-heading" className="sr-only">
                 Fußzeile und Kontaktinformationen
             </h2>
-            <div className="footer-svg pointer-events-none absolute inset-x-0 -top-6 transform-gpu overflow-hidden">
-                <svg
-                    viewBox="0 0 1440 120"
-                    className="w-full h-24 text-sky-900"
-                    preserveAspectRatio="none"
-                    aria-hidden
-                >
-                    <path
-                        fill="currentColor"
-                        d="M0,32L48,42.7C96,53,192,75,288,96C384,117,480,139,576,138.7C672,139,768,117,864,117.3C960,117,1056,139,1152,133.3C1248,128,1344,96,1392,80L1440,64L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
-                    />
-                </svg>
-            </div>
 
             <div className="container mx-auto px-6 pt-20 pb-10">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                    {/* Brand + desc + socials */}
                     <div className="md:col-span-5">
                         <div className="flex items-start gap-4">
                             <div>
@@ -46,58 +37,62 @@ export default function Footer() {
                                         href="/"
                                         aria-label="O&I CLEAN - Startseite"
                                     >
-                                        O&amp;I CLEAN
+                                        {brand?.site_name || "O&I CLEAN"}
                                     </Link>
                                 </h3>
-                                <p className="mt-2 text-sky-100 text-sm leading-relaxed max-w-md">
-                                    Ihr Partner für professionelle Reinigung,
-                                    Pflege und Gebäudemanagement mit deutscher
-                                    Präzision und Zuverlässigkeit.
+
+                                <p className="mt-2 muted text-sm leading-relaxed max-w-md">
+                                    {settings?.footer?.description ||
+                                        "Ihr Partner für professionelle Reinigung, Pflege und Gebäudemanagement mit deutscher Präzision und Zuverlässigkeit."}
                                 </p>
 
                                 <div className="mt-4 flex flex-wrap gap-3">
+                                    {social?.linkedin && (
                                     <a
-                                        href="https://www.linkedin.com"
+                                        href={social.linkedin}
                                         aria-label="LinkedIn - O&I CLEAN"
                                         title="LinkedIn"
-                                        className="inline-flex items-center justify-center p-2 rounded-md bg-white/6 hover:bg-white/10 transition inline-icon"
+                                        className="link-ghost inline-icon"
                                         rel="noopener noreferrer"
                                         target="_blank"
                                     >
                                         <FaLinkedin size={16} />
-                                    </a>
+                                    </a>)}
+                                    {social?.instagram && (
                                     <a
-                                        href="https://www.instagram.com"
+                                        href={social.instagram}
                                         aria-label="Instagram - O&I CLEAN"
                                         title="Instagram"
-                                        className="inline-flex items-center justify-center p-2 rounded-md bg-white/6 hover:bg-white/10 transition inline-icon"
+                                        className="link-ghost inline-icon"
                                         rel="noopener noreferrer"
                                         target="_blank"
                                     >
                                         <FaInstagram size={16} />
-                                    </a>
+                                    </a>)}
+                                    {social?.facebook && (
                                     <a
-                                        href="https://www.facebook.com"
+                                        href={social.facebook}
                                         aria-label="Facebook - O&I CLEAN"
                                         title="Facebook"
-                                        className="inline-flex items-center justify-center p-2 rounded-md bg-white/6 hover:bg-white/10 transition inline-icon"
+                                        className="link-ghost inline-icon"
                                         rel="noopener noreferrer"
                                         target="_blank"
                                     >
                                         <FaFacebook size={16} />
-                                    </a>
+                                    </a>)}
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    {/* Quick links */}
                     <nav aria-label="Schnell Links" className="md:col-span-2">
                         <h4 className="text-lg font-semibold mb-3">Links</h4>
-                        <ul className="space-y-2 text-sm text-sky-100">
+                        <ul className="space-y-2 text-sm">
                             <li>
                                 <Link
                                     href="/uber-uns"
-                                    className="hover:text-white"
+                                    className="footer-link"
                                     aria-label="Über uns"
                                 >
                                     Über uns
@@ -106,7 +101,7 @@ export default function Footer() {
                             <li>
                                 <Link
                                     href="/contact"
-                                    className="hover:text-white"
+                                    className="footer-link"
                                     aria-label="Contact"
                                 >
                                     Contact
@@ -115,7 +110,7 @@ export default function Footer() {
                             <li>
                                 <Link
                                     href="/faq"
-                                    className="hover:text-white"
+                                    className="footer-link"
                                     aria-label="FAQ"
                                 >
                                     FAQ
@@ -124,7 +119,7 @@ export default function Footer() {
                             <li>
                                 <Link
                                     href="/datenschutz"
-                                    className="hover:text-white"
+                                    className="footer-link"
                                     aria-label="Datenschutz"
                                 >
                                     Datenschutz
@@ -133,54 +128,55 @@ export default function Footer() {
                         </ul>
                     </nav>
 
+                    {/* Contact */}
                     <div className="md:col-span-3">
                         <h4 className="text-lg font-semibold mb-3">Kontakt</h4>
-                        <address className="not-italic text-sm text-sky-100 space-y-3">
-                            <div className="flex items-start">
-                                <FaMapMarkerAlt className="mr-3 mt-1 text-amber-400" />
-                                <span>Spaldingstr. 77–79, 20097 Hamburg</span>
+                        <address className="not-italic text-sm space-y-3">
+                            <div>
+                                <FaMapMarkerAlt className="mr-3 mt-1 text-accent" />
+                                <span>{contact?.address || "Spaldingstr. 77–79, 20097 Hamburg"}</span>
                             </div>
-                            <div className="flex items-center">
-                                <FaPhoneAlt className="mr-3 text-amber-400" />
+                            <div>
+                                <FaPhoneAlt className="mr-3 text-accent" />
                                 <a
-                                    href="tel:+494046633519"
-                                    className="hover:text-white"
+                                    href={`tel:${(contact?.phone || "+494046633519").replace(/\s+/g,"")}`}
+                                    className="footer-link"
                                     aria-label="Telefonnummer"
                                 >
-                                    +49 (0)40 46 63 35 19
+                                    {contact?.phone || "+49 (0)40 46 63 35 19"}
                                 </a>
                             </div>
-                            <div className="flex items-center">
-                                <FaEnvelope className="mr-3 text-amber-400" />
+                            <div>
+                                <FaEnvelope className="mr-3 text-accent" />
                                 <a
-                                    href="mailto:info@oi-clean.de"
-                                    className="hover:text-white"
+                                    href={`mailto:${contact?.email || "info@oi-clean.de"}`}
+                                    className="footer-link"
                                     aria-label="E-Mail"
                                 >
-                                    info@oi-clean.de
+                                    {contact?.email || "info@oi-clean.de"}
                                 </a>
                             </div>
                         </address>
                     </div>
 
+                    {/* Bottom row */}
                     <div className="md:col-span-12 mt-2">
-                        <div className="mt-6 border-t border-white/10 pt-4 flex flex-col md:flex-row items-center justify-between gap-3">
-                            <p className="text-sm text-sky-200">
-                                © {year} O&amp;I CLEAN group GmbH. Alle Rechte
+                        <div className="mt-6 border-t pt-4 flex flex-col md:flex-row items-center justify-between gap-3 footer-bottom">
+                            <p className="text-sm muted">
+                                © {year} {brand?.company_name || "O&I CLEAN group GmbH"}. Alle Rechte
                                 vorbehalten.
                             </p>
-
                             <div className="flex items-center gap-4">
                                 <Link
                                     href="/impressum"
-                                    className="text-sm hover:underline"
+                                    className="text-sm footer-link"
                                     aria-label="Impressum"
                                 >
                                     Impressum
                                 </Link>
                                 <Link
                                     href="/datenschutz"
-                                    className="text-sm hover:underline"
+                                    className="text-sm footer-link"
                                     aria-label="Datenschutz"
                                 >
                                     Datenschutz
@@ -191,10 +187,11 @@ export default function Footer() {
                 </div>
             </div>
 
+            {/* back to top */}
             <div className="footer-backtop">
                 <a
                     href="#top"
-                    className="inline-flex items-center justify-center p-2 rounded-full bg-white/6 hover:bg-white/10 transition"
+                    className="btn"
                     aria-label="Nach oben"
                     title="Nach oben"
                 >

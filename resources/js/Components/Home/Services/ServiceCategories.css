@@ -1,3 +1,19 @@
+:root{
+  --svc-surface: var(--background-color, #ffffff);
+  --svc-ink: var(--text-color, #111827);
+  --svc-primary: var(--site-primary-color, #2563eb);
+  --svc-primary-600: color-mix(in srgb, var(--svc-primary) 90%, #000 10%);
+  --svc-primary-700: color-mix(in srgb, var(--svc-primary) 80%, #000 20%);
+  --svc-link: var(--site-primary-color, #2563eb);
+  --svc-link-hover: color-mix(in srgb, var(--svc-link) 75%, #000 25%);
+  --svc-title: var(--text-color, #111827);
+  --svc-subtitle: color-mix(in srgb, var(--svc-ink) 55%, #ffffff 45%);
+  --svc-card-border: color-mix(in srgb, var(--svc-ink) 10%, #ffffff 90%);
+  --svc-card-title: var(--svc-ink);
+  --svc-card-desc: color-mix(in srgb, var(--svc-ink) 65%, #ffffff 35%);
+  --svc-icon-bg: var(--site-accent-color, var(--site-primary-color, #2563eb));
+}
+
 /* ====== Kapsayıcı ve arka plan ====== */
 .svc-section {
   position: relative;
@@ -23,16 +39,16 @@
   position: relative;
   z-index: 1;
   max-width: 1200px;
-  margin-inline: auto;          /* güvenli ortalama */
+  margin-inline: auto;
   padding-inline: 1.5rem;
   box-sizing: border-box;
 }
 
 /* ====== Başlık blok ====== */
 .svc-header{
-  display: flex;                /* gerçek merkezleme */
+  display: flex;
   flex-direction: column;
-  align-items: center;          /* yatay merkez */
+  align-items: center;
   justify-content: center;
   text-align: center;
   width: 100%;
@@ -42,15 +58,15 @@
 .svc-title {
   font-size: clamp(1.875rem, 3.5vw, 2.25rem);
   font-weight: 800;
-  color: #fff;
+  color: var(--svc-title);
   margin: 0;
-  display: inline-block;        /* gerekirse dekor şeritleri doğru hizalansın */
+  display: inline-block;
 }
 
 .svc-subtitle {
   margin: 1rem auto 0;
   font-size: clamp(1.1rem, 2vw, 1.25rem);
-  color: #fff;
+  color: var(--svc-subtitle);
   max-width: 48rem;
 }
 
@@ -60,7 +76,6 @@
   grid-template-columns: 1fr;
   gap: 2.5rem;
 }
-
 @media (min-width: 768px) {
   .svc-grid { grid-template-columns: repeat(3, 1fr); }
 }
@@ -69,16 +84,12 @@
 .svc-card {
   border-radius: 1rem;
   overflow: hidden;
-  background: #ffffff;
-  border: 1px solid #f1f5f9;
+  background: var(--svc-surface);
+  border: 1px solid var(--svc-card-border);
   box-shadow:
     0 10px 15px -3px rgba(0,0,0,.1),
     0 4px 6px -4px rgba(0,0,0,.1);
-  transition:
-    transform .3s ease,
-    box-shadow .3s ease,
-    border-color .3s ease,
-    background-color .3s ease;
+  transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease, background-color .3s ease;
   backdrop-filter: blur(2px);
 }
 
@@ -92,6 +103,7 @@
 .svc-card-bar {
   height: 8px;
   width: 100%;
+  background: var(--svc-primary);
 }
 
 .svc-card-body {
@@ -104,27 +116,26 @@
 
 .svc-card-icon {
   color: #fff;
+  background: var(--svc-icon-bg);
   border-radius: 9999px;
   padding: 1rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 6px 16px rgba(0,0,0,.18);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--svc-icon-bg) 45%, transparent);
   transition: transform .3s ease;
 }
-
 .svc-card:hover .svc-card-icon { transform: rotate(6deg); }
 
 .svc-card-title {
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0 0 .75rem;
-  color: #1f2937;
+  color: var(--svc-card-title);
   transition: color .2s ease;
 }
-
-.svc-card:hover .svc-card-title { color: #1d4ed8; }
+.svc-card:hover .svc-card-title { color: var(--svc-primary-700); }
 
 .svc-card-desc {
-  color: #4b5563;
+  color: var(--svc-card-desc);
   margin: 0 0 1.5rem;
   line-height: 1.65;
   flex-grow: 1;
@@ -136,32 +147,36 @@
   justify-content: center;
   gap: .25rem;
   font-weight: 600;
-  color: #2563eb;
+  color: var(--svc-link);
   text-decoration: none;
   transition: color .15s ease;
 }
-
-.svc-card-link:hover { color: #1e40af; }
+.svc-card-link:hover { color: var(--svc-link-hover); }
 
 .svc-card-link-arrow {
   width: 16px;
   height: 16px;
 }
 
-/* ====== Dark Mode ====== */
-.dark .svc-title { color: #e2e8f0; }
-.dark .svc-subtitle { color: #cbd5e1; }
+/* ====== Dark Mode ======
+   Not: “dark” class’ı sabit kalsın istemiştin; burada da token’ları
+   kullanıyoruz ki panel renkleri dark’ta da akıcı kalsın. */
+.dark .svc-title { color: color-mix(in srgb, var(--svc-ink) 92%, #000 8%); }
+.dark .svc-subtitle { color: color-mix(in srgb, var(--svc-ink) 70%, #000 30%); }
 
 .dark .svc-card {
-  background: rgba(15, 18, 22, 0.7);
-  border-color: rgba(51, 65, 85, 0.6);
+  background: color-mix(in srgb, var(--svc-surface) 70%, transparent);
+  border-color: color-mix(in srgb, var(--svc-ink) 30%, transparent);
+  box-shadow:
+    0 12px 26px rgba(0,0,0,.24);
 }
 
-.dark .svc-card:hover { border-color: #64748b; }
+.dark .svc-card:hover { border-color: color-mix(in srgb, var(--svc-ink) 40%, transparent); }
 
-.dark .svc-card-title { color: #e5e7eb; }
-.dark .svc-card:hover .svc-card-title { color: #60a5fa; }
+.dark .svc-card-title { color: color-mix(in srgb, var(--svc-ink) 88%, #000 12%); }
+.dark .svc-card:hover .svc-card-title { color: color-mix(in srgb, var(--svc-primary) 70%, #fff 30%); }
 
-.dark .svc-card-desc { color: #cbd5e1; }
-.dark .svc-card-link { color: #60a5fa; }
-.dark .svc-card-link:hover { color: #93c5fd; }
+.dark .svc-card-desc { color: color-mix(in srgb, var(--svc-ink) 75%, #000 25%); }
+
+.dark .svc-card-link { color: color-mix(in srgb, var(--svc-link) 85%, #fff 15%); }
+.dark .svc-card-link:hover { color: color-mix(in srgb, var(--svc-link) 65%, #000 35%); }

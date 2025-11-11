@@ -1,32 +1,51 @@
-import React, { useState } from "react";
-import { useForm } from "@inertiajs/react";
+import React, { useMemo, useState } from "react";
+import { usePage } from "@inertiajs/react";
+import { useContactForms } from "@/hooks/useContactForms";
+import { submitContactForm } from "@/services/contactService";
+import { useLocale } from "@/hooks/useLocale";
 import "../../../../css/ContactSection.css";
 import DotGrid from "@/Components/ReactBits/Backgrounds/DotGrid";
 
 const ContactSection = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const { data, setData, post, processing, errors, reset } = useForm({
-        name: "",
-        company: "",
-        email: "",
-        phone: "",
-        message: "",
-        serviceType: "",
-        acceptTerms: false,
-    });
+    const [errors, setErrors] = useState({});
+    const [data, setData] = useState({});
+    const processing = isSubmitting;
+
+    const { props } = usePage();
+    const tenantId =
+        props?.global?.tenantId ||
+        props?.global?.tenant_id ||
+        props?.global?.talentId ||
+        "";
+    const locale = useLocale("de");
+    const { forms } = useContactForms({ tenantId, locale });
+    const form = forms[0];
+
+    const fields = useMemo(
+        () => (Array.isArray(form?.fields) ? form.fields : []),
+        [form]
+    );
+
+    const setField = (name, value) =>
+        setData((prev) => ({ ...prev, [name]: value }));
 
     const handleSubmit = (e) => {
         e.preventDefault();
         setIsSubmitting(true);
-
-        post("/contact", {
-            preserveScroll: true,
-            onSuccess: () => {
-                reset();
-                setIsSubmitting(false);
-            },
-            onError: () => setIsSubmitting(false),
-        });
+        setErrors({});
+        const payload = { ...data };
+        submitContactForm({ formId: form?.id, payload, tenantId, locale })
+            .then(() => {
+                setData({});
+            })
+            .catch((err) => {
+                const msg =
+                    err?.response?.data?.errors ||
+                    { general: err?.message || "Gönderilemedi" };
+                setErrors(msg);
+            })
+            .finally(() => setIsSubmitting(false));
     };
 
     return (
@@ -155,179 +174,43 @@ const ContactSection = () => {
                         noValidate
                     >
                         <div className="form-grid">
-                            <div className="form-group">
-                                <label htmlFor="name">Name *</label>
-                                <input
-                                    type="text"
-                                    id="name"
-                                    value={data.name}
-                                    onChange={(e) =>
-                                        setData("name", e.target.value)
-                                    }
-                                    required
-                                    className={errors.name ? "error" : ""}
-                                    aria-invalid={!!errors.name}
-                                    aria-describedby={
-                                        errors.name ? "name-error" : undefined
-                                    }
-                                />
-                                {errors.name && (
-                                    <span
-                                        id="name-error"
-                                        className="error-message"
-                                        role="alert"
-                                    >
-                                        {errors.name}
-                                    </span>
-                                )}
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="company">Unternehmen</label>
-                                <input
-                                    type="text"
-                                    id="company"
-                                    value={data.company}
-                                    onChange={(e) =>
-                                        setData("company", e.target.value)
-                                    }
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="email">E-Mail *</label>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    value={data.email}
-                                    onChange={(e) =>
-                                        setData("email", e.target.value)
-                                    }
-                                    required
-                                    className={errors.email ? "error" : ""}
-                                    aria-invalid={!!errors.email}
-                                    aria-describedby={
-                                        errors.email ? "email-error" : undefined
-                                    }
-                                />
-                                {errors.email && (
-                                    <span
-                                        id="email-error"
-                                        className="error-message"
-                                        role="alert"
-                                    >
-                                        {errors.email}
-                                    </span>
-                                )}
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="phone">Telefon</label>
-                                <input
-                                    type="tel"
-                                    id="phone"
-                                    value={data.phone}
-                                    onChange={(e) =>
-                                        setData("phone", e.target.value)
-                                    }
-                                />
-                            </div>
-
-                            <div className="form-group full-width">
-                                <label htmlFor="serviceType">
-                                    Gewünschte Dienstleistung
-                                </label>
-                                <select
-                                    id="serviceType"
-                                    value={data.serviceType}
-                                    onChange={(e) =>
-                                        setData("serviceType", e.target.value)
-                                    }
-                                >
-                                    <option value="">Bitte wählen</option>
-                                    <option value="building">
-                                        Gebäudereinigung
-                                    </option>
-                                    <option value="window">
-                                        Fensterreinigung
-                                    </option>
-                                    <option value="floor">
-                                        Bodenreinigung
-                                    </option>
-                                    <option value="special">
-                                        Sonderreinigung
-                                    </option>
-                                    <option value="industrial">
-                                        Industriereinigung
-                                    </option>
-                                </select>
-                            </div>
-
-                            <div className="form-group full-width">
-                                <label htmlFor="message">
-                                    Ihre Nachricht *
-                                </label>
-                                <textarea
-                                    id="message"
-                                    value={data.message}
-                                    onChange={(e) =>
-                                        setData("message", e.target.value)
-                                    }
-                                    required
-                                    rows="5"
-                                    className={errors.message ? "error" : ""}
-                                    aria-invalid={!!errors.message}
-                                    aria-describedby={
-                                        errors.message
-                                            ? "message-error"
-                                            : undefined
-                                    }
-                                />
-                                {errors.message && (
-                                    <span
-                                        id="message-error"
-                                        className="error-message"
-                                        role="alert"
-                                    >
-                                        {errors.message}
-                                    </span>
-                                )}
-                            </div>
-
-                            <div className="form-group full-width">
-                                <label className="checkbox-label">
-                                    <input
-                                        type="checkbox"
-                                        checked={data.acceptTerms}
-                                        onChange={(e) =>
-                                            setData(
-                                                "acceptTerms",
-                                                e.target.checked
-                                            )
-                                        }
-                                        required
-                                    />
-                                    <span>
-                                        Ich akzeptiere die{" "}
-                                        <a
-                                            href="/datenschutz"
-                                            target="_blank"
-                                            rel="noreferrer"
-                                        >
-                                            Datenschutzerklärung
-                                        </a>{" "}
-                                        *
-                                    </span>
-                                </label>
-                                {errors.acceptTerms && (
-                                    <span
-                                        className="error-message"
-                                        role="alert"
-                                    >
-                                        {errors.acceptTerms}
-                                    </span>
-                                )}
-                            </div>
+                            {fields.map((f) => {
+                                const common = {
+                                    id: f.name,
+                                    name: f.name,
+                                    required: f.required,
+                                    value: data[f.name] || "",
+                                    onChange: (e) => setField(f.name, e.target.value),
+                                    className: errors[f.name] ? "error" : "",
+                                    "aria-invalid": !!errors[f.name],
+                                    "aria-describedby": errors[f.name] ? `${f.name}-error` : undefined,
+                                    placeholder: f.placeholder || "",
+                                };
+                                return (
+                                    <div key={f.name} className={`form-group ${f.type === "textarea" ? "full-width" : ""}`}>
+                                        <label htmlFor={f.name}>
+                                            {f.label} {f.required ? "*" : ""}
+                                        </label>
+                                        {f.type === "textarea" ? (
+                                            <textarea rows="5" {...common} />
+                                        ) : f.type === "select" ? (
+                                            <select {...common}>
+                                                <option value="">Bitte wählen</option>
+                                                {(f.options || []).map((o, i) => (
+                                                    <option key={i} value={o?.value || o}>{o?.label || o}</option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <input type={f.type || "text"} {...common} />
+                                        )}
+                                        {errors[f.name] && (
+                                            <span id={`${f.name}-error`} className="error-message" role="alert">
+                                                {errors[f.name]}
+                                            </span>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
 
                         <button

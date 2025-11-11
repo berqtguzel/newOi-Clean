@@ -14,6 +14,9 @@ import {
     FaCouch,
 } from "react-icons/fa";
 import LiquidEther from "@/Components/ReactBits/Backgrounds/LiquidEther";
+import { usePage } from "@inertiajs/react";
+import { useServices } from "@/hooks/useServices";
+import { useLocale } from "@/hooks/useLocale";
 
 function useIsDark() {
     const [isDark, setIsDark] = React.useState(false);
@@ -151,7 +154,35 @@ const ServicesGrid = ({ services = defaultServices }) => {
     const gridRef = React.useRef(null);
     useIntersectionObserver(gridRef);
 
-    const servicesToRender = services?.length ? services : defaultServices;
+    // Uzak servisleri getir (tenant + locale)
+    const { props } = usePage();
+    const tenantId =
+        props?.global?.tenantId ||
+        props?.global?.tenant_id ||
+        props?.global?.talentId ||
+        "";
+    const locale = useLocale("de");
+    const { services: remoteServices, loading } = useServices({
+        perPage: 100,
+        tenantId,
+        locale,
+    });
+
+    const mappedRemote = React.useMemo(
+        () =>
+            (remoteServices || []).map((s) => ({
+                id: s.id,
+                title: s.title,
+                description: s.description,
+                image: s.image,
+                slug: s.slug,
+                link: s.url,
+            })),
+        [remoteServices]
+    );
+
+    const servicesToRender =
+        mappedRemote?.length ? mappedRemote : services?.length ? services : defaultServices;
 
     const isDark = useIsDark();
     const lightColors = ["#085883", "#0C9FE2", "#2EA7E0"];
@@ -240,13 +271,13 @@ const ServicesGrid = ({ services = defaultServices }) => {
                 </div>
 
                 <div ref={gridRef} className="services-grid">
-                    {servicesToRender.map((s) => (
+                    {loading && <div className="services-loading">Lade Services…</div>}
+                    {!loading && servicesToRender.map((s) => (
                         <ServiceCard
                             key={s.slug || s.link || s.title}
                             title={s.title}
                             description={s.description}
                             image={s.image}
-                            icon={s.icon}
                             slug={s.slug}
                             link={s.link}
                             basePath={BASE_PATH}

@@ -10,8 +10,10 @@ import {
 } from "react-icons/fa";
 import ThemeToggle from "./ThemeToggle";
 import DecryptedText from "./ReactBits/Texts/DescryptedText";
+import { useMenus } from "../hooks/useMenus";
+import { useLanguages } from "../hooks/useLanguages";
 
-/* ----------------------------- helpers ----------------------------- */
+/* ============================== helpers ============================== */
 function cx(...args) {
     return args.filter(Boolean).join(" ");
 }
@@ -48,11 +50,9 @@ const dedupeByKey = (items = [], keyA = "url", keyB = "name") => {
     });
 };
 
-/** OMR websites içinden aktif siteyi belirler */
 function pickOmrSite(websites = [], { host, talentId } = {}) {
     if (!Array.isArray(websites)) return null;
 
-    // 1) Alan adına göre
     const byHost =
         host &&
         websites.find((w) => {
@@ -68,7 +68,6 @@ function pickOmrSite(websites = [], { host, talentId } = {}) {
         });
     if (byHost) return byHost;
 
-    // 2) talentId ile
     if (talentId) {
         const byTalent = websites.find(
             (w) =>
@@ -76,13 +75,13 @@ function pickOmrSite(websites = [], { host, talentId } = {}) {
         );
         if (byTalent) return byTalent;
     }
-
-    // 3) fallback: ilk kayıt
     return websites[0] || null;
 }
 
-/* ----------------------------- component ----------------------------- */
-const Header = ({ currentRoute }) => {
+const cleanUrl = (u) => String(u || "#").replace(/:\d+$/, "");
+
+/* ============================== component ============================== */
+const Header = ({ currentRoute, settings }) => {
     const currentPath =
         typeof window !== "undefined"
             ? window.location.pathname.replace(/\/+$/, "")
@@ -171,7 +170,7 @@ const Header = ({ currentRoute }) => {
         });
 
     /* -------------------------- OMR global props -------------------------- */
-    const { props } = usePage(); // Inertia global props
+    const { props } = usePage();
     const omrWebsites = props?.global?.websites || [];
     const omrTalentId = props?.global?.talentId || "";
 
@@ -187,57 +186,70 @@ const Header = ({ currentRoute }) => {
         [omrWebsites, omrTalentId, currentHost]
     );
 
-    // Site’den gelen alanlar (fallback’li)
-    const siteName = site?.name || "O&I CLEAN";
-    const sitePhone = site?.contact?.phone || "+49 000 0000 000";
+    const siteName = settings?.branding?.site_name || site?.name || "O&I CLEAN";
+    const sitePhone =
+        settings?.contact?.phone || site?.contact?.phone || "+49 000 0000 000";
     const topbarTagline =
         site?.content?.topbarTagline ||
         "Sauberkeit, auf die Sie sich verlassen können — 24/7 Service";
+    const cta = site?.cta || { href: "/contact", label: "Termin vereinbaren" };
 
-    const cta = site?.cta || {
-        href: "/contact",
-        label: "Termin vereinbaren",
-    };
-
+    // Dashboard → Branding logoları (çeşitli alan adlarını destekle)
     const siteLogos = {
-        light: site?.branding?.logoLight || "/images/logo/Logo.png",
-        dark: site?.branding?.logoDark || "/images/logo/darkLogo.png",
+        light:
+            settings?.branding?.logo_light ||
+            settings?.branding?.logo_light_url ||
+            settings?.branding?.logo ||
+            settings?.branding?.logo_url ||
+            settings?.general?.logo ||
+            site?.branding?.logoLight ||
+            "/images/logo/Logo.png",
+        dark:
+            settings?.branding?.logo_dark ||
+            settings?.branding?.logo_dark_url ||
+            settings?.branding?.logo ||
+            settings?.branding?.logo_url ||
+            settings?.general?.logo_dark ||
+            site?.branding?.logoDark ||
+            "/images/logo/darkLogo.png",
     };
 
-    const siteLanguagesRaw =
-        Array.isArray(site?.languages) && site.languages.length
-            ? site.languages
-            : [
-                  { code: "de", label: "DE" },
-                  { code: "en", label: "EN" },
-              ];
+    // Diller: uzak settings API'den
+    const { languages: fetchedLanguages, defaultCode: fetchedDefaultLang } =
+        useLanguages();
 
-    const [languages, setLanguages] = useState(
-        siteLanguagesRaw.map((l) => ({
-            code: l.code,
-            label: l.label || l.code.toUpperCase(),
-        }))
-    );
+    const [languages, setLanguages] = useState([]);
 
     useEffect(() => {
-        setLanguages(
-            (Array.isArray(siteLanguagesRaw) ? siteLanguagesRaw : []).map(
-                (l) => ({
+        if (Array.isArray(fetchedLanguages) && fetchedLanguages.length) {
+            setLanguages(
+                fetchedLanguages.map((l) => ({
                     code: l.code,
                     label: l.label || l.code?.toUpperCase() || "DE",
-                })
-            )
-        );
+                }))
+            );
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [site?.languages]);
+    }, [fetchedLanguages]);
 
     const [currentLang, setCurrentLang] = useState(() => {
         try {
-            return localStorage.getItem("locale") || "de";
+            return localStorage.getItem("locale") || fetchedDefaultLang || "de";
         } catch {
             return "de";
         }
     });
+    useEffect(() => {
+        // default API'den geldiyse ve localStorage yoksa onunla başlat
+        try {
+            const saved = localStorage.getItem("locale");
+            if (!saved && fetchedDefaultLang) {
+                setCurrentLang(fetchedDefaultLang);
+                localStorage.setItem("locale", fetchedDefaultLang);
+            }
+        } catch {}
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [fetchedDefaultLang]);
     const langRef = useRef(null);
     useEffect(() => {
         const onUpdateLangs = (e) => {
@@ -264,6 +276,65 @@ const Header = ({ currentRoute }) => {
             new CustomEvent("language-changed", { detail: { locale: code } })
         );
     };
+
+    /* ----------------------- UZAK MENÜ: veri çek / hazırla ------------------ */
+    // Tenant kimliği inertia props’larından çözümlenir
+    const tenantId =
+        props?.global?.tenantId ||
+        props?.global?.tenant_id ||
+        props?.global?.talentId ||
+        "";
+    const {
+        data: remoteMenus,
+        loading: remoteLoading,
+        error: remoteErr,
+    } = useMenus({ perPage: 100, tenantId, locale: currentLang || "de" });
+    const remoteError = remoteErr ? String(remoteErr) : "";
+
+    const remoteNavItems = useMemo(() => {
+        const first =
+            Array.isArray(remoteMenus) && remoteMenus.length
+                ? remoteMenus[0]
+                : null;
+        const items = Array.isArray(first?.items) ? first.items : [];
+        const toDropdown = (children = []) =>
+            children.map((it, idx) => {
+                const hasChildren =
+                    Array.isArray(it.children) && it.children.length > 0;
+                if (!hasChildren)
+                    return { name: it.label, url: cleanUrl(it.url) };
+                return {
+                    name: it.label,
+                    submenuKey: `sub-${it.id || idx}`,
+                    submenu: (it.children || []).map((c) => ({
+                        name: c.label,
+                        url: cleanUrl(c.url),
+                    })),
+                };
+            });
+
+        return items.map((node, i) => {
+            const route = `menu-${node.id || i}`;
+            const hasChildren =
+                Array.isArray(node.children) && node.children.length > 0;
+            return {
+                name: node.label,
+                route,
+                url: cleanUrl(node.url) || "#",
+                ...(hasChildren
+                    ? {
+                          dropdownKey: route,
+                          dropdown: toDropdown(node.children),
+                      }
+                    : {}),
+                isActive: () =>
+                    typeof window !== "undefined"
+                        ? window.location.pathname.replace(/\/+$/, "") ===
+                          cleanUrl(node.url).replace(/\/+$/, "")
+                        : false,
+            };
+        });
+    }, [remoteMenus]);
 
     /* ------------------------------ navigate ------------------------------ */
     const navigate =
@@ -302,67 +373,21 @@ const Header = ({ currentRoute }) => {
             router.visit(url);
         };
 
-    /* ------------------------------ nav items ----------------------------- */
-    const navItems = [
-        {
-            name: "Startseite",
-            route: "home",
-            url: "/",
-            isActive: () => isPathActive("/"),
-        },
-        {
-            name: "Über uns",
-            route: "about",
-            url: "/uber-uns",
-            dropdownKey: "about",
-            dropdown: [
-                { name: "Über uns", url: "/uber-uns" },
-                { name: "Qualitätsmanagement", url: "/qualitatsmanagement" },
-                {
-                    name: "Mitarbeiter Schulungen",
-                    url: "/mitarbeiter-schulungen",
-                },
-                { name: "Häufig gestellte Fragen (FAQ)", url: "/faq" },
-                {
-                    name: "Rechtliches",
-                    submenuKey: "legal",
-                    submenu: [
-                        { name: "Datenschutzhinweise", url: "/datenschutz" },
-                        { name: "Impressum", url: "/impressum" },
-                        { name: "Stockfotos", url: "/stockfotos" },
-                    ],
-                },
-            ],
-            isActive: () =>
-                isPathActive([
-                    "/uber-uns",
-                    "/qualitatsmanagement",
-                    "/mitarbeiter-schulungen",
-                    "/datenschutz",
-                    "/impressum",
-                    "/stockfotos",
-                    "/faq",
-                ]),
-        },
-        {
-            name: "Reinigungsleistungen",
-            route: "services",
-            url: "/#services",
-            dropdownKey: "services",
-        },
-        {
-            name: "Standorte",
-            route: "locations",
-            url: "/#location",
-        },
-        {
-            name: "Kontakt",
-            route: "contact",
-            url: "/contact",
-        },
-    ];
+    const navItems = useMemo(() => {
+        if (remoteNavItems && remoteNavItems.length) return remoteNavItems;
+        return [
+            {
+                name: "Startseite",
+                route: "home",
+                url: "/",
+                isActive: () =>
+                    typeof window !== "undefined"
+                        ? window.location.pathname.replace(/\/+$/, "") === "/"
+                        : false,
+            },
+        ];
+    }, [remoteNavItems]);
 
-    /* ------------------------------- render ------------------------------- */
     return (
         <header ref={headerRef} className="site-header">
             <BitsBackground />
@@ -445,6 +470,19 @@ const Header = ({ currentRoute }) => {
                             className="nav nav--desktop"
                             aria-label="Hauptnavigation"
                         >
+                            {remoteLoading && (
+                                <div className="nav__item">
+                                    <span className="nav__link"></span>
+                                </div>
+                            )}
+                            {remoteError && (
+                                <div className="nav__item">
+                                    <span className="nav__link">
+                                        {remoteError}
+                                    </span>
+                                </div>
+                            )}
+
                             {navItems.map((item) => {
                                 const isActive =
                                     typeof item.isActive === "function"
@@ -863,7 +901,6 @@ const Header = ({ currentRoute }) => {
                             );
                         })}
 
-                        {/* Drawer alt bölümü: tema ve dil */}
                         <div className="drawer__theme-toggle">
                             <ThemeToggle />
                         </div>
