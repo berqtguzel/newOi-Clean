@@ -1,4 +1,3 @@
-// DOM utility helpers for safe, idempotent injections
 export function applyCssVars(vars = {}) {
   const root = document.documentElement;
   Object.entries(vars).forEach(([k, v]) => {

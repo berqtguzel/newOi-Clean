@@ -2,12 +2,20 @@
 import React from "react";
 import { Link } from "@inertiajs/react";
 import "./ServiceCard.css";
+import SafeHtml from "@/Components/Common/SafeHtml";
 
 function buildHref({ link, slug, basePath = "/services" }) {
     if (link) return link;
     if (!slug) return basePath;
     if (slug.startsWith("/")) return slug;
     return `${basePath}/${slug}`.replace(/([^:]\/)\/+/g, "$1");
+}
+
+// HTML içinden düz text çıkar (aria-label, alt için)
+function stripHtml(str = "") {
+    return String(str)
+        .replace(/<[^>]+>/g, "")
+        .trim();
 }
 
 const ServiceCard = ({
@@ -23,16 +31,20 @@ const ServiceCard = ({
     const [isLoaded, setIsLoaded] = React.useState(false);
 
     React.useEffect(() => {
-        if (imageRef.current && imageRef.current.complete) setIsLoaded(true);
+        if (imageRef.current && imageRef.current.complete) {
+            setIsLoaded(true);
+        }
     }, []);
 
     const href = buildHref({ link, slug, basePath });
+
+    const plainTitle = stripHtml(title) || "diesen Service";
 
     return (
         <Link
             href={href}
             className="service-card group"
-            aria-label={`Mehr über ${title} erfahren`}
+            aria-label={`Mehr über ${plainTitle} erfahren`}
         >
             <div className="service-card__image-wrapper">
                 {!isLoaded && (
@@ -40,10 +52,11 @@ const ServiceCard = ({
                         <div className="service-card__skeleton-wave" />
                     </div>
                 )}
+
                 <img
                     ref={imageRef}
                     src={image}
-                    alt={title}
+                    alt={plainTitle}
                     className={`service-card__image ${
                         isLoaded ? "is-loaded" : ""
                     }`}
@@ -52,13 +65,23 @@ const ServiceCard = ({
                     width="800"
                     height="600"
                 />
+
                 <div className="service-card__overlay">
                     {Icon && <Icon className="service-card__icon" />}
                 </div>
             </div>
 
             <div className="service-card__content">
-                <h3 className="service-card__title">{title}</h3>
+                <h3 className="service-card__title">
+                    <SafeHtml html={title} />
+                </h3>
+
+                {description && (
+                    <p className="service-card__description">
+                        <SafeHtml html={description} />
+                    </p>
+                )}
+
                 <span className="service-card__button">
                     <span>Details</span>
                     <svg

@@ -26,14 +26,14 @@ function buildTreeFromFlat(items = []) {
     };
     byId.set(idStr, node);
   });
-  // İkinci geçiş: ebeveyn-çocuk bağla
+
   items.forEach((it, i) => {
     const id = it?.id ?? i;
     const idStr = String(id);
     const parentRaw =
       it?.parent_id ??
       it?.parentId ??
-      it?.menu_parent_id ?? // olası alan
+      it?.menu_parent_id ??
       (typeof it?.parent === "object" ? it?.parent?.id : it?.parent) ??
       null;
     const parentIdStr = parentRaw != null ? String(parentRaw) : null;
@@ -65,11 +65,9 @@ function normalizeItems(items) {
         Array.isArray(it?.links)
     );
 
-  // Eğer öğelerde parent_id benzeri işaretçiler varsa,
-  // duplike kökleri önlemek için DÜZ LİSTEDEN AĞAÇ kur.
+
   if (hasParentMarkers) {
     const tree = buildTreeFromFlat(list);
-    // Sıralama: order alanına göre kök ve tüm çocuklar
     const sortNodes = (arr) => {
       arr.sort(
         (a, b) =>
@@ -82,7 +80,6 @@ function normalizeItems(items) {
     return sortNodes(tree);
   }
 
-  // Aksi halde iç içe geldiği gibi recursive dönüştür
   if (hasExplicitChildren) {
     return list.map((it, i) => {
       const children = Array.isArray(it?.children)
@@ -101,8 +98,6 @@ function normalizeItems(items) {
       };
     });
   }
-
-  // Ne parent işaretçisi ne de children yoksa: tek katman
   return list.map((it, i) => ({
     id: it?.id ?? i,
     label: it?.title ?? it?.name ?? it?.slug ?? "(no title)",
@@ -111,7 +106,6 @@ function normalizeItems(items) {
     raw: it,
   }));
 }
-
 function normalizeMenus(res) {
   let arr = [];
   if (Array.isArray(res)) arr = res;
@@ -130,10 +124,10 @@ function normalizeMenus(res) {
     raw: m,
   }));
 
-  return { menus, meta: res?.meta || {} };
+  // burada _meta'yı da dikkate al
+  return { menus, meta: res?._meta || res?.meta || {} };
 }
 
-// --- public API ---
 export async function getMenus({ page = 1, perPage = 50, search, tenantId, locale } = {}) {
   const cacheKey = buildKey({ page, perPage, search, tenantId, locale });
   if (menuCache.has(cacheKey)) {
@@ -144,7 +138,7 @@ export async function getMenus({ page = 1, perPage = 50, search, tenantId, local
   }
 
   const headers = {};
-  // Sunucu her iki başlığı da kabul edebilir; ikisini de gönderiyoruz
+
   if (remoteConfig.talentId) headers["X-Talent-Id"] = remoteConfig.talentId;
   if (tenantId) {
     headers["X-Tenant-ID"] = String(tenantId);

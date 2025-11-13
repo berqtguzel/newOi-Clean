@@ -8,15 +8,19 @@ import {
     FaBars,
     FaTimes,
 } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 import ThemeToggle from "./ThemeToggle";
 import DecryptedText from "./ReactBits/Texts/DescryptedText";
 import { useMenus } from "../hooks/useMenus";
 import { useLanguages } from "../hooks/useLanguages";
+import SafeHtml from "@/Components/Common/SafeHtml";
 
 /* ============================== helpers ============================== */
+
 function cx(...args) {
     return args.filter(Boolean).join(" ");
 }
+
 const BitsBackground = () => <div aria-hidden className="rbits-bg" />;
 
 const getOffset = () => {
@@ -24,6 +28,7 @@ const getOffset = () => {
     const h = el ? el.offsetHeight : 0;
     return Math.max(0, h - 4);
 };
+
 const smoothScrollTo = (hash) => {
     const id = hash.replace(/^#/, "");
     const el = document.getElementById(id);
@@ -34,7 +39,9 @@ const smoothScrollTo = (hash) => {
     window.scrollTo({ top, behavior: "smooth" });
     history.replaceState(null, "", `${location.pathname}#${id}`);
 };
+
 const isHashOnly = (url) => /^#/.test(url);
+
 const splitPathHash = (url) => {
     const [path, hash] = url.split("#");
     return { path: path || "/", hash: hash ? `#${hash}` : "" };
@@ -80,8 +87,163 @@ function pickOmrSite(websites = [], { host, talentId } = {}) {
 
 const cleanUrl = (u) => String(u || "#").replace(/:\d+$/, "");
 
-/* ============================== component ============================== */
+/* ---------------- Label & URL çözücü (API menüleri için) --------------- */
+
+function resolveMenuLabel(node, locale = "de", fallback = "de") {
+    if (!node) return "";
+
+    const lang = String(locale || "").toLowerCase();
+    const fb = String(fallback || "de").toLowerCase();
+    const raw = node.raw || node;
+
+    const translations = Array.isArray(raw.translations)
+        ? raw.translations
+        : Array.isArray(node.translations)
+        ? node.translations
+        : [];
+
+    const byLang = translations.find(
+        (t) =>
+            String(t.language_code || "")
+                .toLowerCase()
+                .trim() === lang &&
+            t.label &&
+            String(t.label).trim() !== ""
+    );
+    if (byLang) return byLang.label;
+
+    const byFallback = translations.find(
+        (t) =>
+            String(t.language_code || "")
+                .toLowerCase()
+                .trim() === fb &&
+            t.label &&
+            String(t.label).trim() !== ""
+    );
+    if (byFallback) return byFallback.label;
+
+    const firstAny = translations.find(
+        (t) => t.label && String(t.label).trim() !== ""
+    );
+    if (firstAny) return firstAny.label;
+
+    if (node.name && String(node.name).trim() !== "") return node.name;
+    if (raw.name && String(raw.name).trim() !== "") return raw.name;
+
+    if (node.label && String(node.label).trim() !== "") return node.label;
+
+    return "";
+}
+
+function resolveMenuUrl(node, locale = "de") {
+    if (!node) return "#";
+
+    const lang = String(locale || "").toLowerCase();
+    const raw = node.raw || node;
+
+    const pageTranslations =
+        (Array.isArray(node.page_translations) && node.page_translations.length
+            ? node.page_translations
+            : Array.isArray(raw.page_translations) &&
+              raw.page_translations.length
+            ? raw.page_translations
+            : []) || [];
+
+    const byLang = pageTranslations.find(
+        (p) =>
+            String(p.language_code || "")
+                .toLowerCase()
+                .trim() === lang &&
+            p.slug &&
+            String(p.slug).trim() !== ""
+    );
+    if (byLang) {
+        return cleanUrl(`/${byLang.slug}`);
+    }
+
+    return cleanUrl(node.url);
+}
+
+/* ====================== LanguageSwitcher component ====================== */
+
+const LanguageSwitcher = ({ currentLang, languages, onChange }) => {
+    const [open, setOpen] = useState(false);
+    const ref = useRef(null);
+
+    useEffect(() => {
+        const onClick = (e) => {
+            if (ref.current && !ref.current.contains(e.target)) {
+                setOpen(false);
+            }
+        };
+        const onKey = (e) => {
+            if (e.key === "Escape") setOpen(false);
+        };
+        document.addEventListener("click", onClick);
+        window.addEventListener("keydown", onKey);
+        return () => {
+            document.removeEventListener("click", onClick);
+            window.removeEventListener("keydown", onKey);
+        };
+    }, []);
+
+    if (!languages || !languages.length) return null;
+
+    return (
+        <div className={cx("lang-switch", open && "is-open")} ref={ref}>
+            <button
+                type="button"
+                className="lang-switch__btn"
+                aria-haspopup="true"
+                aria-expanded={open}
+                onClick={() => setOpen((o) => !o)}
+            >
+                <span className="lang-switch__label">
+                    {currentLang.toUpperCase()}
+                </span>
+                <FaChevronDown
+                    className="lang-switch__chev"
+                    aria-hidden="true"
+                />
+            </button>
+
+            {open && (
+                <div className="lang-switch__popover" role="menu">
+                    <ul className="lang-switch__list">
+                        {languages.map((l) => (
+                            <li key={l.code}>
+                                <button
+                                    type="button"
+                                    className={cx(
+                                        "lang-switch__item",
+                                        l.code === currentLang && "is-active"
+                                    )}
+                                    onClick={() => {
+                                        onChange(l.code);
+                                        setOpen(false);
+                                    }}
+                                >
+                                    <span className="lang-switch__item-code">
+                                        {l.code.toUpperCase()}
+                                    </span>
+                                    <span className="lang-switch__item-label">
+                                        {l.label}
+                                    </span>
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+        </div>
+    );
+};
+
+/* =============================== Header =============================== */
+
 const Header = ({ currentRoute, settings }) => {
+    const { i18n, t } = useTranslation();
+
     const currentPath =
         typeof window !== "undefined"
             ? window.location.pathname.replace(/\/+$/, "")
@@ -102,22 +264,26 @@ const Header = ({ currentRoute, settings }) => {
     const closeTimer = useRef(null);
     const subCloseTimer = useRef(null);
     const HOVER_INTENT = 160;
+
     const cancelClose = () => {
         if (closeTimer.current) {
             clearTimeout(closeTimer.current);
             closeTimer.current = null;
         }
     };
+
     const cancelSubClose = () => {
         if (subCloseTimer.current) {
             clearTimeout(subCloseTimer.current);
             subCloseTimer.current = null;
         }
     };
+
     const openDrop = (key) => {
         cancelClose();
         setOpenDropdown(key);
     };
+
     const scheduleCloseDrop = () => {
         cancelClose();
         closeTimer.current = setTimeout(() => {
@@ -125,10 +291,12 @@ const Header = ({ currentRoute, settings }) => {
             setOpenSubmenu(null);
         }, HOVER_INTENT);
     };
+
     const openSub = (key) => {
         cancelSubClose();
         setOpenSubmenu(key);
     };
+
     const scheduleCloseSub = () => {
         cancelSubClose();
         subCloseTimer.current = setTimeout(
@@ -137,26 +305,24 @@ const Header = ({ currentRoute, settings }) => {
         );
     };
 
-    const [isLangOpen, setIsLangOpen] = useState(false);
     useEffect(() => {
         const onDocClick = (e) => {
             if (headerRef.current && !headerRef.current.contains(e.target)) {
                 setOpenDropdown(null);
                 setOpenSubmenu(null);
                 setOpenMenu(false);
-                setIsLangOpen(false);
             }
         };
         document.addEventListener("click", onDocClick);
         return () => document.removeEventListener("click", onDocClick);
     }, []);
+
     useEffect(() => {
         const onKey = (e) => {
             if (e.key === "Escape") {
                 setOpenDropdown(null);
                 setOpenSubmenu(null);
                 setOpenMenu(false);
-                setIsLangOpen(false);
             }
         };
         window.addEventListener("keydown", onKey);
@@ -169,8 +335,13 @@ const Header = ({ currentRoute, settings }) => {
             return nextOpen ? { [key]: true } : {};
         });
 
-    /* -------------------------- OMR global props -------------------------- */
+    /* -------------------------- Inertia props -------------------------- */
+
     const { props } = usePage();
+
+    const initialLocale = props?.locale || "de";
+    const sharedLanguages = props?.languages || [];
+
     const omrWebsites = props?.global?.websites || [];
     const omrTalentId = props?.global?.talentId || "";
 
@@ -189,12 +360,23 @@ const Header = ({ currentRoute, settings }) => {
     const siteName = settings?.branding?.site_name || site?.name || "O&I CLEAN";
     const sitePhone =
         settings?.contact?.phone || site?.contact?.phone || "+49 000 0000 000";
+
     const topbarTagline =
         site?.content?.topbarTagline ||
-        "Sauberkeit, auf die Sie sich verlassen können — 24/7 Service";
-    const cta = site?.cta || { href: "/contact", label: "Termin vereinbaren" };
+        t("header.topbar_tagline", {
+            defaultValue:
+                "Sauberkeit, auf die Sie sich verlassen können — 24/7 Service",
+        });
 
-    // Dashboard → Branding logoları (çeşitli alan adlarını destekle)
+    const cta = {
+        href:
+            site?.cta?.href ||
+            t("header.cta_href", { defaultValue: "/contact" }),
+        label:
+            site?.cta?.label ||
+            t("header.cta_label", { defaultValue: "Termin vereinbaren" }),
+    };
+
     const siteLogos = {
         light:
             settings?.branding?.logo_light ||
@@ -214,129 +396,217 @@ const Header = ({ currentRoute, settings }) => {
             "/images/logo/darkLogo.png",
     };
 
-    // Diller: uzak settings API'den
-    const { languages: fetchedLanguages, defaultCode: fetchedDefaultLang } =
-        useLanguages();
+    /* ------------------- Languages ------------------- */
 
-    const [languages, setLanguages] = useState([]);
-
-    useEffect(() => {
-        if (Array.isArray(fetchedLanguages) && fetchedLanguages.length) {
-            setLanguages(
-                fetchedLanguages.map((l) => ({
-                    code: l.code,
-                    label: l.label || l.code?.toUpperCase() || "DE",
-                }))
-            );
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [fetchedLanguages]);
+    const { languages: fetchedLanguages } = useLanguages();
 
     const [currentLang, setCurrentLang] = useState(() => {
         try {
-            return localStorage.getItem("locale") || fetchedDefaultLang || "de";
+            return localStorage.getItem("locale") || initialLocale || "de";
         } catch {
-            return "de";
+            return initialLocale || "de";
         }
     });
+
+    // Backend'ten gelen locale ile state + i18n senkronu
     useEffect(() => {
-        // default API'den geldiyse ve localStorage yoksa onunla başlat
+        if (!initialLocale) return;
+        setCurrentLang((prev) => {
+            if (prev === initialLocale) return prev;
+            try {
+                localStorage.setItem("locale", initialLocale);
+            } catch {}
+            return initialLocale;
+        });
+
         try {
-            const saved = localStorage.getItem("locale");
-            if (!saved && fetchedDefaultLang) {
-                setCurrentLang(fetchedDefaultLang);
-                localStorage.setItem("locale", fetchedDefaultLang);
+            if (i18n.language !== initialLocale) {
+                i18n.changeLanguage(initialLocale);
             }
-        } catch {}
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [fetchedDefaultLang]);
-    const langRef = useRef(null);
-    useEffect(() => {
-        const onUpdateLangs = (e) => {
-            if (e?.detail && Array.isArray(e.detail))
-                setLanguages(
-                    e.detail.map((l) => ({
-                        code: l.code,
-                        label: l.label || l.code?.toUpperCase() || l,
-                    }))
-                );
-        };
-        window.addEventListener("update-languages", onUpdateLangs);
-        return () =>
-            window.removeEventListener("update-languages", onUpdateLangs);
-    }, []);
-    const toggleLang = () => setIsLangOpen((s) => !s);
+        } catch (e) {
+            console.warn("i18n changeLanguage failed:", e);
+        }
+    }, [initialLocale, i18n]);
+
+    const allLanguages = useMemo(() => {
+        if (Array.isArray(sharedLanguages) && sharedLanguages.length) {
+            return sharedLanguages.map((l) => {
+                const code = l.code || l.locale || "de";
+                return {
+                    code,
+                    label:
+                        l.label || l.name || (code ? code.toUpperCase() : "DE"),
+                };
+            });
+        }
+
+        if (Array.isArray(fetchedLanguages) && fetchedLanguages.length) {
+            return fetchedLanguages.map((l) => ({
+                code: l.code,
+                label: l.label || l.code?.toUpperCase() || "DE",
+            }));
+        }
+
+        return [
+            { code: "de", label: "DE" },
+            { code: "en", label: "EN" },
+            { code: "tr", label: "TR" },
+        ];
+    }, [sharedLanguages, fetchedLanguages]);
+
+    /* ----------------------- Dil değişimi ----------------------- */
+
     const changeLanguage = (code) => {
+        if (!code || code === currentLang) return;
+
         setCurrentLang(code);
-        setIsLangOpen(false);
+
         try {
             localStorage.setItem("locale", code);
         } catch {}
+
+        // i18next dilini de değiştir
+        try {
+            if (i18n.language !== code) {
+                i18n.changeLanguage(code);
+            }
+        } catch (e) {
+            console.warn("i18n changeLanguage failed:", e);
+        }
+
         window.dispatchEvent(
             new CustomEvent("language-changed", { detail: { locale: code } })
         );
+
+        let targetUrl = `/lang/${code}`;
+
+        try {
+            if (typeof route === "function") {
+                targetUrl = route("lang.switch", { locale: code });
+            }
+        } catch {}
+
+        router.visit(targetUrl, {
+            method: "get",
+            preserveScroll: true,
+            preserveState: false,
+        });
     };
 
-    /* ----------------------- UZAK MENÜ: veri çek / hazırla ------------------ */
-    // Tenant kimliği inertia props’larından çözümlenir
+    /* ------------------------ Menüler / useMenus ------------------------ */
+
     const tenantId =
         props?.global?.tenantId ||
         props?.global?.tenant_id ||
         props?.global?.talentId ||
         "";
+
     const {
-        data: remoteMenus,
-        loading: remoteLoading,
-        error: remoteErr,
-    } = useMenus({ perPage: 100, tenantId, locale: currentLang || "de" });
-    const remoteError = remoteErr ? String(remoteErr) : "";
+        data: menusResponse,
+        loading: menuLoading,
+        error: menuError,
+    } = useMenus({
+        perPage: 100,
+        tenantId,
+    });
 
     const remoteNavItems = useMemo(() => {
-        const first =
-            Array.isArray(remoteMenus) && remoteMenus.length
-                ? remoteMenus[0]
-                : null;
-        const items = Array.isArray(first?.items) ? first.items : [];
+        if (!menusResponse) return [];
+
+        const rawMenusSource =
+            Array.isArray(menusResponse?.data) || !menusResponse.data
+                ? menusResponse.data || menusResponse
+                : menusResponse;
+
+        const rawMenus = Array.isArray(rawMenusSource)
+            ? rawMenusSource
+            : Array.isArray(rawMenusSource?.data)
+            ? rawMenusSource.data
+            : [];
+
+        const headerMenu =
+            rawMenus.find((m) => m.slug === "header") || rawMenus[0] || null;
+
+        const items = Array.isArray(headerMenu?.items) ? headerMenu.items : [];
+
         const toDropdown = (children = []) =>
-            children.map((it, idx) => {
+            (children || []).map((it, idx) => {
                 const hasChildren =
                     Array.isArray(it.children) && it.children.length > 0;
-                if (!hasChildren)
-                    return { name: it.label, url: cleanUrl(it.url) };
+
+                const label = resolveMenuLabel(it, currentLang, "de");
+                const url = resolveMenuUrl(it, currentLang);
+
+                if (!hasChildren) {
+                    return {
+                        name: label,
+                        url,
+                    };
+                }
+
                 return {
-                    name: it.label,
+                    name: label,
                     submenuKey: `sub-${it.id || idx}`,
                     submenu: (it.children || []).map((c) => ({
-                        name: c.label,
-                        url: cleanUrl(c.url),
+                        name: resolveMenuLabel(c, currentLang, "de"),
+                        url: resolveMenuUrl(c, currentLang),
                     })),
                 };
             });
 
         return items.map((node, i) => {
-            const route = `menu-${node.id || i}`;
+            const routeKey = `menu-${node.id || i}`;
             const hasChildren =
                 Array.isArray(node.children) && node.children.length > 0;
+
+            const label = resolveMenuLabel(node, currentLang, "de");
+            const url = resolveMenuUrl(node, currentLang);
+
             return {
-                name: node.label,
-                route,
-                url: cleanUrl(node.url) || "#",
+                name: label,
+                route: routeKey,
+                url: url || "#",
                 ...(hasChildren
                     ? {
-                          dropdownKey: route,
+                          dropdownKey: routeKey,
                           dropdown: toDropdown(node.children),
                       }
                     : {}),
                 isActive: () =>
                     typeof window !== "undefined"
                         ? window.location.pathname.replace(/\/+$/, "") ===
-                          cleanUrl(node.url).replace(/\/+$/, "")
+                          url.replace(/\/+$/, "")
                         : false,
             };
         });
-    }, [remoteMenus]);
+    }, [menusResponse, currentLang]);
+
+    const navItems = useMemo(() => {
+        if (remoteNavItems && remoteNavItems.length) {
+            return remoteNavItems;
+        }
+
+        if (menuLoading) {
+            return [];
+        }
+
+        const homeLabel = t("nav.home", "Startseite");
+
+        return [
+            {
+                name: homeLabel,
+                route: "home",
+                url: "/",
+                isActive: () =>
+                    typeof window !== "undefined"
+                        ? window.location.pathname.replace(/\/+$/, "") === "/"
+                        : false,
+            },
+        ];
+    }, [remoteNavItems, menuLoading, t]);
 
     /* ------------------------------ navigate ------------------------------ */
+
     const navigate =
         (url, close = false) =>
         (e) => {
@@ -373,20 +643,9 @@ const Header = ({ currentRoute, settings }) => {
             router.visit(url);
         };
 
-    const navItems = useMemo(() => {
-        if (remoteNavItems && remoteNavItems.length) return remoteNavItems;
-        return [
-            {
-                name: "Startseite",
-                route: "home",
-                url: "/",
-                isActive: () =>
-                    typeof window !== "undefined"
-                        ? window.location.pathname.replace(/\/+$/, "") === "/"
-                        : false,
-            },
-        ];
-    }, [remoteNavItems]);
+    /* ============================== render ============================== */
+
+    const menuErrorText = menuError ? String(menuError) : "";
 
     return (
         <header ref={headerRef} className="site-header">
@@ -430,11 +689,14 @@ const Header = ({ currentRoute, settings }) => {
                                     onClick={navigate(cta.href)}
                                     className="btn btn--ghost"
                                 >
-                                    {cta.label}
+                                    <SafeHtml html={cta.label} as="span" />
                                 </a>
                                 <button
                                     className="btn btn--ghost btn--circle"
-                                    aria-label="Top-Leiste ausblenden"
+                                    aria-label={t(
+                                        "header.hide_topbar",
+                                        "Top-Leiste ausblenden"
+                                    )}
                                     onClick={() => setIsTopBarVisible(false)}
                                 >
                                     ×
@@ -452,7 +714,7 @@ const Header = ({ currentRoute, settings }) => {
                             href="/"
                             onClick={navigate("/")}
                             className="brand"
-                            aria-label="Startseite"
+                            aria-label={t("header.home_aria", "Startseite")}
                         >
                             <img
                                 src={siteLogos.light}
@@ -468,17 +730,17 @@ const Header = ({ currentRoute, settings }) => {
 
                         <nav
                             className="nav nav--desktop"
-                            aria-label="Hauptnavigation"
+                            aria-label={t("header.main_nav", "Hauptnavigation")}
                         >
-                            {remoteLoading && (
+                            {menuLoading && (
                                 <div className="nav__item">
-                                    <span className="nav__link"></span>
+                                    <span className="nav__link" />
                                 </div>
                             )}
-                            {remoteError && (
+                            {menuErrorText && (
                                 <div className="nav__item">
                                     <span className="nav__link">
-                                        {remoteError}
+                                        {menuErrorText}
                                     </span>
                                 </div>
                             )}
@@ -530,9 +792,11 @@ const Header = ({ currentRoute, settings }) => {
                                             }
                                             onClick={navigate(item.url)}
                                         >
-                                            <span className="nav__label">
-                                                {item.name}
-                                            </span>
+                                            <SafeHtml
+                                                html={item.name}
+                                                as="span"
+                                                className="nav__label"
+                                            />
                                             {hasDropdown && (
                                                 <FaChevronDown
                                                     className="nav__chev"
@@ -600,11 +864,13 @@ const Header = ({ currentRoute, settings }) => {
                                                                                     subOpen
                                                                                 }
                                                                             >
-                                                                                <span className="menu__label">
-                                                                                    {
+                                                                                <SafeHtml
+                                                                                    html={
                                                                                         subItem.name
                                                                                     }
-                                                                                </span>
+                                                                                    as="span"
+                                                                                    className="menu__label"
+                                                                                />
                                                                                 <FaChevronRight
                                                                                     className="menu__chev"
                                                                                     aria-hidden
@@ -626,9 +892,12 @@ const Header = ({ currentRoute, settings }) => {
                                                                                     subItem.url
                                                                                 )}
                                                                             >
-                                                                                {
-                                                                                    subItem.name
-                                                                                }
+                                                                                <SafeHtml
+                                                                                    html={
+                                                                                        subItem.name
+                                                                                    }
+                                                                                    as="span"
+                                                                                />
                                                                             </a>
                                                                         )}
 
@@ -667,9 +936,12 @@ const Header = ({ currentRoute, settings }) => {
                                                                                                     inner.url
                                                                                                 )}
                                                                                             >
-                                                                                                {
-                                                                                                    inner.name
-                                                                                                }
+                                                                                                <SafeHtml
+                                                                                                    html={
+                                                                                                        inner.name
+                                                                                                    }
+                                                                                                    as="span"
+                                                                                                />
                                                                                             </a>
                                                                                         )
                                                                                     )}
@@ -690,55 +962,26 @@ const Header = ({ currentRoute, settings }) => {
 
                         <div className="nav__cta">
                             <ThemeToggle />
-                            <div className="lang-switch" ref={langRef}>
-                                <button
-                                    type="button"
-                                    className="btn btn--ghost ml-3 lang-switch__btn"
-                                    aria-haspopup="true"
-                                    aria-expanded={isLangOpen}
-                                    onClick={toggleLang}
-                                >
-                                    {currentLang.toUpperCase()}
-                                </button>
-                                {isLangOpen && (
-                                    <ul
-                                        className="lang-switch__list"
-                                        role="menu"
-                                    >
-                                        {languages.map((l) => (
-                                            <li key={l.code}>
-                                                <button
-                                                    type="button"
-                                                    className={cx(
-                                                        "lang-switch__item",
-                                                        l.code ===
-                                                            currentLang &&
-                                                            "is-active"
-                                                    )}
-                                                    onClick={() =>
-                                                        changeLanguage(l.code)
-                                                    }
-                                                >
-                                                    {l.label}
-                                                </button>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
-                            </div>
+
+                            <LanguageSwitcher
+                                currentLang={currentLang}
+                                languages={allLanguages}
+                                onChange={changeLanguage}
+                            />
+
                             <a
                                 href="/impressum"
                                 onClick={navigate("/impressum")}
                                 className="btn bg-button btn--primary ml-4"
                             >
-                                Impressum
+                                {t("header.impressum", "Impressum")}
                             </a>
                         </div>
 
                         <button
                             className="hamburger"
                             onClick={() => setOpenMenu(true)}
-                            aria-label="Menü öffnen"
+                            aria-label={t("header.menu_open", "Menü öffnen")}
                         >
                             <FaBars size={22} />
                         </button>
@@ -768,14 +1011,17 @@ const Header = ({ currentRoute, settings }) => {
                             />
                             <img
                                 src={siteLogos.dark}
-                                alt={`${siteName} Logo`}
+                                alt={`${siteName} Logo (Dark)`}
                                 className="brand__logo brand__logo--dark"
                             />
                         </a>
                         <button
                             className="btn btn--icon"
                             onClick={() => setOpenMenu(false)}
-                            aria-label="Menü schließen"
+                            aria-label={t(
+                                "header.menu_close",
+                                "Menü schließen"
+                            )}
                         >
                             <FaTimes size={20} />
                         </button>
@@ -804,7 +1050,10 @@ const Header = ({ currentRoute, settings }) => {
                                             <span className="acc__icon">
                                                 {item.icon}
                                             </span>
-                                            {item.name}
+                                            <SafeHtml
+                                                html={item.name}
+                                                as="span"
+                                            />
                                         </span>
                                         {hasDropdown && (
                                             <FaChevronDown
@@ -834,9 +1083,12 @@ const Header = ({ currentRoute, settings }) => {
                                                             {subItem.submenu ? (
                                                                 <details className="acc__details">
                                                                     <summary className="acc__summary">
-                                                                        {
-                                                                            subItem.name
-                                                                        }
+                                                                        <SafeHtml
+                                                                            html={
+                                                                                subItem.name
+                                                                            }
+                                                                            as="span"
+                                                                        />
                                                                     </summary>
                                                                     <div className="acc__submenu">
                                                                         {subItem.submenu.map(
@@ -863,9 +1115,12 @@ const Header = ({ currentRoute, settings }) => {
                                                                                         )
                                                                                     }
                                                                                 >
-                                                                                    {
-                                                                                        inner.name
-                                                                                    }
+                                                                                    <SafeHtml
+                                                                                        html={
+                                                                                            inner.name
+                                                                                        }
+                                                                                        as="span"
+                                                                                    />
                                                                                 </a>
                                                                             )
                                                                         )}
@@ -886,9 +1141,12 @@ const Header = ({ currentRoute, settings }) => {
                                                                         )(e)
                                                                     }
                                                                 >
-                                                                    {
-                                                                        subItem.name
-                                                                    }
+                                                                    <SafeHtml
+                                                                        html={
+                                                                            subItem.name
+                                                                        }
+                                                                        as="span"
+                                                                    />
                                                                 </a>
                                                             )}
                                                         </div>
@@ -906,9 +1164,11 @@ const Header = ({ currentRoute, settings }) => {
                         </div>
 
                         <div className="drawer__lang">
-                            <span className="drawer__lang-label">Sprache</span>
+                            <span className="drawer__lang-label">
+                                {t("header.language", "Sprache")}
+                            </span>
                             <div className="drawer__lang-buttons">
-                                {languages.map((l) => (
+                                {allLanguages.map((l) => (
                                     <button
                                         key={l.code}
                                         type="button"

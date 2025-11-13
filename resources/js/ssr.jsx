@@ -7,13 +7,13 @@ import route from "../../vendor/tightenco/ziggy/dist/index.m";
 
 import { ThemeProvider as SSRThemeProvider } from "./Context/ThemeContext.ssr";
 
-const appName = "Laravel";
+const appName = "O&I CLEAN group GmbH";
 
 createServer((page) =>
     createInertiaApp({
         page,
         render: ReactDOMServer.renderToString,
-        title: (title) => `${title} - ${appName}`,
+        title: (title) => (title ? `${title} - ${appName}` : appName),
         resolve: (name) =>
             resolvePageComponent(
                 `./Pages/${name}.jsx`,

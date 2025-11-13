@@ -1,6 +1,5 @@
-/* Panelden gelen renkleri site geneline köprüleyelim */
 :root{
-  /* Dashboard değişkenleri (backend JS ile dolduruluyor) */
+
   --site-primary-color: #2563eb;
   --site-secondary-color: #6b7280;
   --site-accent-color: #60a5fa;
@@ -15,22 +14,22 @@
   --h3-color: var(--text-color);
 }
 
-/* Genel gövde ve başlık/link renkleri */
+
 body{
   background: var(--background-color);
   color: var(--text-color);
 }
 
-/* Başlık renkleri panelden */
+
 h1,.h1{ color: var(--h1-color); }
 h2,.h2{ color: var(--h2-color); }
 h3,.h3{ color: var(--h3-color); }
 
-/* Link rengi */
+
 a{ color: var(--link-color); }
 a:hover{ color: color-mix(in srgb, var(--link-color) 78%, #000 22%); }
 
-/* Butonlar (genel) */
+
 .btn-primary,
 .btn--primary,
 button[type="submit"]{
@@ -44,7 +43,7 @@ button[type="submit"]:hover{
   filter: brightness(0.95);
 }
 
-/* Bölüm arkaplan örnekleri (sabit #fff kullanılan yerleri kapsasın) */
+
 .bg-white{ background: var(--background-color) !important; }
 .text-primary{ color: var(--site-primary-color) !important; }
 .bg-primary{ background: var(--site-primary-color) !important; color:#fff!important; }

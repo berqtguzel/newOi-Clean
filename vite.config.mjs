@@ -1,3 +1,4 @@
+// vite.config.js
 import { defineConfig } from 'vite'
 import laravel from 'laravel-vite-plugin'
 import react from '@vitejs/plugin-react'
@@ -10,12 +11,12 @@ export default defineConfig({
         'resources/css/app.css',
         'resources/js/app.jsx',
       ],
-         ssr: "resources/js/ssr.jsx",
-         refresh: true,
+      ssr: 'resources/js/ssr.jsx',
+      refresh: true,
     }),
   ],
-     ssr: {
-        noExternal: ["@inertiajs/react"],
-        external: ['gsap']
-    },
+  ssr: {
+    noExternal: ['@inertiajs/react'],
+    external: ['gsap'],
+  },
 })

@@ -1,15 +1,13 @@
-// resources/js/app.jsx
 import "./bootstrap";
 import "../css/app.css";
 import "../css/theme.css";
-
+import "./i18n";
 import React from "react";
 import { createInertiaApp } from "@inertiajs/react";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 import route from "../../vendor/tightenco/ziggy/dist/index.m.js";
 import { ThemeProvider } from "./Context/ThemeContext";
-// window.__SITE_COLORS__ Laravel'den geliyor
 function applyCssVarsFromColors(colors = {}) {
     Object.entries(colors).forEach(([key, val]) => {
         if (!val) return;
@@ -28,7 +26,6 @@ if (typeof window !== "undefined" && window.__SITE_COLORS__) {
     }
 }
 
-// 🌈 1️⃣ Backend'den gelen renkleri global değişkenlere uygula
 if (window.__SITE_COLORS__) {
     const root = document.documentElement;
     const colors = window.__SITE_COLORS__;
@@ -41,10 +38,8 @@ if (window.__SITE_COLORS__) {
     });
 }
 
-// 🏷️ Uygulama adı
 const APP_NAME = "O&I CLEAN group GmbH";
 
-// 💡 Başlangıç temasını belirle
 function getInitialTheme() {
     if (typeof window === "undefined") return "light";
     try {
@@ -59,7 +54,6 @@ function getInitialTheme() {
     }
 }
 
-// ⚛️ Inertia uygulaması
 createInertiaApp({
     title: (title) => (title ? `${title} - ${APP_NAME}` : APP_NAME),
 
@@ -70,7 +64,6 @@ createInertiaApp({
         }),
 
     setup({ el, App, props }) {
-        // 🔗 Ziggy route fonksiyonu global olarak tanımla
         const ziggy = props.initialPage?.props?.ziggy;
         if (ziggy) {
             window.route = (name, params, absolute) =>
@@ -80,10 +73,8 @@ createInertiaApp({
                 });
         }
 
-        // 🌙 Tema belirle
         const initialTheme = getInitialTheme();
 
-        // 🧩 React kökü
         const Root = (
             <ThemeProvider initial={initialTheme}>
                 <App {...props} />
@@ -97,5 +88,5 @@ createInertiaApp({
         }
     },
 
-    progress: { color: "var(--site-primary-color)" }, // 🚀 progress bar da temaya göre renklenir
+    progress: { color: "var(--site-primary-color)" },
 });

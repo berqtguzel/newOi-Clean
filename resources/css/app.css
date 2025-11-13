@@ -91,7 +91,7 @@ html, body { overflow-x: hidden; scroll-behavior: smooth; }
 .rbits-section,
 .map-container,
 .services-container {
-  background-color: hsl(var(--section)) !important;
+
 }
 
 /* Koyu modda açık overlay/degradeleri yumuşat (örnek seçiciler, sende farklı olabilir) */

@@ -2,42 +2,85 @@ import React from "react";
 import { Link } from "@inertiajs/react";
 import { motion } from "framer-motion";
 import { FaHotel, FaBuilding, FaTools } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 import Aurora from "@/Components/ReactBits/Backgrounds/Aurora";
+import SafeHtml from "@/Components/Common/SafeHtml";
 import "./ServiceCategories.css";
 
-const categories = [
-    {
-        title: "Hotelreinigung & Housekeeping",
-        description:
-            "Von der Zimmerreinigung bis zur Spülküche – perfekte Hygiene und effiziente Abläufe in jedem Bereich Ihres Hotels.",
-        icon: FaHotel,
-        url: "/dienstleistungen/hotel",
-        gradient: ["#2563EB", "#60A5FA"],
-    },
-    {
-        title: "Professionelle Gebäudereinigung",
-        description:
-            "Büros, Gewerbeflächen, Bauendreinigung und Spezialreinigungen – wir lassen Ihre Immobilien glänzen.",
-        icon: FaBuilding,
-        url: "/dienstleistungen/gebaeude",
-        gradient: ["#334155", "#64748B"],
-    },
-    {
-        title: "Renovierung, Reparatur & Instandhaltung",
-        description:
-            "Maler-, Spachtel- und Trockenbauarbeiten sowie Bodenverlegung und kleinere Reparaturen.",
-        icon: FaTools,
-        url: "/dienstleistungen/renovierung",
-        gradient: ["#CA8A04", "#F59E0B"],
-    },
-];
-
-/** Yardımcı: CSS inline gradient stili üretir */
+/** Inline gradient stili */
 const gradientStyle = (from, to) => ({
     backgroundImage: `linear-gradient(to right, ${from}, ${to})`,
 });
 
+/** aria-label için HTML'den düz metin çıkar */
+const stripHtml = (str = "") =>
+    String(str)
+        .replace(/<[^>]+>/g, "")
+        .trim();
+
 export default function ServiceCategories({ content = {} }) {
+    const { t } = useTranslation();
+
+    // Başlık: önce CMS/Backend, yoksa i18n
+    const sectionTitle =
+        content.section_services ||
+        t("services.section_title", "Unser breites Leistungsspektrum");
+
+    const sectionSubtitle =
+        content.section_services_subtitle ||
+        t(
+            "services.section_subtitle",
+            "Wir bieten schlüsselfertige Lösungen für alle Anforderungen Ihrer Einrichtungen und Gebäude – mit deutscher Präzision und Qualität."
+        );
+
+    // Kartlar: metinler i18n'den geliyor, ikon / url / gradient sabit
+    const categories = [
+        {
+            key: "hotel",
+            title: t(
+                "services.categories.hotel.title",
+                "Hotelreinigung & Housekeeping"
+            ),
+            description: t(
+                "services.categories.hotel.description",
+                "Von der Zimmerreinigung bis zur Spülküche – perfekte Hygiene und effiziente Abläufe in jedem Bereich Ihres Hotels."
+            ),
+            icon: FaHotel,
+            url: "/dienstleistungen/hotel",
+            gradient: ["#2563EB", "#60A5FA"],
+        },
+        {
+            key: "building",
+            title: t(
+                "services.categories.building.title",
+                "Professionelle Gebäudereinigung"
+            ),
+            description: t(
+                "services.categories.building.description",
+                "Büros, Gewerbeflächen, Bauendreinigung und Spezialreinigungen – wir lassen Ihre Immobilien glänzen."
+            ),
+            icon: FaBuilding,
+            url: "/dienstleistungen/gebaeude",
+            gradient: ["#334155", "#64748B"],
+        },
+        {
+            key: "renovation",
+            title: t(
+                "services.categories.renovation.title",
+                "Renovierung, Reparatur & Instandhaltung"
+            ),
+            description: t(
+                "services.categories.renovation.description",
+                "Maler-, Spachtel- und Trockenbauarbeiten sowie Bodenverlegung und kleinere Reparaturen."
+            ),
+            icon: FaTools,
+            url: "/dienstleistungen/renovierung",
+            gradient: ["#CA8A04", "#F59E0B"],
+        },
+    ];
+
+    const learnMoreLabel = t("services.learn_more", "Mehr erfahren");
+
     return (
         <section
             id="services"
@@ -64,13 +107,10 @@ export default function ServiceCategories({ content = {} }) {
                     className="svc-header"
                 >
                     <h2 className="svc-title">
-                        {content.section_services ||
-                            "Unser breites Leistungsspektrum"}
+                        <SafeHtml html={sectionTitle} />
                     </h2>
                     <p className="svc-subtitle">
-                        Wir bieten schlüsselfertige Lösungen für alle
-                        Anforderungen Ihrer Einrichtungen und Gebäude – mit
-                        deutscher Präzision und Qualität.
+                        <SafeHtml html={sectionSubtitle} />
                     </p>
                 </motion.div>
 
@@ -78,10 +118,12 @@ export default function ServiceCategories({ content = {} }) {
                     {categories.map((cat, index) => {
                         const Icon = cat.icon;
                         const [from, to] = cat.gradient;
+                        const plainTitle =
+                            stripHtml(cat.title) || "diese Kategorie";
 
                         return (
                             <motion.article
-                                key={cat.title + index}
+                                key={cat.key}
                                 initial={{ opacity: 0, y: 50 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{
@@ -108,19 +150,19 @@ export default function ServiceCategories({ content = {} }) {
                                     </div>
 
                                     <h3 className="svc-card-title">
-                                        {cat.title}
+                                        <SafeHtml html={cat.title} />
                                     </h3>
 
                                     <p className="svc-card-desc">
-                                        {cat.description}
+                                        <SafeHtml html={cat.description} />
                                     </p>
 
                                     <Link
                                         href={cat.url}
                                         className="svc-card-link"
-                                        aria-label={`${cat.title} – mehr erfahren`}
+                                        aria-label={`${plainTitle} – ${learnMoreLabel}`}
                                     >
-                                        Mehr erfahren
+                                        {learnMoreLabel}
                                         <motion.svg
                                             className="svc-card-link-arrow"
                                             fill="none"

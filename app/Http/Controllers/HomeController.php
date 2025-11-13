@@ -19,34 +19,33 @@ class HomeController extends Controller
     {
 
         $staticContent = [
-            'hero_title' => 'Ihr zuverlässiger Partner im Gastgewerbe und Gebäudemanagement.',
+
             'contact_button' => 'Angebot anfordern',
-            'nav_services' => 'Dienstleistungen',
-            'nav_about' => 'Über uns',
-            'nav_contact' => 'Kontakt',
-            'footer_title' => 'Ihr Experte für Reinigung und Wartung Ihres Unternehmens.',
+            'nav_services'   => 'Dienstleistungen',
+            'nav_about'      => 'Über uns',
+            'nav_contact'    => 'Kontakt',
+            'footer_title'   => 'Ihr Experte für Reinigung und Wartung Ihres Unternehmens.',
         ];
 
-
         try {
-            $content = $this->dashboardService->getContent('home') ?? $staticContent;
-            $services = $this->dashboardService->getServices() ?? [];
+            $content   = $this->dashboardService->getContent('home') ?? $staticContent;
+            $services  = $this->dashboardService->getServices() ?? [];
             $locations = $this->dashboardService->getLocations() ?? [];
-            $settings = $this->dashboardService->getSettings() ?? [];
+            $settings  = $this->dashboardService->getSettings() ?? [];
         } catch (\Exception $e) {
-
             report($e);
-            $content = $staticContent;
-            $services = [];
+
+            $content   = $staticContent;
+            $services  = [];
             $locations = [];
-            $settings = [];
+            $settings  = [];
         }
 
         return Inertia::render('Home', [
-            'content' => $content,
-            'services' => $services,
-            'locations' => $locations,
-            'settings' => $settings,
+            'content'      => $content,
+            'services'     => $services,
+            'locations'    => $locations,
+            'settings'     => $settings,
             'currentRoute' => 'home',
         ]);
     }

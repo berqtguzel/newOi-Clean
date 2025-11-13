@@ -17,7 +17,7 @@ export function useLanguages() {
         if (!disposed) {
           setLanguages(languages);
           setDefaultCode(defaultCode);
-          // global event: diğer yerler isterse dinleyebilir
+
           window.dispatchEvent(new CustomEvent("update-languages", { detail: languages }));
         }
       } catch (e) {

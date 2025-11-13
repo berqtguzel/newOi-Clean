@@ -17,7 +17,7 @@ export function useLocale(defaultLocale = "de") {
     };
     window.addEventListener("language-changed", onChanged);
     return () => window.removeEventListener("language-changed", onChanged);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   return locale;

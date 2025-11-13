@@ -1,85 +1,165 @@
+// resources/js/Components/Home/Locations/LocationsGrid.jsx
 import React from "react";
-import { Head } from "@inertiajs/react";
+import { Head, usePage } from "@inertiajs/react";
 import "../../../../css/LocationsGrid.css";
+import { useTranslation } from "react-i18next";
+
 import GermanyMap from "./GermanyMap";
 import LocationCard from "./LocationCard";
+import SafeHtml from "@/Components/Common/SafeHtml";
+import { useLocale } from "@/hooks/useLocale";
+import { fetchServices } from "@/services/servicesService";
 
-const defaultLocations = [
-    {
-        id: 1,
-        city: "Fulda",
-        title: "Gebäudereinigung in Fulda",
-        image: "/images/aalen.jpg",
-        services: [
-            "Gebäudereinigung",
-            "Fensterreinigung",
-            "Hausmeisterdienste",
-        ],
-        coordinates: { lat: 50.5558, lng: 9.6808 },
-    },
-    {
-        id: 2,
-        city: "Amberg",
-        title: "Gebäudereinigung in Amberg",
-        image: "/images/aalen.jpg",
-        services: ["Gebäudereinigung", "Grundreinigung", "Unterhaltsreinigung"],
-        coordinates: { lat: 49.4478, lng: 11.8516 },
-    },
-    {
-        id: 3,
-        city: "Aschaffenburg",
-        title: "Gebäudereinigung in Aschaffenburg",
-        image: "/images/aalen.jpg",
-        services: ["Gebäudereinigung", "Glasreinigung", "Büroreinigung"],
-        coordinates: { lat: 49.9769, lng: 9.1495 },
-    },
-    {
-        id: 3,
-        city: "Aschaffenburg",
-        title: "Gebäudereinigung in Aschaffenburg",
-        image: "/images/aalen.jpg",
-        services: ["Gebäudereinigung", "Glasreinigung", "Büroreinigung"],
-        coordinates: { lat: 49.9769, lng: 9.1495 },
-    },
-];
+const stripHtml = (s = "") => s.replace(/<[^>]*>/g, "").trim();
 
-const LocationsGrid = ({ locations = [] }) => {
-    const items = locations && locations.length ? locations : defaultLocations;
+/**
+ * Service -> Location map'leme
+ * API, seçili dilde "name" döndüğü için burada ekstra çeviri mantığına gerek yok.
+ */
+const mapServiceToLocation = (svc) => {
+    const lat =
+        typeof svc.latitude === "number" ? svc.latitude : Number(svc.latitude);
+    const lng =
+        typeof svc.longitude === "number"
+            ? svc.longitude
+            : Number(svc.longitude);
+
+    const coordinates = !isNaN(lat) && !isNaN(lng) ? { lat, lng } : null;
+
+    const city =
+        svc.city || svc.district || svc.country || stripHtml(svc.name || "");
+
+    return {
+        id: svc.id,
+        city,
+        title: svc.name,
+        image: svc.image,
+        coordinates,
+        slug: svc.slug,
+        link: svc.url,
+        maps: svc.maps || [],
+        has_maps: svc.has_maps ?? svc.hasMaps,
+        service: svc,
+    };
+};
+
+const LocationsGrid = () => {
+    const { t } = useTranslation();
+    const { props } = usePage();
+
+    const tenantId =
+        props?.global?.tenantId ||
+        props?.global?.tenant_id ||
+        props?.global?.talentId ||
+        "";
+
+    // API için locale (Header ile senkron çalışan hook)
+    const uiLocaleRaw = useLocale("de") || "de";
+    const apiLocale = String(uiLocaleRaw).toLowerCase();
+
+    const [items, setItems] = React.useState([]);
+    const [loading, setLoading] = React.useState(false);
     const [activeLocation, setActiveLocation] = React.useState(null);
 
+    React.useEffect(() => {
+        let isMounted = true;
+
+        const load = async () => {
+            setLoading(true);
+            try {
+                const { services } = await fetchServices({
+                    page: 1,
+                    perPage: 100,
+                    tenantId,
+                    locale: apiLocale,
+                });
+
+                if (!isMounted) return;
+
+                const mapped = (services || []).map(mapServiceToLocation);
+                setItems(mapped);
+            } catch (err) {
+                console.error("Services fetch failed:", err);
+                if (isMounted) {
+                    setItems([]);
+                }
+            } finally {
+                if (isMounted) setLoading(false);
+            }
+        };
+
+        load();
+        return () => {
+            isMounted = false;
+        };
+    }, [tenantId, apiLocale]);
+
+    const usedItems = items || [];
+
+    // i18n metinler
+    const pageTitle = t(
+        "locations.page_title",
+        "Standorte - O&I CLEAN group GmbH"
+    );
+    const pageDescription = t(
+        "locations.page_description",
+        "Professionelle Reinigungsservices an verschiedenen Standorten in Deutschland. Lokale Expertise, bundesweite Qualität."
+    );
+    const title = t("locations.title", "Standorte");
+    const subtitle = t(
+        "locations.subtitle",
+        "Entdecken Sie unsere Standorte in Deutschland"
+    );
+    const loadingText = t("locations.loading", "Standorte werden geladen...");
+    const emptyText = t(
+        "locations.empty",
+        "Derzeit sind keine Standorte verfügbar."
+    );
+    const ctaLabel = t("locations.cta_label", "Standort anfragen");
+    const ctaAria = t("locations.cta_aria", "Jetzt Kontakt aufnehmen");
+    const contactHref = t("locations.contact_href", "/kontakt");
+
+    // JSON-LD schema
     const schemaData = {
         "@context": "https://schema.org",
         "@type": "Organization",
         name: "O&I CLEAN group GmbH",
         url: "https://oi-clean.de",
         logo: "https://oi-clean.de/images/logo.svg",
-        areaServed: (items || [])
+        areaServed: usedItems
             .filter((l) => l && l.coordinates)
-            .map((loc) => ({
-                "@type": "City",
-                name: loc.city,
-                geo: {
-                    "@type": "GeoCoordinates",
-                    latitude: loc.coordinates.lat,
-                    longitude: loc.coordinates.lng,
-                },
-            })),
-        location: (items || [])
+            .map((loc) => {
+                const city = stripHtml(loc.city || "");
+                return {
+                    "@type": "City",
+                    name: city,
+                    geo: {
+                        "@type": "GeoCoordinates",
+                        latitude: loc.coordinates.lat,
+                        longitude: loc.coordinates.lng,
+                    },
+                };
+            }),
+        location: usedItems
             .filter((l) => l && l.coordinates)
-            .map((loc) => ({
-                "@type": "Place",
-                name: loc.title || loc.city,
-                address: {
-                    "@type": "PostalAddress",
-                    addressLocality: loc.city,
-                    addressCountry: "DE",
-                },
-                geo: {
-                    "@type": "GeoCoordinates",
-                    latitude: loc.coordinates.lat,
-                    longitude: loc.coordinates.lng,
-                },
-            })),
+            .map((loc) => {
+                const city = stripHtml(loc.city || "");
+                const locTitle = stripHtml(loc.title || loc.city || "");
+                return {
+                    "@type": "Place",
+                    name: locTitle || city,
+                    address: {
+                        "@type": "PostalAddress",
+                        addressLocality: city,
+                        addressCountry: "DE",
+                    },
+                    geo: {
+                        "@type": "GeoCoordinates",
+                        latitude: loc.coordinates.lat,
+                        longitude: loc.coordinates.lng,
+                    },
+                };
+            }),
     };
 
     return (
@@ -89,11 +169,8 @@ const LocationsGrid = ({ locations = [] }) => {
             aria-labelledby="locations-title"
         >
             <Head>
-                <title>Standorte - O&I CLEAN group GmbH</title>
-                <meta
-                    name="description"
-                    content="Professionelle Reinigungsservices an verschiedenen Standorten in Deutschland. Lokale Expertise, bundesweite Qualität."
-                />
+                <title>{pageTitle}</title>
+                <meta name="description" content={pageDescription} />
                 <script type="application/ld+json">
                     {JSON.stringify(schemaData)}
                 </script>
@@ -102,27 +179,35 @@ const LocationsGrid = ({ locations = [] }) => {
             <div className="locations-container">
                 <div className="locations-header">
                     <h1 id="locations-title" className="locations-title">
-                        Standorte
+                        <SafeHtml html={title} as="span" />
                     </h1>
-                    <p className="locations-subtitle">
-                        Entdecken Sie unsere Standorte in Deutschland
-                    </p>
+                    <SafeHtml
+                        html={subtitle}
+                        as="p"
+                        className="locations-subtitle"
+                    />
                 </div>
 
-                {/* Almanya Haritası */}
                 <div className="map-container">
                     <GermanyMap
-                        locations={items}
+                        locations={usedItems}
                         activeId={activeLocation}
                         setActiveId={setActiveLocation}
                     />
                 </div>
 
-                {/* Lokasyon Grid */}
                 <div className="locations-grid">
-                    {items.map((location) => (
+                    {loading && !usedItems.length && (
+                        <p className="locations-loading">{loadingText}</p>
+                    )}
+
+                    {!loading && !usedItems.length && (
+                        <p className="locations-empty">{emptyText}</p>
+                    )}
+
+                    {usedItems.map((location) => (
                         <LocationCard
-                            key={location.id}
+                            key={`${location.id}-${location.city}`}
                             location={location}
                             onHover={() => setActiveLocation(location.id)}
                             isActive={activeLocation === location.id}
@@ -132,11 +217,11 @@ const LocationsGrid = ({ locations = [] }) => {
 
                 <div className="locations-cta">
                     <a
-                        href="/kontakt"
+                        href={contactHref}
                         className="locations-contact-button"
-                        aria-label="Jetzt Kontakt aufnehmen"
+                        aria-label={ctaAria}
                     >
-                        Standort Anfragen
+                        <SafeHtml html={ctaLabel} as="span" />
                         <svg
                             className="locations-arrow-icon"
                             viewBox="0 0 24 24"

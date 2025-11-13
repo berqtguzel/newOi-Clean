@@ -1,0 +1,146 @@
+{
+  "hero": {
+    "title": "Konaklama ve tesis yönetiminde güvenilir ortağınız.",
+    "subtitle": "25 yılı aşkın deneyimimizle temizlik, bakım ve tesis yönetimi için özelleştirilmiş ve entegre çözümler sunuyoruz.",
+    "button_services": "Hizmetlerimizi keşfedin",
+    "button_contact": "İletişime geçin"
+  },
+
+  "services": {
+    "section_title": "Geniş hizmet yelpazemiz",
+    "section_subtitle": "Tesislerinizin ve binalarınızın tüm ihtiyaçları için anahtar teslim çözümler sunuyoruz – Alman hassasiyeti ve kalitesiyle.",
+    "learn_more": "Daha fazla bilgi",
+    "categories": {
+      "hotel": {
+        "title": "Otel temizliği & housekeeping",
+        "description": "Oda temizliğinden bulaşıkhane alanına kadar otelinizin her bölümünde mükemmel hijyen ve verimli iş akışları sağlıyoruz."
+      },
+      "building": {
+        "title": "Profesyonel bina temizliği",
+        "description": "Ofisler, ticari alanlar, inşaat sonrası temizlik ve özel temizlikler – mülklerinizi pırıl pırıl yapıyoruz."
+      },
+      "renovation": {
+        "title": "Tadilat, tamir & bakım",
+        "description": "Boyama, alçı ve alçıpan işleri ile zemin kaplama ve küçük onarımlar."
+      }
+    }
+  },
+    "servicesList": {
+    "title": "Hizmetler",
+    "subtitle": "Eviniz için sunduğumuz kapsamlı hizmetleri keşfedin",
+    "meta_title": "Hizmetlerimiz - O&I CLEAN group GmbH",
+    "meta_description": "Hamburg'da profesyonel temizlik, tadilat ve tesis yönetimi. ★ Uzmanlık ★ Alman kalitesi ★ Güvenilir hizmet",
+    "loading": "Hizmetler yükleniyor…",
+    "contact_cta": "Bizimle iletişime geçin",
+    "contact_cta_aria": "Şimdi iletişime geçin"
+  },
+   "locations": {
+    "page_title": "Lokasyonlar - O&I CLEAN group GmbH",
+    "page_description": "Almanya'nın farklı şehirlerinde profesyonel temizlik hizmetleri. Yerel uzmanlık, ülke çapında kalite.",
+    "title": "Lokasyonlar",
+    "subtitle": "Almanya’daki lokasyonlarımızı keşfedin",
+    "loading": "Lokasyonlar yükleniyor...",
+    "empty": "Şu anda görüntülenecek lokasyon bulunmuyor.",
+    "cta_label": "Lokasyon talep et",
+    "cta_aria": "Şimdi iletişime geçin",
+    "contact_href": "/iletisim"
+  },
+   "contact": {
+    "title": "Bizimle iletişime geçin",
+    "description": "İşletmeniz için profesyonel temizlik hizmetleri. Size memnuniyetle birebir danışmanlık sunuyoruz.",
+    "submit_label": "Mesaj gönder",
+    "submit_failed": "Mesaj gönderilemedi.",
+    "select_placeholder": "Lütfen seçin",
+    "phone_label": "Telefon",
+    "email_label": "E-posta",
+    "address_label": "Adres",
+    "hours_label": "Çalışma saatleri",
+    "hours_value": "Pzt - Cum: 08:00 - 17:00",
+    "phone_number": "+49 (0) 1234 567 89 00",
+    "email_address": "info@oi-clean.de",
+    "address_street": "Musterstraße 123",
+    "address_city": "12345 Berlin"
+  },
+  "footer": {
+    "description": "Profesyonel temizlik, bakım ve tesis yönetimi için güvenilir çözüm ortağınız; Alman titizliği ve güvenilirliğiyle.",
+    "address": "Spaldingstr. 77–79, 20097 Hamburg",
+    "phone": "+49 (0)40 46 63 35 19",
+    "phone_raw": "+494046633519",
+    "email": "info@oi-clean.de",
+
+    "links_title": "Bağlantılar",
+    "contact_title": "İletişim",
+
+    "link_about": "Hakkımızda",
+    "link_contact": "İletişim",
+    "link_contact_href": "/contact",
+    "link_faq": "SSS",
+    "link_privacy": "Gizlilik",
+    "link_imprint": "Künye",
+    "link_privacy_bottom": "Gizlilik",
+
+    "copyright": "Tüm hakları saklıdır.",
+
+    "back_to_top": "Yukarı çık",
+
+    "region_label": "Alt bilgi ve iletişim bilgileri",
+    "home_aria": "O&I CLEAN - Ana sayfa",
+    "linkedin_aria": "LinkedIn - O&I CLEAN",
+    "instagram_aria": "Instagram - O&I CLEAN",
+    "facebook_aria": "Facebook - O&I CLEAN",
+    "quicklinks_aria": "Hızlı bağlantılar",
+    "phone_aria": "Telefon numarası",
+    "email_aria": "E-posta"
+  },  "header": {
+    "topbar_tagline": "Güvenebileceğiniz temizlik — 7/24 hizmet",
+    "cta_label": "Randevu al",
+    "cta_href": "/iletisim",
+    "hide_topbar": "Üst çubuğu gizle",
+    "home_aria": "Ana sayfa",
+    "main_nav": "Ana menü",
+    "menu_open": "Menüyü aç",
+    "menu_close": "Menüyü kapat",
+    "language": "Dil",
+    "impressum": "Künye"
+  },
+
+
+  "nav": {
+    "home": "Ana sayfa"
+  },
+
+  "serviceCategories": {
+    "section_title": "Geniş hizmet yelpazemiz",
+    "section_subtitle": "Tesisleriniz ve binalarınızın tüm ihtiyaçları için anahtar teslim çözümler sunuyoruz – Alman hassasiyeti ve kalitesiyle.",
+    "cards": {
+      "hotel": {
+        "title": "Otel temizliği & housekeeping",
+        "description": "Oda temizliğinden bulaşıkhaneye kadar otelinizin her alanında kusursuz hijyen ve verimli iş akışları.",
+        "button": "Detaylı bilgi"
+      },
+      "building": {
+        "title": "Profesyonel bina temizliği",
+        "description": "Ofisler, ticari alanlar, inşaat sonrası temizlik ve özel temizlikler – gayrimenkullerinizi parlatıyoruz.",
+        "button": "Detaylı bilgi"
+      },
+      "renovation": {
+        "title": "Tadilat, onarım & bakım",
+        "description": "Boyama, macun, alçıpan işleri, zemin kaplama ve küçük onarımlar.",
+        "button": "Detaylı bilgi"
+      }
+    }
+  },
+
+  "breadcrumbs": {
+    "home": "Ana sayfa"
+  },
+  "static": {
+    "default_title": "Sayfa - O&I CLEAN group GmbH",
+    "default_description": "Hizmetlerimiz ve şirketimiz hakkında bilgiler.",
+    "content_coming_soon": "İçerik yakında eklenecek.",
+    "page": "Sayfa"
+  }
+
+
+
+}

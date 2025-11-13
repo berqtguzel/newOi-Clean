@@ -13,7 +13,7 @@ export async function getAllSettings({ tenantId, locale } = {}) {
     timeoutMs: remoteConfig.timeout,
     retries: 1,
   });
-  // all endpoint tek nesne döndürür; olduğu gibi geçir
+
   return res?.data || res || {};
 }
 

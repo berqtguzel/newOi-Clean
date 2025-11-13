@@ -3,14 +3,13 @@ import axios from "axios";
 const BASE = (import.meta?.env?.VITE_REMOTE_API_BASE || "https://omerdogan.de/api").replace(/\/$/, "");
 const TIMEOUT = Number(import.meta?.env?.VITE_REMOTE_TIMEOUT || 10000);
 
-// Tek bir axios instance
+
 export const http = axios.create({
   baseURL: BASE,
   timeout: TIMEOUT,
-  // axios v1, fetch tabanlı değil ama AbortController sinyali destekliyor (signal paramıyla)
+
 });
 
-// İsteğe ortak header eklemek istersen buraya koy
 http.interceptors.request.use((config) => {
   config.headers = {
     Accept: "application/json",
@@ -20,7 +19,7 @@ http.interceptors.request.use((config) => {
   return config;
 });
 
-// Basit retry: ağ hataları veya 5xx için N kez tekrar
+
 async function withRetry(doRequest, retries = 1, delayMs = 350) {
   try {
     return await doRequest();

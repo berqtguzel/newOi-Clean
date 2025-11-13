@@ -1,3 +1,4 @@
+// resources/js/Pages/StaticPage.jsx
 import React from "react";
 import { Head, Link } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
@@ -6,6 +7,7 @@ import "@/../css/static-page.css";
 
 import parse, { domToReact, Element } from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
+import { useTranslation } from "react-i18next";
 
 function safeParse(html, options) {
     const clean = DOMPurify.sanitize(html || "", {
@@ -77,13 +79,27 @@ function safeParse(html, options) {
 }
 
 export default function StaticPage({ slug, page = {}, meta = {} }) {
-    const title = meta?.title || page?.title || "";
-    const description = meta?.description || page?.subtitle || title;
+    const { t } = useTranslation();
+
+    // Başlık / description: önce backend meta, sonra page, en son i18n fallback
+    const title =
+        meta?.title ||
+        page?.title ||
+        t("static.default_title", "Seite - O&I CLEAN group GmbH");
+
+    const description =
+        meta?.description ||
+        page?.subtitle ||
+        t(
+            "static.default_description",
+            "Informationen zu unseren Leistungen und unserem Unternehmen."
+        );
 
     const currentUrl =
         typeof window !== "undefined"
             ? window.location.href
             : meta?.canonical || "https://oi-clean.de/" + (slug || "");
+
     const originUrl =
         typeof window !== "undefined"
             ? window.location.origin
@@ -99,6 +115,12 @@ export default function StaticPage({ slug, page = {}, meta = {} }) {
 
     const heroImage = page?.hero?.image;
     const heroAlt = page?.hero?.alt || title;
+
+    const homeLabel = t("breadcrumbs.home", "Startseite");
+    const contentComingSoon = t(
+        "static.content_coming_soon",
+        "Inhalt wird bald hinzugefügt."
+    );
 
     return (
         <AppLayout>
@@ -133,6 +155,7 @@ export default function StaticPage({ slug, page = {}, meta = {} }) {
                     {JSON.stringify(schemaWebPage)}
                 </script>
 
+                {/* Breadcrumbs (başlıklar i18n + page başlığı kombinasyonu) */}
                 <script type="application/ld+json">
                     {JSON.stringify({
                         "@context": "https://schema.org",
@@ -141,13 +164,13 @@ export default function StaticPage({ slug, page = {}, meta = {} }) {
                             {
                                 "@type": "ListItem",
                                 position: 1,
-                                name: "Startseite",
+                                name: homeLabel,
                                 item: originUrl,
                             },
                             {
                                 "@type": "ListItem",
                                 position: 2,
-                                name: title || "Seite",
+                                name: title || t("static.page", "Seite"),
                                 item: currentUrl,
                             },
                         ],
@@ -155,6 +178,7 @@ export default function StaticPage({ slug, page = {}, meta = {} }) {
                 </script>
             </Head>
 
+            {/* HERO */}
             <section
                 className={`sp-hero ${heroImage ? "sp-hero--has-img" : ""}`}
             >
@@ -175,22 +199,35 @@ export default function StaticPage({ slug, page = {}, meta = {} }) {
                 </div>
 
                 <div className="sp-hero__inner container">
-                    <nav className="sp-crumbs"></nav>
-                    <h1 className="sp-title">{page?.title || "Static Page"}</h1>
+                    {/* Breadcrumb (görsel) */}
+                    <nav className="sp-crumbs" aria-label="Breadcrumb">
+                        <ol>
+                            <li>
+                                <Link href="/">{homeLabel}</Link>
+                            </li>
+                            <li aria-current="page">
+                                {page?.title || t("static.page", "Seite")}
+                            </li>
+                        </ol>
+                    </nav>
+
+                    <h1 className="sp-title">
+                        {page?.title || t("static.page", "Static Page")}
+                    </h1>
+
                     {page?.subtitle && (
                         <p className="sp-subtitle">{page.subtitle}</p>
                     )}
                 </div>
             </section>
 
+            {/* CONTENT */}
             <section className="sp-content">
                 <div className="container">
                     <article className="sp-card sp-fadeup">
                         <div className="sp-card__body">
                             {(page?.sections ?? []).length === 0 && (
-                                <p className="sp-muted">
-                                    Inhalt wird bald hinzugefügt.
-                                </p>
+                                <p className="sp-muted">{contentComingSoon}</p>
                             )}
 
                             {(page?.sections ?? []).map((s, i) => (

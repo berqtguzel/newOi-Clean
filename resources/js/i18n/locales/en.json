@@ -1,0 +1,146 @@
+{
+  "hero": {
+    "title": "Your reliable partner in hospitality and facility management.",
+    "subtitle": "With over 25 years of experience, we offer customized, integrated solutions for cleaning, maintenance, and facility care.",
+    "button_services": "Discover our services",
+    "button_contact": "Get in touch"
+  },
+
+  "services": {
+    "section_title": "Our comprehensive range of services",
+    "section_subtitle": "We offer turnkey solutions for all requirements of your facilities and buildings – with German precision and quality.",
+    "learn_more": "Learn more",
+    "categories": {
+      "hotel": {
+        "title": "Hotel cleaning & housekeeping",
+        "description": "From room cleaning to dishwashing areas – perfect hygiene and efficient workflows in every area of your hotel."
+      },
+      "building": {
+        "title": "Professional building cleaning",
+        "description": "Offices, commercial spaces, post-construction cleaning and special cleaning – we make your properties shine."
+      },
+      "renovation": {
+        "title": "Renovation, repair & maintenance",
+        "description": "Painting, plastering and drywall work as well as flooring installation and minor repairs."
+      }
+    }
+  }, "servicesList": {
+    "title": "Services",
+    "subtitle": "Discover our comprehensive range of services for your home",
+    "meta_title": "Our services - O&I CLEAN group GmbH",
+    "meta_description": "Professional cleaning, renovation and facility management in Hamburg. ★ Expertise ★ German quality ★ Reliable service",
+    "loading": "Loading services…",
+    "contact_cta": "Contact us",
+    "contact_cta_aria": "Get in touch now"
+  },
+    "locations": {
+    "page_title": "Locations - O&I CLEAN group GmbH",
+    "page_description": "Professional cleaning services at various locations in Germany. Local expertise, nationwide quality.",
+    "title": "Locations",
+    "subtitle": "Discover our locations in Germany",
+    "loading": "Loading locations...",
+    "empty": "No locations are currently available.",
+    "cta_label": "Request a location",
+    "cta_aria": "Contact us now",
+    "contact_href": "/contact"
+  },
+  "contact": {
+    "title": "Contact us",
+    "description": "Professional cleaning services for your business. We are happy to advise you personally.",
+    "submit_label": "Send message",
+    "submit_failed": "The message could not be sent.",
+    "select_placeholder": "Please select",
+    "phone_label": "Phone",
+    "email_label": "E-mail",
+    "address_label": "Address",
+    "hours_label": "Opening hours",
+    "hours_value": "Mon - Fri: 08:00 - 17:00",
+    "phone_number": "+49 (0) 1234 567 89 00",
+    "email_address": "info@oi-clean.de",
+    "address_street": "Musterstraße 123",
+    "address_city": "12345 Berlin"
+  },
+  "footer": {
+    "description": "Your partner for professional cleaning, maintenance and facility management with German precision and reliability.",
+    "address": "Spaldingstr. 77–79, 20097 Hamburg",
+    "phone": "+49 (0)40 46 63 35 19",
+    "phone_raw": "+494046633519",
+    "email": "info@oi-clean.de",
+
+    "links_title": "Links",
+    "contact_title": "Contact",
+
+    "link_about": "About us",
+    "link_contact": "Contact",
+    "link_contact_href": "/contact",
+    "link_faq": "FAQ",
+    "link_privacy": "Privacy policy",
+    "link_imprint": "Imprint",
+    "link_privacy_bottom": "Privacy policy",
+
+    "copyright": "All rights reserved.",
+
+    "back_to_top": "Back to top",
+
+    "region_label": "Footer and contact information",
+    "home_aria": "O&I CLEAN - Home",
+    "linkedin_aria": "LinkedIn - O&I CLEAN",
+    "instagram_aria": "Instagram - O&I CLEAN",
+    "facebook_aria": "Facebook - O&I CLEAN",
+    "quicklinks_aria": "Quick links",
+    "phone_aria": "Phone number",
+    "email_aria": "E-mail"
+  },
+   "header": {
+    "topbar_tagline": "Cleanliness you can rely on — 24/7 service",
+    "cta_label": "Book an appointment",
+    "cta_href": "/contact",
+    "hide_topbar": "Hide top bar",
+    "home_aria": "Home",
+    "main_nav": "Main navigation",
+    "menu_open": "Open menu",
+    "menu_close": "Close menu",
+    "language": "Language",
+    "impressum": "Imprint"
+  },
+
+  "nav": {
+    "home": "Home"
+  },
+
+  "serviceCategories": {
+    "section_title": "Our service portfolio",
+    "section_subtitle": "We offer turnkey solutions for all requirements of your facilities and buildings – with German precision and quality.",
+    "cards": {
+      "hotel": {
+        "title": "Hotel cleaning & housekeeping",
+        "description": "From room cleaning to dishwashing area – perfect hygiene and efficient workflows in every area of your hotel.",
+        "button": "Learn more"
+      },
+      "building": {
+        "title": "Professional building cleaning",
+        "description": "Offices, commercial areas, final construction cleaning and special cleaning – we make your properties shine.",
+        "button": "Learn more"
+      },
+      "renovation": {
+        "title": "Renovation, repair & maintenance",
+        "description": "Painting, filling and drywall work as well as flooring and minor repairs.",
+        "button": "Learn more"
+      }
+    }
+  },
+
+
+  "breadcrumbs": {
+    "home": "Home"
+  },
+  "static": {
+    "default_title": "Page - O&I CLEAN group GmbH",
+    "default_description": "Information about our services and our company.",
+    "content_coming_soon": "Content will be added soon.",
+    "page": "Page"
+  }
+
+
+
+}

@@ -1,16 +1,19 @@
 import React, { useMemo, useState } from "react";
 import { usePage } from "@inertiajs/react";
+import { useTranslation } from "react-i18next";
 import { useContactForms } from "@/hooks/useContactForms";
 import { submitContactForm } from "@/services/contactService";
 import { useLocale } from "@/hooks/useLocale";
 import "../../../../css/ContactSection.css";
 import DotGrid from "@/Components/ReactBits/Backgrounds/DotGrid";
+import SafeHtml from "@/Components/Common/SafeHtml";
 
 const ContactSection = () => {
+    const { t } = useTranslation();
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
     const [data, setData] = useState({});
-    const processing = isSubmitting;
 
     const { props } = usePage();
     const tenantId =
@@ -18,35 +21,102 @@ const ContactSection = () => {
         props?.global?.tenant_id ||
         props?.global?.talentId ||
         "";
+
     const locale = useLocale("de");
+
     const { forms } = useContactForms({ tenantId, locale });
-    const form = forms[0];
+    const form = forms?.[0];
 
     const fields = useMemo(
         () => (Array.isArray(form?.fields) ? form.fields : []),
         [form]
     );
 
+    const processing = isSubmitting;
+
     const setField = (name, value) =>
         setData((prev) => ({ ...prev, [name]: value }));
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (!form) return;
+
         setIsSubmitting(true);
         setErrors({});
-        const payload = { ...data };
-        submitContactForm({ formId: form?.id, payload, tenantId, locale })
+
+        const payload = {};
+        fields.forEach((f) => {
+            payload[f.name] = data[f.name] ?? "";
+        });
+
+        submitContactForm({ formId: form.id, payload, tenantId, locale })
             .then(() => {
+                console.log("Contact form başarıyla gönderildi:", {
+                    formId: form.id,
+                    payload,
+                    locale,
+                    tenantId,
+                });
                 setData({});
             })
             .catch((err) => {
-                const msg =
-                    err?.response?.data?.errors ||
-                    { general: err?.message || "Gönderilemedi" };
-                setErrors(msg);
+                const backendErrors = err?.response?.data?.errors;
+                let normalized = {};
+
+                if (backendErrors && typeof backendErrors === "object") {
+                    Object.entries(backendErrors).forEach(([key, value]) => {
+                        if (Array.isArray(value)) {
+                            normalized[key] = value[0];
+                        } else if (typeof value === "string") {
+                            normalized[key] = value;
+                        }
+                    });
+                } else {
+                    normalized = {
+                        general:
+                            err?.message ||
+                            t(
+                                "contact.submit_failed",
+                                "Nachricht konnte nicht gesendet werden."
+                            ),
+                    };
+                }
+
+                setErrors(normalized);
             })
             .finally(() => setIsSubmitting(false));
     };
+
+    const titleHtml = form?.title || t("contact.title", "Kontaktieren Sie uns");
+
+    const descriptionHtml =
+        form?.description ||
+        t(
+            "contact.description",
+            "Professionelle Reinigungsdienstleistungen für Ihr Unternehmen. Wir beraten Sie gerne persönlich."
+        );
+
+    const submitLabelHtml =
+        form?.submit_label ||
+        form?.submitLabel ||
+        t("contact.submit_label", "Nachricht senden");
+
+    const selectPlaceholder = t("contact.select_placeholder", "Bitte wählen");
+
+    const phoneLabel = t("contact.phone_label", "Telefon");
+    const emailLabel = t("contact.email_label", "E-Mail");
+    const addressLabel = t("contact.address_label", "Adresse");
+    const hoursLabel = t("contact.hours_label", "Öffnungszeiten");
+    const hoursValue = t("contact.hours_value", "Mo. - Fr.: 08:00 - 17:00 Uhr");
+
+    const phoneNumber = t("contact.phone_number", "+49 (0) 1234 567 89 00");
+    const phoneHref = `tel:${phoneNumber.replace(/\s+/g, "")}`;
+
+    const emailAddress = t("contact.email_address", "info@oi-clean.de");
+    const emailHref = `mailto:${emailAddress}`;
+
+    const streetHtml = t("contact.address_street", "Musterstraße 123");
+    const cityHtml = t("contact.address_city", "12345 Berlin");
 
     return (
         <section className="contact-section rbits-section" id="contact">
@@ -69,12 +139,17 @@ const ContactSection = () => {
 
             <div className="contact-container">
                 <div className="contact-content">
+                    {/* Sol bilgi sütunu */}
                     <div className="contact-info">
-                        <h2 className="contact-title">Kontaktieren Sie uns</h2>
-                        <p className="contact-description">
-                            Professionelle Reinigungsdienstleistungen für Ihr
-                            Unternehmen. Wir beraten Sie gerne persönlich.
-                        </p>
+                        <h2 className="contact-title">
+                            <SafeHtml html={titleHtml} as="span" />
+                        </h2>
+
+                        <SafeHtml
+                            html={descriptionHtml}
+                            as="p"
+                            className="contact-description"
+                        />
 
                         <div className="contact-details">
                             <div className="contact-detail-item">
@@ -94,11 +169,9 @@ const ContactSection = () => {
                                     />
                                 </svg>
                                 <div>
-                                    <h3>Telefon</h3>
+                                    <h3>{phoneLabel}</h3>
                                     <p>
-                                        <a href="tel:+4912345678900">
-                                            +49 (0) 1234 567 89 00
-                                        </a>
+                                        <a href={phoneHref}>{phoneNumber}</a>
                                     </p>
                                 </div>
                             </div>
@@ -120,11 +193,9 @@ const ContactSection = () => {
                                     />
                                 </svg>
                                 <div>
-                                    <h3>E-Mail</h3>
+                                    <h3>{emailLabel}</h3>
                                     <p>
-                                        <a href="mailto:info@oi-clean.de">
-                                            info@oi-clean.de
-                                        </a>
+                                        <a href={emailHref}>{emailAddress}</a>
                                     </p>
                                 </div>
                             </div>
@@ -152,22 +223,23 @@ const ContactSection = () => {
                                     />
                                 </svg>
                                 <div>
-                                    <h3>Adresse</h3>
+                                    <h3>{addressLabel}</h3>
                                     <p>
-                                        Musterstraße 123
+                                        <SafeHtml html={streetHtml} />
                                         <br />
-                                        12345 Berlin
+                                        <SafeHtml html={cityHtml} />
                                     </p>
                                 </div>
                             </div>
                         </div>
 
                         <div className="contact-hours">
-                            <h3>Öffnungszeiten</h3>
-                            <p>Mo. - Fr.: 08:00 - 17:00 Uhr</p>
+                            <h3>{hoursLabel}</h3>
+                            <p>{hoursValue}</p>
                         </div>
                     </div>
 
+                    {/* Form */}
                     <form
                         onSubmit={handleSubmit}
                         className="contact-form"
@@ -175,38 +247,81 @@ const ContactSection = () => {
                     >
                         <div className="form-grid">
                             {fields.map((f) => {
+                                const fieldError = errors[f.name];
+
                                 const common = {
                                     id: f.name,
                                     name: f.name,
                                     required: f.required,
                                     value: data[f.name] || "",
-                                    onChange: (e) => setField(f.name, e.target.value),
-                                    className: errors[f.name] ? "error" : "",
-                                    "aria-invalid": !!errors[f.name],
-                                    "aria-describedby": errors[f.name] ? `${f.name}-error` : undefined,
+                                    onChange: (e) =>
+                                        setField(f.name, e.target.value),
+                                    className: fieldError ? "error" : "",
+                                    "aria-invalid": !!fieldError,
+                                    "aria-describedby": fieldError
+                                        ? `${f.name}-error`
+                                        : undefined,
                                     placeholder: f.placeholder || "",
                                 };
+
                                 return (
-                                    <div key={f.name} className={`form-group ${f.type === "textarea" ? "full-width" : ""}`}>
+                                    <div
+                                        key={f.name}
+                                        className={`form-group ${
+                                            f.type === "textarea"
+                                                ? "full-width"
+                                                : ""
+                                        }`}
+                                    >
                                         <label htmlFor={f.name}>
-                                            {f.label} {f.required ? "*" : ""}
+                                            <SafeHtml
+                                                html={f.label}
+                                                as="span"
+                                            />{" "}
+                                            {f.required ? "*" : ""}
                                         </label>
+
                                         {f.type === "textarea" ? (
                                             <textarea rows="5" {...common} />
                                         ) : f.type === "select" ? (
                                             <select {...common}>
-                                                <option value="">Bitte wählen</option>
-                                                {(f.options || []).map((o, i) => (
-                                                    <option key={i} value={o?.value || o}>{o?.label || o}</option>
-                                                ))}
+                                                <option value="">
+                                                    {selectPlaceholder}
+                                                </option>
+                                                {(f.options || []).map(
+                                                    (o, i) => (
+                                                        <option
+                                                            key={i}
+                                                            value={
+                                                                o?.value || o
+                                                            }
+                                                        >
+                                                            <SafeHtml
+                                                                html={
+                                                                    o?.label ||
+                                                                    o
+                                                                }
+                                                                as="span"
+                                                            />
+                                                        </option>
+                                                    )
+                                                )}
                                             </select>
                                         ) : (
-                                            <input type={f.type || "text"} {...common} />
+                                            <input
+                                                type={f.type || "text"}
+                                                {...common}
+                                            />
                                         )}
-                                        {errors[f.name] && (
-                                            <span id={`${f.name}-error`} className="error-message" role="alert">
-                                                {errors[f.name]}
-                                            </span>
+
+                                        {fieldError && (
+                                            <SafeHtml
+                                                html={fieldError}
+                                                as="span"
+                                                id={`${f.name}-error`}
+                                                className="error-message"
+                                                role="alert"
+                                            />
                                         )}
                                     </div>
                                 );
@@ -216,14 +331,23 @@ const ContactSection = () => {
                         <button
                             type="submit"
                             className="submit-button bg-button"
-                            disabled={processing || isSubmitting}
+                            disabled={processing || !form}
                         >
                             {processing ? (
                                 <span className="loading-spinner"></span>
                             ) : (
-                                "Nachricht senden"
+                                <SafeHtml html={submitLabelHtml} as="span" />
                             )}
                         </button>
+
+                        {errors.general && (
+                            <SafeHtml
+                                html={errors.general}
+                                as="p"
+                                className="error-message general-error"
+                                role="alert"
+                            />
+                        )}
                     </form>
                 </div>
             </div>
