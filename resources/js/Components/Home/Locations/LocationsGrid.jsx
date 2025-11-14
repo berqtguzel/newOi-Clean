@@ -1,9 +1,7 @@
-// resources/js/Components/Home/Locations/LocationsGrid.jsx
 import React from "react";
 import { Head, usePage } from "@inertiajs/react";
 import "../../../../css/LocationsGrid.css";
 import { useTranslation } from "react-i18next";
-
 import GermanyMap from "./GermanyMap";
 import LocationCard from "./LocationCard";
 import SafeHtml from "@/Components/Common/SafeHtml";
@@ -12,10 +10,6 @@ import { fetchServices } from "@/services/servicesService";
 
 const stripHtml = (s = "") => s.replace(/<[^>]*>/g, "").trim();
 
-/**
- * Service -> Location map'leme
- * API, seçili dilde "name" döndüğü için burada ekstra çeviri mantığına gerek yok.
- */
 const mapServiceToLocation = (svc) => {
     const lat =
         typeof svc.latitude === "number" ? svc.latitude : Number(svc.latitude);
@@ -53,7 +47,6 @@ const LocationsGrid = () => {
         props?.global?.talentId ||
         "";
 
-    // API için locale (Header ile senkron çalışan hook)
     const uiLocaleRaw = useLocale("de") || "de";
     const apiLocale = String(uiLocaleRaw).toLowerCase();
 
@@ -96,7 +89,6 @@ const LocationsGrid = () => {
 
     const usedItems = items || [];
 
-    // i18n metinler
     const pageTitle = t(
         "locations.page_title",
         "Standorte - O&I CLEAN group GmbH"
@@ -119,7 +111,6 @@ const LocationsGrid = () => {
     const ctaAria = t("locations.cta_aria", "Jetzt Kontakt aufnehmen");
     const contactHref = t("locations.contact_href", "/kontakt");
 
-    // JSON-LD schema
     const schemaData = {
         "@context": "https://schema.org",
         "@type": "Organization",

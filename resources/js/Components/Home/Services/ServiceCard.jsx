@@ -11,7 +11,6 @@ function buildHref({ link, slug, basePath = "/services" }) {
     return `${basePath}/${slug}`.replace(/([^:]\/)\/+/g, "$1");
 }
 
-// HTML içinden düz text çıkar (aria-label, alt için)
 function stripHtml(str = "") {
     return String(str)
         .replace(/<[^>]+>/g, "")

@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import "../../css/OfferDock.css";
 
 export default function OfferDock() {
+    const { t } = useTranslation();
+
     const PANEL_W = 280;
     const TAB_W = 40;
     const HIDE_X = -(PANEL_W - TAB_W);
@@ -41,6 +44,14 @@ export default function OfferDock() {
         ["--panel-x"]: collapsed ? `${HIDE_X}px` : "0px",
     };
 
+    // i18n metinleri
+    const title = t("offerDock.title", "Angebot");
+    const subtitle = t("offerDock.subtitle", "Kostenlos & unverbindlich");
+    const buttonLabel = t("offerDock.button", "Anfordern");
+
+    const ariaOpen = t("offerDock.aria_open", "Angebotsleiste öffnen");
+    const ariaClose = t("offerDock.aria_close", "Angebotsleiste schließen");
+
     return (
         <div
             className={`odock ${collapsed ? "odock--collapsed" : ""}`}
@@ -49,10 +60,8 @@ export default function OfferDock() {
             <div className="odock__panel">
                 <div className="odock__body">
                     <div className="odock__group">
-                        <div className="odock__title">Angebot</div>
-                        <div className="odock__sub">
-                            Kostenlos &amp; unverbindlich
-                        </div>
+                        <div className="odock__title">{title}</div>
+                        <div className="odock__sub">{subtitle}</div>
                     </div>
 
                     <button
@@ -60,7 +69,7 @@ export default function OfferDock() {
                         className="odock__cta bg-button"
                         onClick={openQuoteModal}
                     >
-                        Anfordern
+                        {buttonLabel}
                     </button>
                 </div>
             </div>
@@ -68,11 +77,7 @@ export default function OfferDock() {
             <button
                 type="button"
                 className="odock__tab bg-button"
-                aria-label={
-                    collapsed
-                        ? "Angebot-Leiste öffnen"
-                        : "Angebot-Leiste schließen"
-                }
+                aria-label={collapsed ? ariaOpen : ariaClose}
                 onClick={() => setCollapsed((s) => !s)}
             >
                 <svg

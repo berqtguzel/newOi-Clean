@@ -7,12 +7,10 @@ import Aurora from "@/Components/ReactBits/Backgrounds/Aurora";
 import SafeHtml from "@/Components/Common/SafeHtml";
 import "./ServiceCategories.css";
 
-/** Inline gradient stili */
 const gradientStyle = (from, to) => ({
     backgroundImage: `linear-gradient(to right, ${from}, ${to})`,
 });
 
-/** aria-label için HTML'den düz metin çıkar */
 const stripHtml = (str = "") =>
     String(str)
         .replace(/<[^>]+>/g, "")
@@ -21,7 +19,6 @@ const stripHtml = (str = "") =>
 export default function ServiceCategories({ content = {} }) {
     const { t } = useTranslation();
 
-    // Başlık: önce CMS/Backend, yoksa i18n
     const sectionTitle =
         content.section_services ||
         t("services.section_title", "Unser breites Leistungsspektrum");
@@ -33,7 +30,6 @@ export default function ServiceCategories({ content = {} }) {
             "Wir bieten schlüsselfertige Lösungen für alle Anforderungen Ihrer Einrichtungen und Gebäude – mit deutscher Präzision und Qualität."
         );
 
-    // Kartlar: metinler i18n'den geliyor, ikon / url / gradient sabit
     const categories = [
         {
             key: "hotel",
@@ -87,7 +83,6 @@ export default function ServiceCategories({ content = {} }) {
             className="svc-section"
             style={{ isolation: "isolate" }}
         >
-            {/* Arka plan aurora */}
             <div className="svc-aurora">
                 <Aurora
                     className="svc-aurora-canvas"
@@ -134,13 +129,11 @@ export default function ServiceCategories({ content = {} }) {
                                 viewport={{ once: true }}
                                 className="svc-card"
                             >
-                                {/* Üst renkli bar */}
                                 <div
                                     className="svc-card-bar"
                                     style={gradientStyle(from, to)}
                                 />
 
-                                {/* İçerik */}
                                 <div className="svc-card-body">
                                     <div
                                         className="svc-card-icon"

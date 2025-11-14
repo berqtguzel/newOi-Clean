@@ -1,13 +1,7 @@
-// resources/js/hooks/useSliders.js
 import { useEffect, useState } from "react";
 import { fetchSliders } from "@/services/sliderService";
 
-/**
- * Sliders için basit React hook
- *
- * @example
- * const { sliders, loading, error } = useSliders({ tenantId, locale });
- */
+
 export function useSliders({ tenantId, locale, lang } = {}) {
     const [sliders, setSliders] = useState([]);
     const [loading, setLoading] = useState(false);

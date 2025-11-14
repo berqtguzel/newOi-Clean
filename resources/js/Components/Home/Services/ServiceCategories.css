@@ -14,10 +14,10 @@
   --svc-icon-bg: var(--site-accent-color, var(--site-primary-color, #2563eb));
 }
 
-/* ====== Kapsayıcı ve arka plan ====== */
+
 .svc-section {
   position: relative;
-  padding: 6rem 0;              /* py-24 */
+  padding: 6rem 0;
   background: transparent;
 }
 
@@ -44,7 +44,7 @@
   box-sizing: border-box;
 }
 
-/* ====== Başlık blok ====== */
+
 .svc-header{
   display: flex;
   flex-direction: column;
@@ -70,18 +70,30 @@
   max-width: 48rem;
 }
 
-/* ====== Grid ====== */
 .svc-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 2.5rem;
-}
-@media (min-width: 768px) {
-  .svc-grid { grid-template-columns: repeat(3, 1fr); }
+  align-items: stretch;
 }
 
-/* ====== Kart ====== */
+@media (min-width: 640px) {
+  .svc-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .svc-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+
 .svc-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   border-radius: 1rem;
   overflow: hidden;
   background: var(--svc-surface);
@@ -89,7 +101,8 @@
   box-shadow:
     0 10px 15px -3px rgba(0,0,0,.1),
     0 4px 6px -4px rgba(0,0,0,.1);
-  transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease, background-color .3s ease;
+  transition: transform .3s ease, box-shadow .3s ease,
+              border-color .3s ease, background-color .3s ease;
   backdrop-filter: blur(2px);
 }
 
@@ -106,7 +119,9 @@
   background: var(--svc-primary);
 }
 
+
 .svc-card-body {
+  flex: 1;
   padding: 2rem;
   display: flex;
   flex-direction: column;
@@ -126,7 +141,7 @@
 .svc-card:hover .svc-card-icon { transform: rotate(6deg); }
 
 .svc-card-title {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 700;
   margin: 0 0 .75rem;
   color: var(--svc-card-title);
@@ -141,7 +156,9 @@
   flex-grow: 1;
 }
 
+
 .svc-card-link {
+  margin-top: auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -158,9 +175,7 @@
   height: 16px;
 }
 
-/* ====== Dark Mode ======
-   Not: “dark” class’ı sabit kalsın istemiştin; burada da token’ları
-   kullanıyoruz ki panel renkleri dark’ta da akıcı kalsın. */
+
 .dark .svc-title { color: color-mix(in srgb, var(--svc-ink) 92%, #000 8%); }
 .dark .svc-subtitle { color: color-mix(in srgb, var(--svc-ink) 70%, #000 30%); }
 
@@ -180,3 +195,26 @@
 
 .dark .svc-card-link { color: color-mix(in srgb, var(--svc-link) 85%, #fff 15%); }
 .dark .svc-card-link:hover { color: color-mix(in srgb, var(--svc-link) 65%, #000 35%); }
+
+
+@media (max-width: 640px) {
+  .svc-section {
+    padding: 3.5rem 0;
+  }
+
+  .svc-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .svc-card-body {
+    padding: 1.5rem;
+  }
+
+  .svc-card-title {
+    font-size: 1.2rem;
+  }
+
+  .svc-card-desc {
+    font-size: 0.95rem;
+  }
+}

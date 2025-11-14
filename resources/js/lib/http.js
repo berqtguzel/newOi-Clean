@@ -36,9 +36,9 @@ async function withRetry(doRequest, retries = 1, delayMs = 350) {
 }
 
 /**
- * httpRequest — axios üstü küçük sarmalayıcı
- * @param {string} path  ör: "/v1/menus"
- * @param {object} opts  { method, params, data, headers, timeoutMs, retries, signal }
+ *
+ * @param {string} path
+ * @param {object} opts
  */
 export function httpRequest(path, opts = {}) {
   const {

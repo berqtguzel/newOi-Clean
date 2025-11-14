@@ -1,10 +1,8 @@
-// resources/js/Pages/StaticPage.jsx
 import React from "react";
 import { Head, Link } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import ContactSection from "@/Components/Home/Contact/ContactSection";
 import "@/../css/static-page.css";
-
 import parse, { domToReact, Element } from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
 import { useTranslation } from "react-i18next";
@@ -81,7 +79,6 @@ function safeParse(html, options) {
 export default function StaticPage({ slug, page = {}, meta = {} }) {
     const { t } = useTranslation();
 
-    // Başlık / description: önce backend meta, sonra page, en son i18n fallback
     const title =
         meta?.title ||
         page?.title ||
@@ -155,7 +152,6 @@ export default function StaticPage({ slug, page = {}, meta = {} }) {
                     {JSON.stringify(schemaWebPage)}
                 </script>
 
-                {/* Breadcrumbs (başlıklar i18n + page başlığı kombinasyonu) */}
                 <script type="application/ld+json">
                     {JSON.stringify({
                         "@context": "https://schema.org",
@@ -178,7 +174,6 @@ export default function StaticPage({ slug, page = {}, meta = {} }) {
                 </script>
             </Head>
 
-            {/* HERO */}
             <section
                 className={`sp-hero ${heroImage ? "sp-hero--has-img" : ""}`}
             >
@@ -199,7 +194,6 @@ export default function StaticPage({ slug, page = {}, meta = {} }) {
                 </div>
 
                 <div className="sp-hero__inner container">
-                    {/* Breadcrumb (görsel) */}
                     <nav className="sp-crumbs" aria-label="Breadcrumb">
                         <ol>
                             <li>
@@ -221,7 +215,6 @@ export default function StaticPage({ slug, page = {}, meta = {} }) {
                 </div>
             </section>
 
-            {/* CONTENT */}
             <section className="sp-content">
                 <div className="container">
                     <article className="sp-card sp-fadeup">

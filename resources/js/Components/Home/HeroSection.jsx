@@ -1,9 +1,7 @@
-// resources/js/Components/Home/HeroSection.jsx
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { usePage } from "@inertiajs/react";
-
 import SafeHtml from "../Common/SafeHtml";
 import { useSliders } from "@/hooks/useSliders";
 import { useLocale } from "@/hooks/useLocale";
@@ -33,52 +31,27 @@ export default function HeroSection({ content = {} }) {
 
     const locale = useLocale("de");
 
-    // Slider’ları çek (varsa)
     const { sliders } = useSliders({ tenantId, locale });
-
     const primarySlide = sliders && sliders.length ? sliders[0] : null;
 
-    // ---------------- TEXTLER ----------------
+    const [useFallbackVideo, setUseFallbackVideo] = useState(false);
 
-    // Başlık: 1) slider.title 2) content.hero_title 3) i18n fallback
-    const heroTitleHtml =
-        primarySlide?.title ||
-        content.hero_title ||
-        content.hero?.title ||
-        t(
-            "hero.title",
-            "Ihr zuverlässiger Partner im Gastgewerbe und Gebäudemanagement."
-        );
+    const heroTitleHtml = t("hero.title", "");
+    const heroSubtitleHtml = t("hero.subtitle", "");
 
-    // Alt başlık: 1) slider.subtitle/description 2) content 3) i18n
-    const heroSubtitleHtml =
-        primarySlide?.subtitle ||
-        primarySlide?.description ||
-        content.hero_subtitle ||
-        content.hero?.subtitle ||
-        t(
-            "hero.subtitle",
-            "Mit über 25 Jahren Erfahrung bieten wir maßgeschneiderte, integrierte Lösungen für Reinigung, Pflege und Instandhaltung."
-        );
-
-    // Primary CTA label & href
-    const primaryCtaLabel =
-        primarySlide?.buttonLabel ||
-        content.hero_primary_cta ||
-        t("hero.button_services", "Unsere Leistungen entdecken");
+    const primaryCtaLabel = t("hero.button_services", "");
+    const secondaryCtaLabel = t("hero.button_contact", "");
 
     const primaryCtaHref =
-        primarySlide?.buttonUrl || content.hero_primary_cta_href || "#services";
+        primarySlide?.button_link ||
+        primarySlide?.buttonUrl ||
+        content.hero_primary_cta_href ||
+        "#services";
 
-    // Secondary CTA
-    const secondaryCtaLabel =
-        content.hero_secondary_cta ||
-        t("hero.button_contact", "Kontakt aufnehmen");
     const secondaryCtaHref = content.hero_secondary_cta_href || "#contact";
 
-    // ---------------- RENDER ----------------
-
-    const hasSlideImage = !!primarySlide?.image;
+    const hasSlideImage = !!primarySlide?.image && !useFallbackVideo;
+    const hasSlideVideo = !!primarySlide?.video_url && !useFallbackVideo;
 
     return (
         <section
@@ -86,15 +59,29 @@ export default function HeroSection({ content = {} }) {
             className="relative min-h-[70svh] md:min-h-[600px] lg:min-h-[720px] overflow-hidden flex items-center justify-center text-white px-4 py-16 sm:py-20"
             aria-labelledby="hero-heading"
         >
-            {/* Arka plan: önce slider image, yoksa video */}
             {hasSlideImage ? (
                 <motion.img
                     src={primarySlide.image}
                     alt={typeof heroTitleHtml === "string" ? heroTitleHtml : ""}
                     className="absolute inset-0 w-full h-full object-cover"
+                    style={{ pointerEvents: "none" }}
                     initial={{ opacity: 0, scale: 1.05 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 1.1, ease: "easeOut" }}
+                    onError={() => setUseFallbackVideo(true)}
+                />
+            ) : hasSlideVideo ? (
+                <motion.iframe
+                    src={primarySlide.video_url}
+                    title="Hero Video"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    loading="lazy"
+                    style={{ pointerEvents: "none", border: "none" }}
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 1.1, ease: "easeOut" }}
+                    onError={() => setUseFallbackVideo(true)}
                 />
             ) : (
                 <motion.video
@@ -104,6 +91,7 @@ export default function HeroSection({ content = {} }) {
                     playsInline
                     preload="metadata"
                     className="absolute inset-0 w-full h-full object-cover"
+                    style={{ pointerEvents: "none" }}
                     initial={{ opacity: 0, scale: 1.05 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 1.1, ease: "easeOut" }}
@@ -113,7 +101,6 @@ export default function HeroSection({ content = {} }) {
                 </motion.video>
             )}
 
-            {/* Gradient overlay */}
             <motion.div
                 className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70 md:from-black/50 md:via-black/40 md:to-black/50"
                 initial={{ opacity: 0 }}
@@ -121,7 +108,6 @@ export default function HeroSection({ content = {} }) {
                 transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
             />
 
-            {/* İçerik */}
             <motion.div
                 className="relative z-10 text-center"
                 variants={container}

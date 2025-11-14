@@ -68,7 +68,7 @@ class StaticPageController extends Controller
             ],
 
 
-            'faq' => [
+            'haufig-gestellte-fragen-faq' => [
                 'title'    => 'Häufig gestellte Fragen (FAQ)',
                 'subtitle' => 'Antworten auf die häufigsten Fragen rund um unsere Reinigungsleistungen.',
                 'hero'     => [

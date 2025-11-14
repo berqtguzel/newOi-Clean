@@ -95,7 +95,7 @@
 }
 @keyframes cmapShine{ 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-/* ---------- Alt Bilgi ---------- */
+
 .cmap-note{
   margin-top:.75rem;
   color:var(--cmap-ink-soft);

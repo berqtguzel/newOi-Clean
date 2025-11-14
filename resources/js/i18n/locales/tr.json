@@ -1,42 +1,43 @@
 {
-  "hero": {
-    "title": "Konaklama ve tesis yönetiminde güvenilir ortağınız.",
-    "subtitle": "25 yılı aşkın deneyimimizle temizlik, bakım ve tesis yönetimi için özelleştirilmiş ve entegre çözümler sunuyoruz.",
+      "hero": {
+    "title": "Otelcilik ve bina yönetiminde güvenilir çözüm ortağınız.",
+    "subtitle": "25 yılı aşkın deneyimimizle temizlik, bakım ve bakım-onarım için size özel, entegre çözümler sunuyoruz.",
     "button_services": "Hizmetlerimizi keşfedin",
     "button_contact": "İletişime geçin"
   },
-
   "services": {
     "section_title": "Geniş hizmet yelpazemiz",
-    "section_subtitle": "Tesislerinizin ve binalarınızın tüm ihtiyaçları için anahtar teslim çözümler sunuyoruz – Alman hassasiyeti ve kalitesiyle.",
+    "section_subtitle": "Tesislerinizin ve binalarınızın tüm ihtiyaçları için anahtar teslim çözümler sunuyoruz – Alman titizliği ve kalitesiyle.",
     "learn_more": "Daha fazla bilgi",
     "categories": {
       "hotel": {
-        "title": "Otel temizliği & housekeeping",
-        "description": "Oda temizliğinden bulaşıkhane alanına kadar otelinizin her bölümünde mükemmel hijyen ve verimli iş akışları sağlıyoruz."
+        "title": "Otel Temizliği & Housekeeping",
+        "description": "Oda temizliğinden bulaşıkhaneye kadar – otelinizin her alanında kusursuz hijyen ve verimli iş akışları."
       },
       "building": {
-        "title": "Profesyonel bina temizliği",
-        "description": "Ofisler, ticari alanlar, inşaat sonrası temizlik ve özel temizlikler – mülklerinizi pırıl pırıl yapıyoruz."
+        "title": "Profesyonel Bina Temizliği",
+        "description": "Ofisler, ticari alanlar, inşaat sonrası temizlik ve özel temizlikler – mülklerinizi parlatıyoruz."
       },
       "renovation": {
-        "title": "Tadilat, tamir & bakım",
-        "description": "Boyama, alçı ve alçıpan işleri ile zemin kaplama ve küçük onarımlar."
+        "title": "Tadilat, Onarım & Bakım",
+        "description": "Boyama, alçı, alçıpan işleri, zemin döşeme ve küçük onarımlar."
       }
     }
   },
-    "servicesList": {
+
+  "servicesList": {
     "title": "Hizmetler",
-    "subtitle": "Eviniz için sunduğumuz kapsamlı hizmetleri keşfedin",
+    "subtitle": "Eviniz ve işletmeniz için sunduğumuz kapsamlı hizmetleri keşfedin",
     "meta_title": "Hizmetlerimiz - O&I CLEAN group GmbH",
-    "meta_description": "Hamburg'da profesyonel temizlik, tadilat ve tesis yönetimi. ★ Uzmanlık ★ Alman kalitesi ★ Güvenilir hizmet",
+    "meta_description": "Hamburg’da profesyonel temizlik, tadilat ve bina yönetimi. ★ Uzmanlık ★ Alman kalitesi ★ Güvenilir hizmet",
     "loading": "Hizmetler yükleniyor…",
     "contact_cta": "Bizimle iletişime geçin",
     "contact_cta_aria": "Şimdi iletişime geçin"
   },
-   "locations": {
+
+  "locations": {
     "page_title": "Lokasyonlar - O&I CLEAN group GmbH",
-    "page_description": "Almanya'nın farklı şehirlerinde profesyonel temizlik hizmetleri. Yerel uzmanlık, ülke çapında kalite.",
+    "page_description": "Almanya’nın farklı şehirlerinde profesyonel temizlik hizmetleri. Yerel uzmanlık, ülke çapında kalite.",
     "title": "Lokasyonlar",
     "subtitle": "Almanya’daki lokasyonlarımızı keşfedin",
     "loading": "Lokasyonlar yükleniyor...",
@@ -45,24 +46,36 @@
     "cta_aria": "Şimdi iletişime geçin",
     "contact_href": "/iletisim"
   },
-   "contact": {
+
+  "contact": {
     "title": "Bizimle iletişime geçin",
-    "description": "İşletmeniz için profesyonel temizlik hizmetleri. Size memnuniyetle birebir danışmanlık sunuyoruz.",
+    "description": "İşletmeniz için profesyonel temizlik hizmetleri. Size memnuniyetle kişisel olarak danışmanlık sunuyoruz.",
     "submit_label": "Mesaj gönder",
     "submit_failed": "Mesaj gönderilemedi.",
     "select_placeholder": "Lütfen seçin",
+
     "phone_label": "Telefon",
     "email_label": "E-posta",
     "address_label": "Adres",
     "hours_label": "Çalışma saatleri",
     "hours_value": "Pzt - Cum: 08:00 - 17:00",
+
     "phone_number": "+49 (0) 1234 567 89 00",
     "email_address": "info@oi-clean.de",
-    "address_street": "Musterstraße 123",
-    "address_city": "12345 Berlin"
+    "address_street": "Örnek Cad. 123",
+    "address_city": "12345 Berlin",
+
+    "form": {
+      "name": "İsim",
+      "phone": "Telefon",
+      "email": "E-posta",
+      "message": "Mesaj",
+      "other": "Alan"
+    }
   },
+
   "footer": {
-    "description": "Profesyonel temizlik, bakım ve tesis yönetimi için güvenilir çözüm ortağınız; Alman titizliği ve güvenilirliğiyle.",
+    "description": "Profesyonel temizlik, bakım ve bina yönetimi için Alman titizliği ve güvenilirliğiyle çözüm ortağınız.",
     "address": "Spaldingstr. 77–79, 20097 Hamburg",
     "phone": "+49 (0)40 46 63 35 19",
     "phone_raw": "+494046633519",
@@ -73,7 +86,7 @@
 
     "link_about": "Hakkımızda",
     "link_contact": "İletişim",
-    "link_contact_href": "/contact",
+    "link_contact_href": "/iletisim",
     "link_faq": "SSS",
     "link_privacy": "Gizlilik",
     "link_imprint": "Künye",
@@ -84,19 +97,21 @@
     "back_to_top": "Yukarı çık",
 
     "region_label": "Alt bilgi ve iletişim bilgileri",
-    "home_aria": "O&I CLEAN - Ana sayfa",
+    "home_aria": "O&I CLEAN - Anasayfa",
     "linkedin_aria": "LinkedIn - O&I CLEAN",
     "instagram_aria": "Instagram - O&I CLEAN",
     "facebook_aria": "Facebook - O&I CLEAN",
     "quicklinks_aria": "Hızlı bağlantılar",
     "phone_aria": "Telefon numarası",
     "email_aria": "E-posta"
-  },  "header": {
+  },
+
+  "header": {
     "topbar_tagline": "Güvenebileceğiniz temizlik — 7/24 hizmet",
     "cta_label": "Randevu al",
     "cta_href": "/iletisim",
     "hide_topbar": "Üst çubuğu gizle",
-    "home_aria": "Ana sayfa",
+    "home_aria": "Anasayfa",
     "main_nav": "Ana menü",
     "menu_open": "Menüyü aç",
     "menu_close": "Menüyü kapat",
@@ -104,43 +119,52 @@
     "impressum": "Künye"
   },
 
-
   "nav": {
-    "home": "Ana sayfa"
+    "home": "Anasayfa"
   },
 
-  "serviceCategories": {
-    "section_title": "Geniş hizmet yelpazemiz",
-    "section_subtitle": "Tesisleriniz ve binalarınızın tüm ihtiyaçları için anahtar teslim çözümler sunuyoruz – Alman hassasiyeti ve kalitesiyle.",
-    "cards": {
-      "hotel": {
-        "title": "Otel temizliği & housekeeping",
-        "description": "Oda temizliğinden bulaşıkhaneye kadar otelinizin her alanında kusursuz hijyen ve verimli iş akışları.",
-        "button": "Detaylı bilgi"
-      },
-      "building": {
-        "title": "Profesyonel bina temizliği",
-        "description": "Ofisler, ticari alanlar, inşaat sonrası temizlik ve özel temizlikler – gayrimenkullerinizi parlatıyoruz.",
-        "button": "Detaylı bilgi"
-      },
-      "renovation": {
-        "title": "Tadilat, onarım & bakım",
-        "description": "Boyama, macun, alçıpan işleri, zemin kaplama ve küçük onarımlar.",
-        "button": "Detaylı bilgi"
-      }
-    }
+  "staticPage": {
+    "breadcrumbs_home": "Anasayfa",
+    "breadcrumbs_page": "Sayfa",
+    "empty_content": "İçerik yakında eklenecek."
   },
-
-  "breadcrumbs": {
-    "home": "Ana sayfa"
-  },
-  "static": {
-    "default_title": "Sayfa - O&I CLEAN group GmbH",
-    "default_description": "Hizmetlerimiz ve şirketimiz hakkında bilgiler.",
-    "content_coming_soon": "İçerik yakında eklenecek.",
-    "page": "Sayfa"
+  "offerDock": {
+  "title": "Teklif",
+  "subtitle": "Ücretsiz & yükümlülük yok",
+  "button": "Teklif iste",
+  "aria_open": "Teklif panelini aç",
+  "aria_close": "Teklif panelini kapat"
+},
+ "quote_modal": {
+    "title": "Teklif iste",
+    "scrim_aria": "Modeli kapat",
+    "close_aria": "Kapat",
+    "field_name": "Ad Soyad",
+    "field_email": "E-posta",
+    "field_phone": "Telefon",
+    "field_service": "Hizmet",
+    "field_message": "Mesaj",
+    "service_placeholder": "Lütfen seçin…",
+    "service_hotel_cleaning": "Otel temizliği",
+    "service_building_cleaning": "Bina / ofis temizliği",
+    "service_window_cleaning": "Cam / dış cephe temizliği",
+    "service_maintenance_cleaning": "Periyodik temizlik",
+    "service_basic_cleaning": "Detaylı temizlik",
+    "service_carpet_cleaning": "Halı temizliği",
+    "service_other": "Diğer",
+    "service_general": "Genel",
+    "message_placeholder": "Sizin için ne yapabiliriz?",
+    "consent_prefix": "Kişisel verilerimin ",
+    "consent_link": "gizlilik notları",
+    "consent_suffix": " uyarınca işlenmesini kabul ediyorum.",
+    "cancel": "Vazgeç",
+    "submit": "Gönder",
+    "sending": "Gönderiliyor…",
+    "error_consent": "Lütfen veri işlenmesini kabul edin.",
+    "error_generic": "Bir hata oluştu. Lütfen tekrar deneyin.",
+    "subject_prefix": "Teklif talebi",
+    "thank_you_title": "Teşekkür ederiz!",
+    "thank_you_text": "Talebinizi aldık, en kısa sürede sizinle iletişime geçeceğiz.",
+    "close_button": "Kapat"
   }
-
-
-
 }

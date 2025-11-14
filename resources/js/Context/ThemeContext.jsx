@@ -1,4 +1,3 @@
-// resources/js/providers/ThemeProvider.jsx
 import React, {
     createContext,
     useContext,
@@ -15,14 +14,12 @@ const ThemeContext = createContext({
 
 export const useTheme = () => useContext(ThemeContext);
 
-// SSR-safe: SSR'de dokümana dokunmaz, client'ta senkronlar
 export const ThemeProvider = ({ children, initial = "system" }) => {
     const getInitial = () => {
         if (typeof window === "undefined") {
-            // SSR: sadece "light" ya da gönderdiysen "initial"
             return initial === "dark" ? "dark" : "light";
         }
-        // CSR: localStorage > system preference > light
+
         const saved = localStorage.getItem("theme");
         if (saved === "light" || saved === "dark") return saved;
         if (
@@ -38,20 +35,18 @@ export const ThemeProvider = ({ children, initial = "system" }) => {
 
     const [theme, setThemeState] = useState(getInitial);
 
-    // documentElement.classList'i yönet
     useEffect(() => {
         if (typeof document === "undefined") return;
         const root = document.documentElement;
         const isDark = theme === "dark";
         root.classList.toggle("dark", isDark);
-        // Tailwind color-scheme ipucu
+
         root.style.colorScheme = isDark ? "dark" : "light";
         try {
             localStorage.setItem("theme", theme);
         } catch {}
     }, [theme]);
 
-    // sistem teması değişirse (kullanıcı işletim sisteminden değiştirirse)
     useEffect(() => {
         if (typeof window === "undefined") return;
         const mq = window.matchMedia("(prefers-color-scheme: dark)");

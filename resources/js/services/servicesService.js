@@ -25,11 +25,11 @@ function normalizeService(it, i) {
   return {
     id: it?.id ?? i,
 
-    // Kartlarda kullanmak için
+
     title: it?.title || it?.name || `Service #${it?.id ?? i}`,
     name: it?.name || it?.title || `Service #${it?.id ?? i}`,
 
-    // Kısa açıklama varsa onu, yoksa normal description
+
     description: it?.short_description || it?.description || "",
     shortDescription: it?.short_description || "",
 
@@ -38,22 +38,21 @@ function normalizeService(it, i) {
 
     image: pickImage(it),
 
-    // Kategori bilgisi
+
     categoryId: it?.category_id ?? it?.categoryId ?? null,
     categoryName: it?.category_name || it?.category?.name || null,
 
-    // Parent service (örn: Hotelreinigung parent, Hotelreinigung - Hamburg child)
     parentId: it?.parent_id ?? null,
     parentName: it?.parent_name ?? null,
 
-    // Lokasyon bilgileri
+
     country: it?.country || null,
     city: it?.city || null,
     district: it?.district || null,
     latitude,
     longitude,
 
-    // Map bilgileri (LocationCard için önemli)
+
     hasMaps: !!it?.has_maps,
     maps: Array.isArray(it?.maps) ? it.maps : [],
 
@@ -61,7 +60,7 @@ function normalizeService(it, i) {
     order: typeof it?.order === "number" ? it.order : null,
     views: typeof it?.views === "number" ? it.views : null,
 
-    // Ham data'yı da saklıyoruz, lazım olursa
+
     raw: it,
   };
 }

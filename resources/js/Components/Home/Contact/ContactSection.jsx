@@ -37,6 +37,33 @@ const ContactSection = () => {
     const setField = (name, value) =>
         setData((prev) => ({ ...prev, [name]: value }));
 
+    const getFieldLabel = (field, index) => {
+        const type = String(field.type || "").toLowerCase();
+        const raw = String(field.name || field.label || "").toLowerCase();
+
+        if (raw.includes("name") || (type === "text" && index === 0)) {
+            return t("contact.form.name", "Name");
+        }
+
+        if (raw.includes("phone") || raw.includes("tel") || type === "tel") {
+            return t("contact.form.phone", "Telefon");
+        }
+
+        if (raw.includes("mail") || type === "email") {
+            return t("contact.form.email", "E-Mail");
+        }
+
+        if (
+            raw.includes("message") ||
+            raw.includes("nachricht") ||
+            type === "textarea"
+        ) {
+            return t("contact.form.message", "Nachricht");
+        }
+
+        return t("contact.form.other", "Feld");
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!form) return;
@@ -46,6 +73,7 @@ const ContactSection = () => {
 
         const payload = {};
         fields.forEach((f) => {
+            if (!f.name) return;
             payload[f.name] = data[f.name] ?? "";
         });
 
@@ -139,7 +167,6 @@ const ContactSection = () => {
 
             <div className="contact-container">
                 <div className="contact-content">
-                    {/* Sol bilgi sütunu */}
                     <div className="contact-info">
                         <h2 className="contact-title">
                             <SafeHtml html={titleHtml} as="span" />
@@ -239,23 +266,26 @@ const ContactSection = () => {
                         </div>
                     </div>
 
-                    {/* Form */}
                     <form
                         onSubmit={handleSubmit}
                         className="contact-form"
                         noValidate
                     >
                         <div className="form-grid">
-                            {fields.map((f) => {
+                            {fields.map((f, index) => {
                                 const fieldError = errors[f.name];
+                                const labelText = getFieldLabel(f, index);
 
                                 const common = {
-                                    id: f.name,
-                                    name: f.name,
+                                    id: f.name || `field-${index}`,
+                                    name: f.name || `field_${index}`,
                                     required: f.required,
                                     value: data[f.name] || "",
                                     onChange: (e) =>
-                                        setField(f.name, e.target.value),
+                                        setField(
+                                            f.name || `field_${index}`,
+                                            e.target.value
+                                        ),
                                     className: fieldError ? "error" : "",
                                     "aria-invalid": !!fieldError,
                                     "aria-describedby": fieldError
@@ -266,19 +296,15 @@ const ContactSection = () => {
 
                                 return (
                                     <div
-                                        key={f.name}
+                                        key={f.name || index}
                                         className={`form-group ${
                                             f.type === "textarea"
                                                 ? "full-width"
                                                 : ""
                                         }`}
                                     >
-                                        <label htmlFor={f.name}>
-                                            <SafeHtml
-                                                html={f.label}
-                                                as="span"
-                                            />{" "}
-                                            {f.required ? "*" : ""}
+                                        <label htmlFor={common.id}>
+                                            {labelText} {f.required ? "*" : ""}
                                         </label>
 
                                         {f.type === "textarea" ? (
@@ -296,13 +322,7 @@ const ContactSection = () => {
                                                                 o?.value || o
                                                             }
                                                         >
-                                                            <SafeHtml
-                                                                html={
-                                                                    o?.label ||
-                                                                    o
-                                                                }
-                                                                as="span"
-                                                            />
+                                                            {o?.label || o}
                                                         </option>
                                                     )
                                                 )}

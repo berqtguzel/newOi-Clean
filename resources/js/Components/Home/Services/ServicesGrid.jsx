@@ -24,9 +24,6 @@ import SafeHtml from "@/Components/Common/SafeHtml";
 const BASE_PATH = "/services";
 const BASE_DOMAIN = "https://oi-clean.de";
 
-/* -------------------------------------------------------------------------- */
-/* 🌙 Tema (dark / light) algılayan hook (SSR-safe)                           */
-/* -------------------------------------------------------------------------- */
 function useIsDark() {
     const [isDark, setIsDark] = React.useState(false);
 
@@ -47,9 +44,6 @@ function useIsDark() {
     return isDark;
 }
 
-/* -------------------------------------------------------------------------- */
-/* 👁️ IntersectionObserver Hook (SSR-safe)                                   */
-/* -------------------------------------------------------------------------- */
 const useIntersectionObserver = (ref) => {
     React.useEffect(() => {
         if (
@@ -79,9 +73,6 @@ const useIntersectionObserver = (ref) => {
     }, [ref]);
 };
 
-/* -------------------------------------------------------------------------- */
-/* 🔧 Varsayılan Servisler (API gelmezse fallback)                            */
-/* -------------------------------------------------------------------------- */
 const defaultServices = [
     {
         id: 1,
@@ -157,9 +148,6 @@ const defaultServices = [
     },
 ];
 
-/* -------------------------------------------------------------------------- */
-/* 🧩 Ana Bileşen                                                             */
-/* -------------------------------------------------------------------------- */
 const ServicesGrid = ({ services = defaultServices, content = {} }) => {
     const { t } = useTranslation();
     const gridRef = React.useRef(null);
@@ -180,7 +168,6 @@ const ServicesGrid = ({ services = defaultServices, content = {} }) => {
         locale,
     });
 
-    /* ---------------------- remoteServices'i normalize et ---------------------- */
     const safeRemoteServices = React.useMemo(() => {
         if (Array.isArray(remoteServices)) return remoteServices;
 
@@ -224,7 +211,6 @@ const ServicesGrid = ({ services = defaultServices, content = {} }) => {
     const lightColors = ["#085883", "#0C9FE2", "#2EA7E0"];
     const darkColors = ["#47B3FF", "#7CCBFF", "#B5E3FF"];
 
-    /* -------------------------- JSON-LD Schema.org ------------------------- */
     const schemaData = React.useMemo(
         () => ({
             "@context": "https://schema.org",
@@ -260,7 +246,6 @@ const ServicesGrid = ({ services = defaultServices, content = {} }) => {
         [servicesToRender]
     );
 
-    // 🔤 Başlık & alt başlık: önce CMS content, sonra i18n
     const headingHtml =
         content.services_title || t("servicesList.title", "Leistungen");
 
@@ -271,7 +256,6 @@ const ServicesGrid = ({ services = defaultServices, content = {} }) => {
             "Entdecken Sie unsere umfassenden Dienstleistungen für Ihr Zuhause"
         );
 
-    // SEO title & description i18n
     const metaTitle = t(
         "servicesList.meta_title",
         "Unsere Leistungen - O&I CLEAN group GmbH"

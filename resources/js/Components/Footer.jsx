@@ -1,4 +1,3 @@
-// resources/js/Components/Footer.jsx
 import React from "react";
 import { Link } from "@inertiajs/react";
 import {
@@ -23,7 +22,6 @@ export default function Footer({ settings }) {
     const contact = settings?.contact || {};
     const social = settings?.social || {};
 
-    // Açıklama: önce settings.footer.description, yoksa i18n fallback
     const fallbackFooterDesc = t(
         "footer.description",
         "Ihr Partner für professionelle Reinigung, Pflege und Gebäudemanagement mit deutscher Präzision und Zuverlässigkeit."
@@ -44,7 +42,6 @@ export default function Footer({ settings }) {
     const siteName = brand?.site_name || "O&I CLEAN";
     const companyName = brand?.company_name || "O&I CLEAN group GmbH";
 
-    // Link label’leri
     const linksTitle = t("footer.links_title", "Links");
     const contactTitle = t("footer.contact_title", "Kontakt");
 
@@ -72,7 +69,6 @@ export default function Footer({ settings }) {
 
             <div className="container mx-auto px-6 pt-20 pb-10">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-                    {/* Brand + desc + socials */}
                     <div className="md:col-span-5">
                         <div className="flex items-start gap-4">
                             <div>
@@ -148,7 +144,6 @@ export default function Footer({ settings }) {
                         </div>
                     </div>
 
-                    {/* Quick links */}
                     <nav
                         aria-label={t(
                             "footer.quicklinks_aria",
@@ -199,7 +194,6 @@ export default function Footer({ settings }) {
                         </ul>
                     </nav>
 
-                    {/* Contact */}
                     <div className="md:col-span-3">
                         <h4 className="text-lg font-semibold mb-3">
                             {contactTitle}
@@ -241,7 +235,6 @@ export default function Footer({ settings }) {
                         </address>
                     </div>
 
-                    {/* Bottom row */}
                     <div className="md:col-span-12 mt-2">
                         <div className="mt-6 border-t pt-4 flex flex-col md:flex-row items-center justify-between gap-3 footer-bottom">
                             <p className="text-sm muted">
@@ -270,7 +263,6 @@ export default function Footer({ settings }) {
                 </div>
             </div>
 
-            {/* back to top */}
             <div className="footer-backtop">
                 <a
                     href="#top"

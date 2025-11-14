@@ -3,7 +3,7 @@ import { httpRequest } from "../lib/http";
 import { remoteConfig } from "./remoteConfig";
 
 function pickImage(it) {
-    // API’den nasıl geldiğini bilmiyorsak birkaç olası alanı deneriz
+
     return (
         it?.image_url ||
         it?.image ||
@@ -37,12 +37,12 @@ function normalizeSlider(it, i) {
 }
 
 /**
- * Slider listesini çeker.
+ *
  *
  * @param {Object} options
- * @param {string|number} options.tenantId  - Tenant ID (zorunlu)
- * @param {string} [options.locale]         - Dil kodu (de, en, tr)
- * @param {string} [options.lang]           - Alternatif dil param (locale yerine)
+ * @param {string|number} options.tenantId
+ * @param {string} [options.locale]
+ * @param {string} [options.lang]
  */
 export async function fetchSliders({ tenantId, locale, lang } = {}) {
     if (!tenantId) {
@@ -54,11 +54,11 @@ export async function fetchSliders({ tenantId, locale, lang } = {}) {
     };
 
     const params = {
-        // endpoint dokümanında tenant zorunlu
+
         tenant: String(tenantId),
     };
 
-    // API lang bekliyor; biz hem locale hem lang paramını destekleyelim
+
     const langParam = lang || locale;
     if (langParam) {
         params.lang = String(langParam);
@@ -80,7 +80,7 @@ export async function fetchSliders({ tenantId, locale, lang } = {}) {
 
     const sliders = list.map(normalizeSlider);
 
-    // Bazı endpointler meta döndürüyor olabilir, saklayalım
+
     return {
         sliders,
         meta: res?.meta || res?._meta || {},

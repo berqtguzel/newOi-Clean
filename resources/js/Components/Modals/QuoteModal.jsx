@@ -1,9 +1,13 @@
+// resources/js/Components/Home/QuoteModal.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { router } from "@inertiajs/react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 import "../../../css/quote-modal.css";
 
 export default function QuoteModal() {
+    const { t } = useTranslation();
+
     const [open, setOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [ok, setOk] = useState(false);
@@ -86,7 +90,12 @@ export default function QuoteModal() {
     const onSubmit = (e) => {
         e.preventDefault();
         if (!form.consent) {
-            alert("Bitte stimmen Sie der Datenverarbeitung zu.");
+            alert(
+                t(
+                    "quote_modal.error_consent",
+                    "Bitte stimmen Sie der Datenverarbeitung zu."
+                )
+            );
             return;
         }
         setSubmitting(true);
@@ -97,7 +106,11 @@ export default function QuoteModal() {
                 name: form.name,
                 email: form.email,
                 phone: form.phone,
-                subject: `Angebotsanfrage - ${form.service || "Allgemein"}`,
+                subject:
+                    t("quote_modal.subject_prefix", "Angebotsanfrage") +
+                    " - " +
+                    (form.service ||
+                        t("quote_modal.service_general", "Allgemein")),
                 message: form.message,
                 service: form.service,
             },
@@ -109,7 +122,12 @@ export default function QuoteModal() {
                 },
                 onError: () => {
                     setSubmitting(false);
-                    alert("Etwas ist schiefgelaufen. Bitte erneut versuchen.");
+                    alert(
+                        t(
+                            "quote_modal.error_generic",
+                            "Etwas ist schiefgelaufen. Bitte erneut versuchen."
+                        )
+                    );
                 },
             }
         );
@@ -121,7 +139,7 @@ export default function QuoteModal() {
         <div className="qdock">
             <button
                 className="qdock__scrim"
-                aria-label="Modal schließen"
+                aria-label={t("quote_modal.scrim_aria", "Modal schließen")}
                 onClick={close}
             />
 
@@ -134,11 +152,11 @@ export default function QuoteModal() {
             >
                 <div className="qdock__head">
                     <h2 id="quote-title" className="qdock__title">
-                        Angebot anfordern
+                        {t("quote_modal.title", "Angebot anfordern")}
                     </h2>
                     <button
                         className="qdock__close"
-                        aria-label="Schließen"
+                        aria-label={t("quote_modal.close_aria", "Schließen")}
                         onClick={close}
                     >
                         ×
@@ -149,7 +167,9 @@ export default function QuoteModal() {
                     <form className="qdock__form" onSubmit={onSubmit}>
                         <div className="qdock__grid">
                             <label className="qdock__field">
-                                <span>Name*</span>
+                                <span>
+                                    {t("quote_modal.field_name", "Name")}*
+                                </span>
                                 <input
                                     name="name"
                                     type="text"
@@ -161,7 +181,9 @@ export default function QuoteModal() {
                             </label>
 
                             <label className="qdock__field">
-                                <span>E-Mail*</span>
+                                <span>
+                                    {t("quote_modal.field_email", "E-Mail")}*
+                                </span>
                                 <input
                                     name="email"
                                     type="email"
@@ -172,7 +194,9 @@ export default function QuoteModal() {
                             </label>
 
                             <label className="qdock__field">
-                                <span>Telefon</span>
+                                <span>
+                                    {t("quote_modal.field_phone", "Telefon")}
+                                </span>
                                 <input
                                     name="phone"
                                     type="tel"
@@ -182,30 +206,77 @@ export default function QuoteModal() {
                             </label>
 
                             <label className="qdock__field">
-                                <span>Leistung</span>
+                                <span>
+                                    {t("quote_modal.field_service", "Leistung")}
+                                </span>
                                 <select
                                     name="service"
                                     value={form.service}
                                     onChange={onChange}
                                 >
-                                    <option value="">Bitte wählen…</option>
-                                    <option>Hotelreinigung</option>
-                                    <option>Gebäudereinigung</option>
-                                    <option>Fenster/Glasreinigung</option>
-                                    <option>Unterhaltsreinigung</option>
-                                    <option>Grundreinigung</option>
-                                    <option>Teppichreinigung</option>
-                                    <option>Sonstiges</option>
+                                    <option value="">
+                                        {t(
+                                            "quote_modal.service_placeholder",
+                                            "Bitte wählen…"
+                                        )}
+                                    </option>
+                                    <option>
+                                        {t(
+                                            "quote_modal.service_hotel_cleaning",
+                                            "Hotelreinigung"
+                                        )}
+                                    </option>
+                                    <option>
+                                        {t(
+                                            "quote_modal.service_building_cleaning",
+                                            "Gebäudereinigung"
+                                        )}
+                                    </option>
+                                    <option>
+                                        {t(
+                                            "quote_modal.service_window_cleaning",
+                                            "Fenster/Glasreinigung"
+                                        )}
+                                    </option>
+                                    <option>
+                                        {t(
+                                            "quote_modal.service_maintenance_cleaning",
+                                            "Unterhaltsreinigung"
+                                        )}
+                                    </option>
+                                    <option>
+                                        {t(
+                                            "quote_modal.service_basic_cleaning",
+                                            "Grundreinigung"
+                                        )}
+                                    </option>
+                                    <option>
+                                        {t(
+                                            "quote_modal.service_carpet_cleaning",
+                                            "Teppichreinigung"
+                                        )}
+                                    </option>
+                                    <option>
+                                        {t(
+                                            "quote_modal.service_other",
+                                            "Sonstiges"
+                                        )}
+                                    </option>
                                 </select>
                             </label>
                         </div>
 
                         <label className="qdock__field">
-                            <span>Nachricht</span>
+                            <span>
+                                {t("quote_modal.field_message", "Nachricht")}
+                            </span>
                             <textarea
                                 name="message"
                                 rows={4}
-                                placeholder="Was dürfen wir für Sie tun?"
+                                placeholder={t(
+                                    "quote_modal.message_placeholder",
+                                    "Was dürfen wir für Sie tun?"
+                                )}
                                 value={form.message}
                                 onChange={onChange}
                             />
@@ -220,15 +291,21 @@ export default function QuoteModal() {
                                 required
                             />
                             <span>
-                                Ich stimme der Verarbeitung meiner Daten gemäß{" "}
+                                {t(
+                                    "quote_modal.consent_prefix",
+                                    "Ich stimme der Verarbeitung meiner Daten gemäß "
+                                )}
                                 <a
                                     href="/datenschutz"
                                     target="_blank"
                                     rel="noreferrer"
                                 >
-                                    Datenschutzhinweisen
+                                    {t(
+                                        "quote_modal.consent_link",
+                                        "Datenschutzhinweisen"
+                                    )}
                                 </a>{" "}
-                                zu.
+                                {t("quote_modal.consent_suffix", "zu.")}
                             </span>
                         </label>
 
@@ -239,14 +316,16 @@ export default function QuoteModal() {
                                 onClick={close}
                                 disabled={submitting}
                             >
-                                Abbrechen
+                                {t("quote_modal.cancel", "Abbrechen")}
                             </button>
                             <button
                                 type="submit"
                                 className="btn btn--primary"
                                 disabled={submitting}
                             >
-                                {submitting ? "Senden…" : "Anfordern"}
+                                {submitting
+                                    ? t("quote_modal.sending", "Senden…")
+                                    : t("quote_modal.submit", "Anfordern")}
                             </button>
                         </div>
                     </form>
@@ -255,13 +334,17 @@ export default function QuoteModal() {
                         <div className="qdock__ok-badge" aria-hidden>
                             ✓
                         </div>
-                        <h3>Vielen Dank!</h3>
+                        <h3>
+                            {t("quote_modal.thank_you_title", "Vielen Dank!")}
+                        </h3>
                         <p>
-                            Wir haben Ihre Anfrage erhalten und melden uns
-                            zeitnah bei Ihnen.
+                            {t(
+                                "quote_modal.thank_you_text",
+                                "Wir haben Ihre Anfrage erhalten und melden uns zeitnah bei Ihnen."
+                            )}
                         </p>
                         <button className="btn btn--primary" onClick={close}>
-                            Schließen
+                            {t("quote_modal.close_button", "Schließen")}
                         </button>
                     </div>
                 )}

@@ -1,10 +1,6 @@
-/* ===========================
-   Location Card (Dynamic Colors)
-   Dashboard renkleriyle tam senkron
-   =========================== */
 
 .location-card {
-  /* temel */
+
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -26,7 +22,7 @@
 .location-card:focus-within,
 .location-card.active {
   transform: translateY(-2px);
-  /* vurguyu primary ile yap (iki isimlendirme biçimine de bak) */
+
   border-color: color-mix(
     in srgb,
     var(--site-primary-color, var(--site_primary_color, #3b82f6)) 35%,
@@ -41,16 +37,16 @@
     0 6px 14px -6px rgba(0,0,0,.12);
 }
 
-/* aktif outline rengi: primary */
+
 .location-card.active {
   outline: 2px solid var(--site-primary-color, var(--site_primary_color, #3b82f6));
   outline-offset: 2px;
 }
 
-/* resim alanı */
+
 .location-card-media {
   position: relative;
-  aspect-ratio: 4 / 3; /* 16rem sabit yerine oran */
+  aspect-ratio: 4 / 3;
   background: #f1f5f9;
   overflow: hidden;
 }
@@ -69,7 +65,7 @@
   filter: saturate(1.05);
 }
 
-/* üstten karartma */
+
 .location-card-overlay {
   position: absolute;
   inset: 0;
@@ -84,7 +80,7 @@
   padding: 12px 14px;
 }
 
-/* başlık (foto üstü, her temada beyaz) */
+
 .location-card-title {
   margin: 0;
   color: #ffffff;
@@ -94,7 +90,6 @@
   text-shadow: 0 2px 10px rgba(0,0,0,.35);
 }
 
-/* içerik */
 .location-card-content {
   padding: 14px 16px 16px;
   display: flex;
@@ -103,7 +98,7 @@
   color: var(--text_color, var(--text-color, #111827));
 }
 
-/* servis listesi */
+
 .location-card-services { margin-bottom: 1.5rem; }
 
 .location-card-services-title {
@@ -128,21 +123,21 @@
   content: "";
   width: .375rem;
   height: .375rem;
-  /* accent varsa onu, yoksa primary */
+
   background-color: var(--site-accent-color, var(--site_accent_color, var(--site-primary-color, var(--site_primary_color, #3b82f6))));
   border-radius: 9999px;
   margin-right: .5rem;
   flex-shrink: 0;
 }
 
-/* alt alan & buton */
+
 .location-card-footer {
   margin-top: 1rem;
   display: flex;
   justify-content: flex-end;
 }
 
-/* Buton: dashboard -> button_color (fallback: site-primary-color) */
+
 .location-card-button {
   --btn-bg: var(--button_color, var(--button-color, var(--site-primary-color, var(--site_primary_color, #2563eb))));
   --btn-fg: #ffffff;
@@ -171,7 +166,7 @@
 }
 .location-card-button:hover .location-card-arrow { transform: translateX(.25rem); }
 
-/* focus ring */
+
 .location-card:focus-within,
 .location-card-button:focus-visible { outline: none; }
 .location-card-button:focus-visible {
@@ -180,7 +175,7 @@
     0 8px 18px color-mix(in srgb, var(--btn-bg) 26%, rgba(0,0,0,0) 74%);
 }
 
-/* Dark mode */
+
 .dark .location-card {
   background: var(--surface, #0f172a);
   border-color: rgba(255,255,255,.08);

@@ -18,13 +18,13 @@ Route::get('/dienstleistungen', fn () => redirect()->route('services.index'), 30
 Route::get('/standorte/{slug}', [LocationsController::class, 'show'])->name('locations.show');
 Route::get('/location', [LocationsController::class, 'index'])->name('locations.index');
 
-Route::get('/contact', function () {
-    return Inertia::render('Contact/index', [
-        'currentRoute' => 'contact',
+Route::get('/kontakt', function () {
+    return Inertia::render('kontakt/index', [
+        'currentRoute' => 'kontakt',
     ]);
-})->name('contact.index');
+})->name('kontakt.index');
 
-Route::post('/contact', [ContactController::class, 'submit'])->name('contact.submit');
+Route::post('/kontakt', [ContactController::class, 'submit'])->name('kontakt.submit');
 
 // 🔥 DİL DEĞİŞTİRME – SADECE GET
 Route::get('/lang/{locale}', function ($locale) {
@@ -41,5 +41,5 @@ Route::get('/lang/{locale}', function ($locale) {
 
 // EN SONA: static sayfalar
 Route::get('/{slug}', [StaticPageController::class, 'show'])
-    ->where('slug', '^(?!services$)(?!standorte)(?!contact$)(?!dienstleistungen$)[-a-z0-9]+$')
+    ->where('slug', '^(?!services$)(?!standorte)(?!kontakt$)(?!dienstleistungen$)[-a-z0-9]+$')
     ->name('static.show');

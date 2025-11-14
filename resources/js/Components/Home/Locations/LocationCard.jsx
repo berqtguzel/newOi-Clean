@@ -3,10 +3,8 @@ import { Link } from "@inertiajs/react";
 import "react-lazy-load-image-component/src/effects/blur.css";
 import "../../../../css/LocationCard.css";
 
-// 🔒 Güvenli HTML render
 import SafeHtml from "@/Components/Common/SafeHtml";
 
-// 🔠 Slug helper
 const toSlug = (s = "") =>
     s
         .toString()
@@ -16,16 +14,13 @@ const toSlug = (s = "") =>
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)+/g, "");
 
-// 🧹 Basit HTML tag temizleyici (alt / aria-label / slug için)
 const stripHtml = (s = "") => s.replace(/<[^>]*>/g, "").trim();
 
-// 🚀 SSR-safe LazyLoadImage (fallback: normal img)
 let FallbackImg = (props) => <img {...props} />;
 
 export default function LocationCard({ location, onHover, isActive }) {
     const [Img, setImg] = useState(() => FallbackImg);
 
-    // Client’ta modül geldikten sonra LazyLoadImage ile değiştir
     useEffect(() => {
         if (typeof window !== "undefined") {
             import("react-lazy-load-image-component").then((mod) => {
@@ -35,11 +30,8 @@ export default function LocationCard({ location, onHover, isActive }) {
         }
     }, []);
 
-    // 🔗 /api/v1/services yapısına göre mapping
-    // title: eski title varsa onu, yoksa service.name
     const titleHtml = location.title || location.name || "";
 
-    // şehir: varsa city, yoksa district, yoksa country, yoksa name
     const cityRaw =
         location.city ||
         location.district ||
@@ -50,26 +42,22 @@ export default function LocationCard({ location, onHover, isActive }) {
 
     const cityText = stripHtml(cityRaw) || "dieser Stadt";
 
-    // slug için base: slug > name > city
     const slugBase = location.slug || location.name || cityRaw || "";
     const slug = location.slug || toSlug(stripHtml(slugBase));
 
-    // maps bilgisi: map'e göre seçmek için data-* attribute'larına koyacağız
     const hasMaps = Array.isArray(location.maps) && location.maps.length > 0;
     const primaryMap = hasMaps ? location.maps[0] : null;
 
-    // Link: API'den özel link geldiyse onu kullan, yoksa slug'a göre
     const href =
         location.link && location.link.trim().length > 0
             ? location.link
-            : `/standorte/${slug}`; // route'ı istersen /services/${slug} yapabilirsin
+            : `/standorte/${slug}`;
 
     return (
         <article
             className={`location-card ${isActive ? "active" : ""}`}
             onMouseEnter={onHover}
             onFocus={onHover}
-            // 🗺️ map'e göre seçmek için data attribute'lar
             data-map-id={primaryMap?.id}
             data-map-name={primaryMap?.name}
             data-map-type={primaryMap?.map_type}

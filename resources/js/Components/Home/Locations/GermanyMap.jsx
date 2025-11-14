@@ -39,7 +39,7 @@ const GermanyMap = ({ locations = [], activeId, setActiveId }) => {
                 projectionConfig={{ center: [10.3, 51.2], scale: 3400 }}
                 width={500}
                 height={780}
-                style={{ width: "100%", height: "100%" }} // kutuyu doldur
+                style={{ width: "100%", height: "100%" }}
             >
                 <Geographies geography={DE_STATES_URL}>
                     {({ geographies }) =>

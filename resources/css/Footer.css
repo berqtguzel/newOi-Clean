@@ -1,5 +1,5 @@
 :root{
-  /* panelden gelenler */
+
   --ft-surface: var(--footer-background-color, var(--background-color, #f8f9fa));
   --ft-ink: var(--text-color, #111827);
   --ft-link: var(--link-color, var(--site-primary-color, #2563eb));
@@ -18,7 +18,7 @@
   --ft-border:rgba(148,163,184,.18);
 }
 
-/* wrapper */
+
 .footer{
   position:relative; isolation:isolate;
   background: linear-gradient(180deg, var(--footer-bg-start), var(--ft-surface));
@@ -26,18 +26,18 @@
 }
 .footer-bottom{ border-color: var(--ft-border)!important; }
 
-/* svg dalga rengi: currentColor = ft-ink’e yakın */
+
 .footer-svg{ color: color-mix(in srgb, var(--ft-ink) 12%, #fff 88%); }
 
-/* metin/link */
+
 .muted{ color: color-mix(in srgb, var(--ft-ink) 70%, #fff 30%); }
 .footer a, .footer-link{ color: var(--ft-link); text-decoration:none; transition: color .15s; }
 .footer a:hover, .footer-link:hover{ color: var(--ft-link-hover); text-decoration: underline; }
 
-/* ikon vurgu */
+
 .text-accent{ color: var(--ft-accent)!important; }
 
-/* sosyal butonlar */
+
 .link-ghost{
   display:inline-flex; align-items:center; justify-content:center;
   padding:.5rem; border-radius:.5rem;
@@ -46,7 +46,7 @@
 }
 .link-ghost:hover{ background: color-mix(in srgb, var(--ft-ink) 10%, transparent); }
 
-/* back-to-top = button color */
+
 .footer-backtop{ position:absolute; right:1.5rem; bottom:1.5rem; }
 .footer-backtop .btn{
   display:inline-flex; align-items:center; justify-content:center;
@@ -58,5 +58,5 @@
 .footer-backtop .btn:hover{ transform: translateY(-1px); filter:brightness(1.05); }
 @media (max-width:768px){ .footer-backtop{ right:1rem; bottom:1rem; } }
 
-/* address satırı */
+
 .footer address > div{ display:flex; align-items:center; gap:.75rem; }

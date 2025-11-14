@@ -1,27 +1,27 @@
-/* ===== O-DOCK THEME-AWARE VARS ===== */
+
 :root{
-  /* LIGHT defaults */
-  --odock-bg: rgba(255,255,255,.66);         /* şeffaf beyaz panel */
+
+  --odock-bg: rgba(255,255,255,.66);
   --odock-bg-blur: 12px;
-  --odock-border: rgba(15,23,42,.10);        /* slate-900/10 */
-  --odock-text: #0f172a;                     /* koyu metin */
+  --odock-border: rgba(15,23,42,.10);
+  --odock-text: #0f172a;
   --odock-sub: rgba(15,23,42,.70);
-  --odock-cta-bg: #2457ff;                   /* ana CTA mavi */
+  --odock-cta-bg: #2457ff;
   --odock-cta-text: #fff;
   --odock-cta-bg-hover: #1f49e6;
   --odock-shadow: 0 18px 40px -12px rgba(15,23,42,.18);
-  --odock-tab-bg: #2457ff;                   /* tab mavi kalsın */
+  --odock-tab-bg: #2457ff;
   --odock-focus: 0 0 0 3px rgba(36,95,255,.35);
 }
 
-/* DARK override (html.dark sınıfınız zaten var) */
+
 .dark{
-  --odock-bg: rgba(36,95,255,.90);           /* mavi panel */
+  --odock-bg: rgba(36,95,255,.90);
   --odock-bg-blur: 8px;
   --odock-border: rgba(255,255,255,.22);
   --odock-text: #fff;
   --odock-sub: rgba(255,255,255,.85);
-  --odock-cta-bg: #ffffff;                   /* CTA beyaz */
+  --odock-cta-bg: #ffffff;
   --odock-cta-text: #2457ff;
   --odock-cta-bg-hover: #f5f7ff;
   --odock-shadow: 0 18px 40px -12px rgba(20,50,120,.35);
@@ -29,7 +29,7 @@
   --odock-focus: 0 0 0 3px rgba(255,255,255,.35);
 }
 
-/* ===== COMPONENT ===== */
+
 
 .odock{
   position: fixed;
@@ -51,7 +51,6 @@
   display: flex; align-items: center;
   border-top-right-radius: 18px;
   border-bottom-right-radius: 18px;
-  /* light’ta frosted, dark’ta mavi */
   background:
     linear-gradient(135deg,
       color-mix(in oklab, var(--odock-bg), transparent 0%) 0%,

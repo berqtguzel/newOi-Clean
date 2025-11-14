@@ -1,6 +1,3 @@
-/* =========================
-   Locations Section (Theming)
-   ========================= */
 
 .locations-section{
   padding: 4rem 1rem;
@@ -19,7 +16,7 @@
 }
 
 .locations-title{
-  font-size: 2.25rem; /* 36px */
+  font-size: 2.25rem;
   line-height: 2.5rem;
   font-weight: 700;
   margin-bottom: 1rem;
@@ -27,21 +24,20 @@
 }
 @media (min-width: 768px){
   .locations-title{
-    font-size: 3rem;   /* 48px */
+    font-size: 3rem;
     line-height: 1;
   }
 }
 
 .locations-subtitle{
-  font-size: 1.25rem; /* 20px */
+  font-size: 1.25rem;
   line-height: 1.75rem;
   max-width: 42rem;
   margin-inline: auto;
-  /* text gradyanı: text-color’un yumuşatılmış hali */
   color: color-mix(in srgb, var(--text-color, #111827) 70%, #ffffff 30%);
 }
 
-/* ---- CTA button (paneldeki button_color + primary ile temalı) ---- */
+
 .locations-cta{
   text-align: center;
   margin-top: 4rem;
@@ -76,7 +72,7 @@
   transform: translateX(.25rem);
 }
 
-/* ---- Grid ---- */
+
 .locations-grid{
   display: grid;
   grid-template-columns: repeat(1, minmax(0, 1fr));
@@ -90,9 +86,7 @@
   .locations-grid{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
-/* =========================
-   Map wrapper (theming)
-   ========================= */
+
 .map-container{
   width: 100%;
   max-width: 900px;
@@ -107,7 +101,6 @@
   border-radius: 16px;
   overflow: hidden;
 
-  /* panel + tema uyumlu yüzey & çerçeve */
   background: color-mix(in srgb, var(--surface, #ffffff) 96%, #000 4%);
   border: 1px solid color-mix(in srgb, var(--text-color, #111827) 14%, #ffffff 86%);
   box-shadow:
@@ -117,7 +110,7 @@
 @media (max-width: 1024px){ .map-box{ height: 460px; } }
 @media (max-width: 640px){  .map-box{ height: 360px; } }
 
-/* SVG Harita kapsayıcı */
+
 .germany-map-svg svg{
   width: 100%;
   height: auto;
@@ -125,19 +118,16 @@
   display: block;
 }
 
-/* İç sarmalayıcı (gerekirse konumsal overlay için) */
+
 .germany-map{
   width: 100%;
   height: 100%;
   position: relative;
 }
 
-/* Arkaplan efekti (opsiyonel) */
+
 .liquid-ether-bg{ opacity: .6; }
 
-/* =========================
-   Dark mode özel dokunuş (tokenlar zaten dark’ta değişiyor)
-   ========================= */
 .dark .map-box{
   background: color-mix(in srgb, var(--surface, #0f172a) 92%, #fff 8%);
   border-color: color-mix(in srgb, var(--text-color, #f8fafc) 18%, #000 82%);

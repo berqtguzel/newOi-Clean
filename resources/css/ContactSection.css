@@ -87,7 +87,7 @@
 .checkbox-label a{ color:#2563eb; text-decoration:none; }
 .checkbox-label a:hover{ text-decoration:underline; }
 
-/* Buton */
+
 .submit-button{
   width:100%; padding:1rem 2rem; margin-top:2rem;
   background:#2563eb; color:#fff; border:none; border-radius:.5rem;

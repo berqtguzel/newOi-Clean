@@ -87,13 +87,19 @@ function pickOmrSite(websites = [], { host, talentId } = {}) {
 
 const cleanUrl = (u) => String(u || "#").replace(/:\d+$/, "");
 
+// dil kodlarını normalize et: "de-DE" => "de"
+const normalizeLang = (code) =>
+    String(code || "")
+        .toLowerCase()
+        .split("-")[0];
+
 /* ---------------- Label & URL çözücü (API menüleri için) --------------- */
 
 function resolveMenuLabel(node, locale = "de", fallback = "de") {
     if (!node) return "";
 
-    const lang = String(locale || "").toLowerCase();
-    const fb = String(fallback || "de").toLowerCase();
+    const lang = normalizeLang(locale);
+    const fb = normalizeLang(fallback);
     const raw = node.raw || node;
 
     const translations = Array.isArray(raw.translations)
@@ -104,9 +110,7 @@ function resolveMenuLabel(node, locale = "de", fallback = "de") {
 
     const byLang = translations.find(
         (t) =>
-            String(t.language_code || "")
-                .toLowerCase()
-                .trim() === lang &&
+            normalizeLang(t.language_code) === lang &&
             t.label &&
             String(t.label).trim() !== ""
     );
@@ -114,9 +118,7 @@ function resolveMenuLabel(node, locale = "de", fallback = "de") {
 
     const byFallback = translations.find(
         (t) =>
-            String(t.language_code || "")
-                .toLowerCase()
-                .trim() === fb &&
+            normalizeLang(t.language_code) === fb &&
             t.label &&
             String(t.label).trim() !== ""
     );
@@ -138,7 +140,7 @@ function resolveMenuLabel(node, locale = "de", fallback = "de") {
 function resolveMenuUrl(node, locale = "de") {
     if (!node) return "#";
 
-    const lang = String(locale || "").toLowerCase();
+    const lang = normalizeLang(locale);
     const raw = node.raw || node;
 
     const pageTranslations =
@@ -151,9 +153,7 @@ function resolveMenuUrl(node, locale = "de") {
 
     const byLang = pageTranslations.find(
         (p) =>
-            String(p.language_code || "")
-                .toLowerCase()
-                .trim() === lang &&
+            normalizeLang(p.language_code) === lang &&
             p.slug &&
             String(p.slug).trim() !== ""
     );
@@ -169,6 +169,8 @@ function resolveMenuUrl(node, locale = "de") {
 const LanguageSwitcher = ({ currentLang, languages, onChange }) => {
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
+
+    const normalizedCurrent = normalizeLang(currentLang);
 
     useEffect(() => {
         const onClick = (e) => {
@@ -189,6 +191,11 @@ const LanguageSwitcher = ({ currentLang, languages, onChange }) => {
 
     if (!languages || !languages.length) return null;
 
+    // aktif dile ait label'ı bul (örn. TR → Türkçe)
+    const activeLang =
+        languages.find((l) => normalizeLang(l.code) === normalizedCurrent) ||
+        languages[0];
+
     return (
         <div className={cx("lang-switch", open && "is-open")} ref={ref}>
             <button
@@ -199,7 +206,7 @@ const LanguageSwitcher = ({ currentLang, languages, onChange }) => {
                 onClick={() => setOpen((o) => !o)}
             >
                 <span className="lang-switch__label">
-                    {currentLang.toUpperCase()}
+                    {normalizeLang(activeLang.code).toUpperCase()}
                 </span>
                 <FaChevronDown
                     className="lang-switch__chev"
@@ -210,28 +217,33 @@ const LanguageSwitcher = ({ currentLang, languages, onChange }) => {
             {open && (
                 <div className="lang-switch__popover" role="menu">
                     <ul className="lang-switch__list">
-                        {languages.map((l) => (
-                            <li key={l.code}>
-                                <button
-                                    type="button"
-                                    className={cx(
-                                        "lang-switch__item",
-                                        l.code === currentLang && "is-active"
-                                    )}
-                                    onClick={() => {
-                                        onChange(l.code);
-                                        setOpen(false);
-                                    }}
-                                >
-                                    <span className="lang-switch__item-code">
-                                        {l.code.toUpperCase()}
-                                    </span>
-                                    <span className="lang-switch__item-label">
-                                        {l.label}
-                                    </span>
-                                </button>
-                            </li>
-                        ))}
+                        {languages.map((l) => {
+                            const codeNorm = normalizeLang(l.code);
+                            const isActive = codeNorm === normalizedCurrent;
+
+                            return (
+                                <li key={l.code}>
+                                    <button
+                                        type="button"
+                                        className={cx(
+                                            "lang-switch__item",
+                                            isActive && "is-active"
+                                        )}
+                                        onClick={() => {
+                                            onChange(codeNorm);
+                                            setOpen(false);
+                                        }}
+                                    >
+                                        <span className="lang-switch__item-code">
+                                            {codeNorm.toUpperCase()}
+                                        </span>
+                                        <span className="lang-switch__item-label">
+                                            {l.label || codeNorm.toUpperCase()}
+                                        </span>
+                                    </button>
+                                </li>
+                            );
+                        })}
                     </ul>
                 </div>
             )}
@@ -339,7 +351,7 @@ const Header = ({ currentRoute, settings }) => {
 
     const { props } = usePage();
 
-    const initialLocale = props?.locale || "de";
+    const initialLocale = normalizeLang(props?.locale || "de");
     const sharedLanguages = props?.languages || [];
 
     const omrWebsites = props?.global?.websites || [];
@@ -402,7 +414,8 @@ const Header = ({ currentRoute, settings }) => {
 
     const [currentLang, setCurrentLang] = useState(() => {
         try {
-            return localStorage.getItem("locale") || initialLocale || "de";
+            const stored = normalizeLang(localStorage.getItem("locale"));
+            return stored || initialLocale || "de";
         } catch {
             return initialLocale || "de";
         }
@@ -411,17 +424,20 @@ const Header = ({ currentRoute, settings }) => {
     // Backend'ten gelen locale ile state + i18n senkronu
     useEffect(() => {
         if (!initialLocale) return;
+        const normInit = normalizeLang(initialLocale);
+
         setCurrentLang((prev) => {
-            if (prev === initialLocale) return prev;
+            const normPrev = normalizeLang(prev);
+            if (normPrev === normInit) return prev;
             try {
-                localStorage.setItem("locale", initialLocale);
+                localStorage.setItem("locale", normInit);
             } catch {}
-            return initialLocale;
+            return normInit;
         });
 
         try {
-            if (i18n.language !== initialLocale) {
-                i18n.changeLanguage(initialLocale);
+            if (normalizeLang(i18n.language) !== normInit) {
+                i18n.changeLanguage(normInit);
             }
         } catch (e) {
             console.warn("i18n changeLanguage failed:", e);
@@ -431,7 +447,7 @@ const Header = ({ currentRoute, settings }) => {
     const allLanguages = useMemo(() => {
         if (Array.isArray(sharedLanguages) && sharedLanguages.length) {
             return sharedLanguages.map((l) => {
-                const code = l.code || l.locale || "de";
+                const code = normalizeLang(l.code || l.locale || "de");
                 return {
                     code,
                     label:
@@ -441,23 +457,27 @@ const Header = ({ currentRoute, settings }) => {
         }
 
         if (Array.isArray(fetchedLanguages) && fetchedLanguages.length) {
-            return fetchedLanguages.map((l) => ({
-                code: l.code,
-                label: l.label || l.code?.toUpperCase() || "DE",
-            }));
+            return fetchedLanguages.map((l) => {
+                const code = normalizeLang(l.code);
+                return {
+                    code,
+                    label: l.label || code.toUpperCase() || "DE",
+                };
+            });
         }
 
         return [
-            { code: "de", label: "DE" },
-            { code: "en", label: "EN" },
-            { code: "tr", label: "TR" },
+            { code: "de", label: "Deutsch" },
+            { code: "en", label: "English" },
+            { code: "tr", label: "Türkçe" },
         ];
     }, [sharedLanguages, fetchedLanguages]);
 
     /* ----------------------- Dil değişimi ----------------------- */
 
-    const changeLanguage = (code) => {
-        if (!code || code === currentLang) return;
+    const changeLanguage = (codeRaw) => {
+        const code = normalizeLang(codeRaw);
+        if (!code || normalizeLang(currentLang) === code) return;
 
         setCurrentLang(code);
 
@@ -467,7 +487,7 @@ const Header = ({ currentRoute, settings }) => {
 
         // i18next dilini de değiştir
         try {
-            if (i18n.language !== code) {
+            if (normalizeLang(i18n.language) !== code) {
                 i18n.changeLanguage(code);
             }
         } catch (e) {
@@ -529,13 +549,15 @@ const Header = ({ currentRoute, settings }) => {
 
         const items = Array.isArray(headerMenu?.items) ? headerMenu.items : [];
 
+        const lang = currentLang || "de";
+
         const toDropdown = (children = []) =>
             (children || []).map((it, idx) => {
                 const hasChildren =
                     Array.isArray(it.children) && it.children.length > 0;
 
-                const label = resolveMenuLabel(it, currentLang, "de");
-                const url = resolveMenuUrl(it, currentLang);
+                const label = resolveMenuLabel(it, lang, "de");
+                const url = resolveMenuUrl(it, lang);
 
                 if (!hasChildren) {
                     return {
@@ -548,8 +570,8 @@ const Header = ({ currentRoute, settings }) => {
                     name: label,
                     submenuKey: `sub-${it.id || idx}`,
                     submenu: (it.children || []).map((c) => ({
-                        name: resolveMenuLabel(c, currentLang, "de"),
-                        url: resolveMenuUrl(c, currentLang),
+                        name: resolveMenuLabel(c, lang, "de"),
+                        url: resolveMenuUrl(c, lang),
                     })),
                 };
             });
@@ -559,8 +581,8 @@ const Header = ({ currentRoute, settings }) => {
             const hasChildren =
                 Array.isArray(node.children) && node.children.length > 0;
 
-            const label = resolveMenuLabel(node, currentLang, "de");
-            const url = resolveMenuUrl(node, currentLang);
+            const label = resolveMenuLabel(node, lang, "de");
+            const url = resolveMenuUrl(node, lang);
 
             return {
                 name: label,
@@ -1174,7 +1196,8 @@ const Header = ({ currentRoute, settings }) => {
                                         type="button"
                                         className={cx(
                                             "btn btn--ghost",
-                                            l.code === currentLang &&
+                                            normalizeLang(l.code) ===
+                                                normalizeLang(currentLang) &&
                                                 "is-active"
                                         )}
                                         onClick={() => changeLanguage(l.code)}
