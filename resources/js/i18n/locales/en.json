@@ -1,0 +1,344 @@
+{
+  "hero": {
+    "title": "Your reliable partner in hospitality and facility management",
+    "subtitle": "With more than 25 years of experience, we provide tailored, integrated solutions for cleaning, care and maintenance",
+    "button_services": "Discover our services",
+    "button_contact": "Get in touch now"
+  },
+
+  "services": {
+    "section_title": "Our wide range of services",
+    "section_subtitle": "We offer turnkey solutions for all requirements of your facilities and buildings – with German precision and quality.",
+    "learn_more": "Learn more",
+    "categories": {
+      "hotel": {
+        "title": "Hotel cleaning & housekeeping",
+        "description": "From room cleaning to dishwashing – perfect hygiene and efficient processes in every area of your hotel."
+      },
+      "building": {
+        "title": "Professional building cleaning",
+        "description": "Offices, commercial spaces, post-construction cleaning and special cleanings – we make your properties shine."
+      },
+      "renovation": {
+        "title": "Renovation, repair & maintenance",
+        "description": "Painting, filling and drywall work as well as floor installation and minor repairs."
+      }
+    }
+  },
+
+  "servicesList": {
+    "title": "Services",
+    "subtitle": "Discover our comprehensive services for your home and business",
+    "meta_title": "Our Services - O&I CLEAN group GmbH",
+    "meta_description": "Professional cleaning, renovation and facility management in Hamburg. ★ Expertise ★ German quality ★ Reliable service",
+    "loading": "Loading services…",
+    "contact_cta": "Contact us",
+    "contact_cta_aria": "Get in touch now"
+  },
+
+  "locations": {
+    "page_title": "Locations - O&I CLEAN group GmbH",
+    "page_description": "Professional cleaning services at various locations in Germany. Local expertise, nationwide quality.",
+    "title": "Locations",
+    "subtitle": "Discover our locations in Germany",
+    "loading": "Loading locations...",
+    "empty": "No locations are currently available.",
+    "cta_label": "Request location",
+    "cta_aria": "Get in touch now",
+    "contact_href": "/kontakt"
+  },
+
+  "contact": {
+    "title": "Contact us",
+    "description": "Professional cleaning services for your company. We are happy to advise you personally.",
+    "submit_label": "Send message",
+    "submit_failed": "Message could not be sent.",
+    "select_placeholder": "Please choose",
+
+    "phone_label": "Phone",
+    "email_label": "Email",
+    "address_label": "Address",
+    "hours_label": "Opening hours",
+    "hours_value": "Mon - Fri: 08:00 - 17:00",
+
+    "phone_number": "+49 (0)36874 38 55 67",
+    "email_address": "info@oi-clean.de",
+    "address_street": "Musterstraße 123",
+    "address_city": "12345 Berlin",
+
+    "form": {
+      "name": "Name",
+      "phone": "Phone",
+      "email": "Email",
+      "message": "Message",
+      "other": "Field"
+    }
+  },
+
+  "footer": {
+    "description": "Your partner for professional cleaning, care and facility management – with German precision and reliability.",
+    "address": "Spaldingstr. 77–79, 20097 Hamburg",
+    "phone": "+49 (0)40 46 63 35 19",
+    "phone_raw": "+494046633519",
+    "email": "info@oi-clean.de",
+
+    "links_title": "Links",
+    "contact_title": "Contact",
+
+    "link_about": "About us",
+    "link_contact": "Contact",
+    "link_contact_href": "/contact",
+    "link_faq": "FAQ",
+    "link_privacy": "Privacy",
+    "link_imprint": "Imprint",
+    "link_privacy_bottom": "Privacy",
+
+    "copyright": "All rights reserved.",
+
+    "back_to_top": "Back to top",
+
+    "region_label": "Footer and contact information",
+    "home_aria": "O&I CLEAN - Home",
+    "linkedin_aria": "LinkedIn - O&I CLEAN",
+    "instagram_aria": "Instagram - O&I CLEAN",
+    "facebook_aria": "Facebook - O&I CLEAN",
+    "quicklinks_aria": "Quick links",
+    "phone_aria": "Phone number",
+    "email_aria": "Email"
+  },
+
+  "header": {
+    "topbar_tagline": "Cleanliness you can rely on — 24/7 service",
+    "cta_label": "Schedule an appointment",
+    "cta_href": "/kontakt",
+    "hide_topbar": "Hide top bar",
+    "home_aria": "Home",
+    "main_nav": "Main navigation",
+    "menu_open": "Open menu",
+    "menu_close": "Close menu",
+    "language": "Language",
+    "impressum": "Imprint"
+  },
+
+  "nav": {
+    "home": "Home"
+  },
+
+  "staticPage": {
+    "breadcrumbs_home": "Home",
+    "breadcrumbs_page": "Page",
+    "empty_content": "Content will be added soon."
+  },
+
+  "offerDock": {
+    "title": "Quote",
+    "subtitle": "Free & without obligation",
+    "button": "Request",
+    "aria_open": "Open quote bar",
+    "aria_close": "Close quote bar"
+  },
+
+  "quote_modal": {
+    "title": "Request a quote",
+    "scrim_aria": "Close modal",
+    "close_aria": "Close",
+    "field_name": "Name",
+    "field_email": "Email",
+    "field_phone": "Phone",
+    "field_service": "Service",
+    "field_message": "Message",
+    "service_placeholder": "Please choose…",
+    "service_hotel_cleaning": "Hotel cleaning",
+    "service_building_cleaning": "Building cleaning",
+    "service_window_cleaning": "Window/glass cleaning",
+    "service_maintenance_cleaning": "Maintenance cleaning",
+    "service_basic_cleaning": "Basic/deep cleaning",
+    "service_carpet_cleaning": "Carpet cleaning",
+    "service_other": "Other",
+    "service_general": "General",
+    "message_placeholder": "What can we do for you?",
+    "consent_prefix": "I agree to the processing of my data in accordance with the ",
+    "consent_link": "privacy notice",
+    "consent_suffix": ".",
+    "cancel": "Cancel",
+    "submit": "Request",
+    "sending": "Sending…",
+    "error_consent": "Please agree to the data processing.",
+    "error_generic": "Something went wrong. Please try again.",
+    "subject_prefix": "Quote request",
+    "thank_you_title": "Thank you!",
+    "thank_you_text": "We have received your request and will get back to you shortly.",
+    "close_button": "Close"
+  },
+
+  "static": {
+    "uber-uns": {
+      "title": "About us",
+      "subtitle": "More than 25 years of experience in professional building cleaning.",
+      "hero": {
+        "image": "/images/template.jpg",
+        "alt": "About us – O&I CLEAN group GmbH"
+      },
+      "sections": [
+        {
+          "heading": "Hotel cleaning",
+          "body": "Our company, Ö&I CLEAN group GmbH, has existed for over 25 years and is one of the leading building cleaning companies. In recent years we have expanded and now operate throughout Germany. Our main focus is hotel cleaning. We count numerous large hotel chains as well as private and commercial companies among our clients."
+        },
+        {
+          "heading": "Employees & values",
+          "body": "We work with more than 2,000 employees who are flexible and have proven their reliability through their work over the years. As our customer, you will notice how important sustainable action is to us and that we keep the promises we make – this is what sets us apart from other companies."
+        },
+        {
+          "heading": "Trust & passion",
+          "body": "Trust and appreciation towards our employees and of course towards our customers form the basic foundation of our company. A service provider with a well-coordinated team and passion – that is what we stand for."
+        }
+      ]
+    },
+
+    "qualitatsmanagement": {
+      "title": "Quality management",
+      "subtitle": "For us, quality is more than a word – it is our commitment.",
+      "hero": {
+        "image": "/images/template.jpg",
+        "alt": "Quality management – O&I CLEAN group GmbH"
+      },
+      "sections": [
+        {
+          "heading": "Quality",
+          "body": "In a quality review, it is ensured that the customer’s desired requirements and wishes are actually met. The quality of a product or service is individual for every customer – it depends on the respective customer or company. At Ö&I CLEAN group GmbH we stand by our name: quality is our top priority."
+        }
+      ]
+    },
+
+    "mitarbeiter-schulungen": {
+      "title": "Employee trainings",
+      "subtitle": "Regular trainings and further education for social and technical skills.",
+      "hero": {
+        "image": "/images/template.jpg",
+        "alt": "Employee trainings – O&I CLEAN group GmbH"
+      },
+      "sections": [
+        {
+          "heading": "Overview",
+          "body": "Employee training in a company must take place on a regular basis. Employees are trained both in social competences and in technical fields – either from scratch or as a refresher. Trainings can take place in individual or group settings."
+        }
+      ]
+    },
+
+    "haufig-gestellte-fragen-faq": {
+      "title": "Frequently asked questions (FAQ)",
+      "subtitle": "Answers to the most common questions about our cleaning services.",
+      "hero": {
+        "image": "/images/template.jpg",
+        "alt": "FAQ – O&I CLEAN group GmbH"
+      },
+      "sections": [
+        {
+          "heading": "Why are basic cleanings important?",
+          "body": "Basic cleaning at regular intervals is important because dust and dirt accumulate even in the smallest corners of a room or property that are often not reached during daily cleaning."
+        },
+        {
+          "heading": "What is maintenance cleaning?",
+          "body": "Maintenance cleaning covers all public and common areas."
+        },
+        {
+          "heading": "How often should cleaning be carried out?",
+          "body": "Regular cleaning should ideally take place daily. Basic cleaning should be carried out at regular intervals."
+        },
+        {
+          "heading": "Why should I rely on a specialist company?",
+          "body": "A specialist company has special cleaning methods, professional cleaning agents and, of course, the necessary experience."
+        }
+      ]
+    },
+
+    "datenschutzhinweise": {
+      "title": "Privacy notice",
+      "subtitle": "The protection of your personal data is particularly important to us.",
+      "hero": {
+        "image": "/images/template.jpg",
+        "alt": "Privacy notice – O&I CLEAN group GmbH"
+      },
+      "sections": [
+        {
+          "heading": "Privacy principles",
+          "body": "The operators of these pages take the protection of your personal data very seriously. We treat your personal data confidentially and in accordance with the statutory data protection regulations and this privacy notice."
+        },
+        {
+          "heading": "Data collection & use",
+          "body": "Using our website is generally possible without providing personal data. If personal data (for example name, address or email addresses) is collected on our pages, this is always done, as far as possible, on a voluntary basis. These data will not be passed on to third parties without your explicit consent."
+        },
+        {
+          "heading": "Security of data transmission",
+          "body": "We would like to point out that data transmission on the Internet (for example when communicating by email) can have security gaps. Complete protection of data against access by third parties is not possible."
+        }
+      ]
+    },
+
+    "stockfotos": {
+      "title": "Stock photos",
+      "subtitle": "Information about the images used on our website.",
+      "hero": {
+        "image": "/images/template.jpg",
+        "alt": "Stock photos – O&I CLEAN group GmbH"
+      },
+      "sections": [
+        {
+          "heading": "Licensing",
+          "body": "All stock photos used on the website have a royalty-free licence and were purchased from third-party providers for a fee."
+        },
+        {
+          "heading": "Rights",
+          "body": "All rights reserved."
+        },
+        {
+          "heading": "Legal inquiries",
+          "body": "In the event of any legal inquiry, you can contact Ö&I CLEAN group GmbH via the imprint page."
+        }
+      ]
+    },
+
+    "impressum": {
+      "title": "Imprint",
+      "subtitle": "Information according to § 5 TMG",
+      "hero": {
+        "image": "/images/template.jpg",
+        "alt": "Imprint – O&I CLEAN group GmbH"
+      },
+      "sections": [
+        {
+          "heading": "Ö&I Clean GmbH",
+          "body": "Managing director: Ömer Dogan"
+        },
+        {
+          "heading": "Address",
+          "body": "Schnetter Straße 1\n98666 Masserberg\nGermany"
+        },
+        {
+          "heading": "Commercial register",
+          "body": "Local court Jena, HRB 521053"
+        },
+        {
+          "heading": "VAT ID & tax number",
+          "body": "VAT ID: —\nTax number: —"
+        },
+        {
+          "heading": "Hamburg office",
+          "body": "Großmannstraße 86\n20539 Hamburg\nGermany"
+        },
+        {
+          "heading": "Contact",
+          "body": "Phone: +49 (0)36874 38 55 67\nPhone: +49 (0)36874 38 55 68\nEmail: info@oi-clean.de\nWeb: www.oi-clean.de"
+        },
+        {
+          "heading": "Disclaimer",
+          "body": "No guarantee is given for the correctness of the content. Links to external websites are the responsibility of the respective providers."
+        },
+        {
+          "heading": "Copyright",
+          "body": "All content published on this page is subject to German copyright law. Any unauthorised duplication or distribution is not permitted."
+        }
+      ]
+    }
+  }
+}

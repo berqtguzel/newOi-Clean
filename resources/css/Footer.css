@@ -1,0 +1,62 @@
+:root{
+
+  --ft-surface: var(--footer-background-color, var(--background-color, #f8f9fa));
+  --ft-ink: var(--text-color, #111827);
+  --ft-link: var(--link-color, var(--site-primary-color, #2563eb));
+  --ft-link-hover: color-mix(in srgb, var(--ft-link) 78%, #000 22%);
+  --ft-primary: var(--site-primary-color, #2563eb);
+  --ft-accent: var(--site-accent-color, var(--ft-primary));
+  --ft-button: var(--button-color, var(--ft-primary));
+  --ft-border: color-mix(in srgb, var(--ft-ink) 12%, #fff 88%);
+  --footer-bg-start: var(--ft-surface);
+}
+
+:root.dark,.dark{
+  --ft-surface:#0b1220; --ft-ink:#e5e7eb;
+  --ft-link:#93c5fd; --ft-link-hover:#60a5fa;
+  --ft-primary:#3b82f6; --ft-accent:#60a5fa; --ft-button:#3b82f6;
+  --ft-border:rgba(148,163,184,.18);
+}
+
+
+.footer{
+  position:relative; isolation:isolate;
+  background: linear-gradient(180deg, var(--footer-bg-start), var(--ft-surface));
+  color: var(--ft-ink);
+}
+.footer-bottom{ border-color: var(--ft-border)!important; }
+
+
+.footer-svg{ color: color-mix(in srgb, var(--ft-ink) 12%, #fff 88%); }
+
+
+.muted{ color: color-mix(in srgb, var(--ft-ink) 70%, #fff 30%); }
+.footer a, .footer-link{ color: var(--ft-link); text-decoration:none; transition: color .15s; }
+.footer a:hover, .footer-link:hover{ color: var(--ft-link-hover); text-decoration: underline; }
+
+
+.text-accent{ color: var(--ft-accent)!important; }
+
+
+.link-ghost{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:.5rem; border-radius:.5rem;
+  background: color-mix(in srgb, var(--ft-ink) 6%, transparent);
+  border:1px solid var(--ft-border); color: var(--ft-ink);
+}
+.link-ghost:hover{ background: color-mix(in srgb, var(--ft-ink) 10%, transparent); }
+
+
+.footer-backtop{ position:absolute; right:1.5rem; bottom:1.5rem; }
+.footer-backtop .btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:.6rem .9rem; border-radius:9999px;
+  background: var(--ft-button); color:#fff; font-weight:700;
+  border:1px solid color-mix(in srgb, var(--ft-button) 30%, #fff 70%);
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--ft-button) 26%, transparent);
+}
+.footer-backtop .btn:hover{ transform: translateY(-1px); filter:brightness(1.05); }
+@media (max-width:768px){ .footer-backtop{ right:1rem; bottom:1rem; } }
+
+
+.footer address > div{ display:flex; align-items:center; gap:.75rem; }

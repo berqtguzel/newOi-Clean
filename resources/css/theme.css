@@ -1,0 +1,51 @@
+:root{
+
+  --site-primary-color: #2563eb;
+  --site-secondary-color: #6b7280;
+  --site-accent-color: #60a5fa;
+  --button-color: var(--site-primary-color);
+  --link-color: var(--site-primary-color);
+  --text-color: #0f172a;
+  --background-color: #ffffff;
+  --header-background-color: var(--background-color);
+  --footer-background-color: #f8f9fa;
+  --h1-color: var(--text-color);
+  --h2-color: var(--text-color);
+  --h3-color: var(--text-color);
+}
+
+
+body{
+  background: var(--background-color);
+  color: var(--text-color);
+}
+
+
+h1,.h1{ color: var(--h1-color); }
+h2,.h2{ color: var(--h2-color); }
+h3,.h3{ color: var(--h3-color); }
+
+
+a{ color: var(--link-color); }
+a:hover{ color: color-mix(in srgb, var(--link-color) 78%, #000 22%); }
+
+
+.btn-primary,
+.btn--primary,
+button[type="submit"]{
+  background: var(--button-color);
+  color:#fff;
+  border-color: color-mix(in srgb, var(--button-color) 30%, #fff 70%);
+}
+.btn-primary:hover,
+.btn--primary:hover,
+button[type="submit"]:hover{
+  filter: brightness(0.95);
+}
+
+
+.bg-white{ background: var(--background-color) !important; }
+.text-primary{ color: var(--site-primary-color) !important; }
+.bg-primary{ background: var(--site-primary-color) !important; color:#fff!important; }
+
+

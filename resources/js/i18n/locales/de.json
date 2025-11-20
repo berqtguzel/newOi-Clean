@@ -1,0 +1,344 @@
+{
+  "hero": {
+    "title": "Ihr zuverlässiger Partner im Gastgewerbe und Gebäudemanagement",
+    "subtitle": "Mit über 25 Jahren Erfahrung bieten wir maßgeschneiderte, integrierte Lösungen für Reinigung, Pflege und Instandhaltung",
+    "button_services": "Unsere Leistungen entdecken",
+    "button_contact": "Jetzt Kontakt aufnehmen"
+  },
+
+  "services": {
+    "section_title": "Unser breites Leistungsspektrum",
+    "section_subtitle": "Wir bieten schlüsselfertige Lösungen für alle Anforderungen Ihrer Einrichtungen und Gebäude – mit deutscher Präzision und Qualität.",
+    "learn_more": "Mehr erfahren",
+    "categories": {
+      "hotel": {
+        "title": "Hotelreinigung & Housekeeping",
+        "description": "Von der Zimmerreinigung bis zur Spülküche – perfekte Hygiene und effiziente Abläufe in jedem Bereich Ihres Hotels."
+      },
+      "building": {
+        "title": "Professionelle Gebäudereinigung",
+        "description": "Büros, Gewerbeflächen, Bauendreinigung und Spezialreinigungen – wir lassen Ihre Immobilien glänzen."
+      },
+      "renovation": {
+        "title": "Renovierung, Reparatur & Instandhaltung",
+        "description": "Maler-, Spachtel- und Trockenbauarbeiten sowie Bodenverlegung und kleinere Reparaturen."
+      }
+    }
+  },
+
+  "servicesList": {
+    "title": "Leistungen",
+    "subtitle": "Entdecken Sie unsere umfassenden Dienstleistungen für Ihr Zuhause",
+    "meta_title": "Unsere Leistungen - O&I CLEAN group GmbH",
+    "meta_description": "Professionelle Reinigung, Renovierung und Gebäudemanagement in Hamburg. ★ Expertise ★ Deutsche Qualität ★ Zuverlässiger Service",
+    "loading": "Lade Services…",
+    "contact_cta": "Kontaktiere Uns",
+    "contact_cta_aria": "Jetzt Kontakt aufnehmen"
+  },
+
+  "locations": {
+    "page_title": "Standorte - O&I CLEAN group GmbH",
+    "page_description": "Professionelle Reinigungsservices an verschiedenen Standorten in Deutschland. Lokale Expertise, bundesweite Qualität.",
+    "title": "Standorte",
+    "subtitle": "Entdecken Sie unsere Standorte in Deutschland",
+    "loading": "Standorte werden geladen...",
+    "empty": "Derzeit sind keine Standorte verfügbar.",
+    "cta_label": "Standort anfragen",
+    "cta_aria": "Jetzt Kontakt aufnehmen",
+    "contact_href": "/kontakt"
+  },
+
+  "contact": {
+    "title": "Kontaktieren Sie uns",
+    "description": "Professionelle Reinigungsdienstleistungen für Ihr Unternehmen. Wir beraten Sie gerne persönlich.",
+    "submit_label": "Nachricht senden",
+    "submit_failed": "Nachricht konnte nicht gesendet werden.",
+    "select_placeholder": "Bitte wählen",
+
+    "phone_label": "Telefon",
+    "email_label": "E-Mail",
+    "address_label": "Adresse",
+    "hours_label": "Öffnungszeiten",
+    "hours_value": "Mo. - Fr.: 08:00 - 17:00 Uhr",
+
+    "phone_number": "+49 (0)36874 38 55 67",
+    "email_address": "info@oi-clean.de",
+    "address_street": "Musterstraße 123",
+    "address_city": "12345 Berlin",
+
+    "form": {
+      "name": "Name",
+      "phone": "Telefon",
+      "email": "E-Mail",
+      "message": "Nachricht",
+      "other": "Feld"
+    }
+  },
+
+  "footer": {
+    "description": "Ihr Partner für professionelle Reinigung, Pflege und Gebäudemanagement mit deutscher Präzision und Zuverlässigkeit.",
+    "address": "Spaldingstr. 77–79, 20097 Hamburg",
+    "phone": "+49 (0)40 46 63 35 19",
+    "phone_raw": "+494046633519",
+    "email": "info@oi-clean.de",
+
+    "links_title": "Links",
+    "contact_title": "Kontakt",
+
+    "link_about": "Über uns",
+    "link_contact": "Kontakt",
+    "link_contact_href": "/contact",
+    "link_faq": "FAQ",
+    "link_privacy": "Datenschutz",
+    "link_imprint": "Impressum",
+    "link_privacy_bottom": "Datenschutz",
+
+    "copyright": "Alle Rechte vorbehalten.",
+
+    "back_to_top": "Nach oben",
+
+    "region_label": "Fußzeile und Kontaktinformationen",
+    "home_aria": "O&I CLEAN - Startseite",
+    "linkedin_aria": "LinkedIn - O&I CLEAN",
+    "instagram_aria": "Instagram - O&I CLEAN",
+    "facebook_aria": "Facebook - O&I CLEAN",
+    "quicklinks_aria": "Schnell Links",
+    "phone_aria": "Telefonnummer",
+    "email_aria": "E-Mail"
+  },
+
+  "header": {
+    "topbar_tagline": "Sauberkeit, auf die Sie sich verlassen können — 24/7 Service",
+    "cta_label": "Termin vereinbaren",
+    "cta_href": "/kontakt",
+    "hide_topbar": "Top-Leiste ausblenden",
+    "home_aria": "Startseite",
+    "main_nav": "Hauptnavigation",
+    "menu_open": "Menü öffnen",
+    "menu_close": "Menü schließen",
+    "language": "Sprache",
+    "impressum": "Impressum"
+  },
+
+  "nav": {
+    "home": "Startseite"
+  },
+
+  "staticPage": {
+    "breadcrumbs_home": "Startseite",
+    "breadcrumbs_page": "Seite",
+    "empty_content": "Inhalt wird bald hinzugefügt."
+  },
+
+  "offerDock": {
+    "title": "Angebot",
+    "subtitle": "Kostenlos & unverbindlich",
+    "button": "Anfordern",
+    "aria_open": "Angebotsleiste öffnen",
+    "aria_close": "Angebotsleiste schließen"
+  },
+
+  "quote_modal": {
+    "title": "Angebot anfordern",
+    "scrim_aria": "Modal schließen",
+    "close_aria": "Schließen",
+    "field_name": "Name",
+    "field_email": "E-Mail",
+    "field_phone": "Telefon",
+    "field_service": "Leistung",
+    "field_message": "Nachricht",
+    "service_placeholder": "Bitte wählen…",
+    "service_hotel_cleaning": "Hotelreinigung",
+    "service_building_cleaning": "Gebäudereinigung",
+    "service_window_cleaning": "Fenster/Glasreinigung",
+    "service_maintenance_cleaning": "Unterhaltsreinigung",
+    "service_basic_cleaning": "Grundreinigung",
+    "service_carpet_cleaning": "Teppichreinigung",
+    "service_other": "Sonstiges",
+    "service_general": "Allgemein",
+    "message_placeholder": "Was dürfen wir für Sie tun?",
+    "consent_prefix": "Ich stimme der Verarbeitung meiner Daten gemäß ",
+    "consent_link": "Datenschutzhinweisen",
+    "consent_suffix": "zu.",
+    "cancel": "Abbrechen",
+    "submit": "Anfordern",
+    "sending": "Senden…",
+    "error_consent": "Bitte stimmen Sie der Datenverarbeitung zu.",
+    "error_generic": "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
+    "subject_prefix": "Angebotsanfrage",
+    "thank_you_title": "Vielen Dank!",
+    "thank_you_text": "Wir haben Ihre Anfrage erhalten und melden uns zeitnah bei Ihnen.",
+    "close_button": "Schließen"
+  },
+
+  "static": {
+    "uber-uns": {
+      "title": "Über uns",
+      "subtitle": "Über 25 Jahre Erfahrung in der professionellen Gebäudereinigung.",
+      "hero": {
+        "image": "/images/template.jpg",
+        "alt": "Über uns – O&I CLEAN group GmbH"
+      },
+      "sections": [
+        {
+          "heading": "Hotelreinigung",
+          "body": "Unser Unternehmen, die Ö&I CLEAN group GmbH, besteht seit über 25 Jahren und ist eines der führenden Gebäudereinigungsunternehmen. In den letzten Jahren haben wir expandiert und sind bundesweit auf dem Markt. Unser Schwerpunkt ist die Hotelreinigung. Wir können zahlreiche große Hotelketten sowie auch private und gewerbliche Firmen zu unserem Kundenkreis zählen."
+        },
+        {
+          "heading": "Mitarbeiter & Werte",
+          "body": "Wir arbeiten mit mehr als 2000 Mitarbeiterinnen und Mitarbeitern, welche flexibel sind und sich im Laufe der Jahre mit ihrer Arbeit auf ihre Zuverlässigkeit bewiesen haben. Als unser Kunde können Sie spüren, dass wir viel Wert auf nachhaltiges Handeln legen und was wir versprechen, das halten wir auch, denn das unterscheidet uns von anderen Firmen."
+        },
+        {
+          "heading": "Vertrauen & Leidenschaft",
+          "body": "Vertrauen und Wertschätzung gegenüber den Mitarbeiterinnen und Mitarbeitern und selbstverständlich unserem Kunden gegenüber bilden die grundlegende Basis unseres Unternehmens. Ein Dienstleister mit einem eingespielten Team und Leidenschaft – das steht bei uns im Vordergrund."
+        }
+      ]
+    },
+
+    "qualitatsmanagement": {
+      "title": "Qualitätsmanagement",
+      "subtitle": "Qualität ist bei uns mehr als ein Wort – sie ist unsere Verpflichtung.",
+      "hero": {
+        "image": "/images/template.jpg",
+        "alt": "Qualitätsmanagement – O&I CLEAN group GmbH"
+      },
+      "sections": [
+        {
+          "heading": "Qualität",
+          "body": "In einer Qualitätsüberprüfung stellt man sicher, dass die gewünschten Anforderungen und Wünsche des Kunden tatsächlich übereinstimmen. Die Qualität eines Produkts oder einer gewünschten Dienstleistung ist bei jedem Kunden individuell – sie hängt vom jeweiligen Kunden oder Unternehmen ab. Wir, die Ö&I CLEAN group GmbH, stehen zu unserem Namen: Qualität steht bei uns an erster Stelle."
+        }
+      ]
+    },
+
+    "mitarbeiter-schulungen": {
+      "title": "Mitarbeiter Schulungen",
+      "subtitle": "Regelmäßige Schulungen und Weiterbildungen für soziale und fachliche Kompetenzen.",
+      "hero": {
+        "image": "/images/template.jpg",
+        "alt": "Mitarbeiter Schulungen – O&I CLEAN group GmbH"
+      },
+      "sections": [
+        {
+          "heading": "Überblick",
+          "body": "Die Mitarbeiterschulung eines Unternehmens muss regelmäßig erfolgen. Die Mitarbeitenden werden sowohl in sozialen Kompetenzen als auch in fachlichen Bereichen geschult – sei es von Grund auf oder als Auffrischung. Schulungen können in Einzel- oder Gruppensettings stattfinden."
+        }
+      ]
+    },
+
+    "haufig-gestellte-fragen-faq": {
+      "title": "Häufig gestellte Fragen (FAQ)",
+      "subtitle": "Antworten auf die häufigsten Fragen rund um unsere Reinigungsleistungen.",
+      "hero": {
+        "image": "/images/template.jpg",
+        "alt": "FAQ – O&I CLEAN group GmbH"
+      },
+      "sections": [
+        {
+          "heading": "Warum sind die Grundreinigungen wichtig?",
+          "body": "Die Grundreinigung ist in regelmäßigen Abständen wichtig, da sich in einem Zimmer oder Objekt auch in den kleinsten Ecken Staub oder Schmutz ansammelt, der bei der täglichen Reinigung oft nicht erreicht wird."
+        },
+        {
+          "heading": "Was versteht man unter einer Unterhaltsreinigung?",
+          "body": "Eine Unterhaltsreinigung betrifft alle öffentlichen Bereiche."
+        },
+        {
+          "heading": "Wie oft sollte eine Reinigung durchgeführt werden?",
+          "body": "Die normale Reinigung sollte idealerweise täglich stattfinden. Die Grundreinigung sollte in regelmäßigen Abständen erfolgen."
+        },
+        {
+          "heading": "Warum sollte man auf einen Fachbetrieb zurückgreifen?",
+          "body": "Ein Fachunternehmen verfügt über spezielle Reinigungsverfahren, professionelle Reinigungsmittel und natürlich über die notwendige Erfahrung."
+        }
+      ]
+    },
+
+    "datenschutzhinweise": {
+      "title": "Datenschutzhinweise",
+      "subtitle": "Der Schutz Ihrer persönlichen Daten ist uns ein besonderes Anliegen.",
+      "hero": {
+        "image": "/images/template.jpg",
+        "alt": "Datenschutzhinweise – O&I CLEAN group GmbH"
+      },
+      "sections": [
+        {
+          "heading": "Datenschutz-Grundsätze",
+          "body": "Die Betreiber dieser Seiten nehmen den Schutz Ihrer persönlichen Daten sehr ernst. Wir behandeln Ihre personenbezogenen Daten vertraulich und entsprechend der gesetzlichen Datenschutzvorschriften sowie dieser Datenschutzerklärung."
+        },
+        {
+          "heading": "Datenerhebung & Nutzung",
+          "body": "Die Nutzung unserer Webseite ist in der Regel ohne Angabe personenbezogener Daten möglich. Soweit auf unseren Seiten personenbezogene Daten (beispielsweise Name, Anschrift oder E-Mail-Adressen) erhoben werden, erfolgt dies, soweit möglich, stets auf freiwilliger Basis. Diese Daten werden ohne Ihre ausdrückliche Zustimmung nicht an Dritte weitergegeben."
+        },
+        {
+          "heading": "Sicherheit der Datenübertragung",
+          "body": "Wir weisen darauf hin, dass die Datenübertragung im Internet (z. B. bei der Kommunikation per E-Mail) Sicherheitslücken aufweisen kann. Ein lückenloser Schutz der Daten vor dem Zugriff durch Dritte ist nicht möglich."
+        }
+      ]
+    },
+
+    "stockfotos": {
+      "title": "Stockfotos",
+      "subtitle": "Informationen zu den auf unserer Website verwendeten Bildern.",
+      "hero": {
+        "image": "/images/template.jpg",
+        "alt": "Stockfotos – O&I CLEAN group GmbH"
+      },
+      "sections": [
+        {
+          "heading": "Lizenzierung",
+          "body": "Alle auf der Website verwendeten Stock-Fotos haben eine „Royalty-free“-Lizenz und wurden von Drittanbietern gegen Zahlung einer Gebühr erworben."
+        },
+        {
+          "heading": "Rechte",
+          "body": "Alle Rechte vorbehalten."
+        },
+        {
+          "heading": "Rechtliche Anfragen",
+          "body": "Im Falle einer rechtlichen Anfrage können Sie sich über die Impressum-Seite an die Ö&I CLEAN group GmbH wenden."
+        }
+      ]
+    },
+
+    "impressum": {
+      "title": "Impressum",
+      "subtitle": "Angaben gemäß § 5 TMG",
+      "hero": {
+        "image": "/images/template.jpg",
+        "alt": "Impressum – O&I CLEAN group GmbH"
+      },
+      "sections": [
+        {
+          "heading": "Ö&I Clean GmbH",
+          "body": "Geschäftsführer: Ömer Dogan"
+        },
+        {
+          "heading": "Anschrift",
+          "body": "Schnetter Straße 1\n98666 Masserberg\nDeutschland"
+        },
+        {
+          "heading": "Registereintrag",
+          "body": "Amtsgericht Jena, HRB 521053"
+        },
+        {
+          "heading": "USt-IdNr. & Steuernummer",
+          "body": "USt-IdNr.: —\nSteuernummer: —"
+        },
+        {
+          "heading": "Büro Hamburg",
+          "body": "Großmannstraße 86\n20539 Hamburg\nDeutschland"
+        },
+        {
+          "heading": "Kontakt",
+          "body": "Telefon: +49 (0)36874 38 55 67\nTelefon: +49 (0)36874 38 55 68\nE-Mail: info@oi-clean.de\nWeb: www.oi-clean.de"
+        },
+        {
+          "heading": "Haftungsausschluss",
+          "body": "Für die Richtigkeit der Inhalte wird keine Gewähr übernommen. Links zu externen Webseiten unterliegen der Haftung der jeweiligen Anbieter."
+        },
+        {
+          "heading": "Urheberrecht",
+          "body": "Alle auf dieser Seite veröffentlichten Inhalte unterliegen dem deutschen Urheberrecht. Unerlaubte Vervielfältigung oder Verbreitung ist nicht gestattet."
+        }
+      ]
+    }
+  }
+}

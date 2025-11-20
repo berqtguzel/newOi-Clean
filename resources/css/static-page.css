@@ -1,0 +1,371 @@
+/* ===================================================================
+   STATIC PAGE – MODERN TASARIM
+   =================================================================== */
+
+/* ------------------ Değişkenler ------------------ */
+
+:root {
+  --sp-max: 1200px;
+  --sp-pad-x: 1rem;
+
+  --sp-ink: #020617;          /* ana metin */
+  --sp-ink-soft: #475569;     /* gövde metin */
+  --sp-ink-mute: #94a3b8;     /* yardımcı metin */
+
+  --sp-surface: #ffffff;
+  --sp-surface-soft: rgba(255, 255, 255, 0.92);
+  --sp-surface-subtle: #f8fafc;
+  --sp-border: rgba(148, 163, 184, 0.35);
+
+  --sp-accent: #2563eb;
+  --sp-accent-soft: #60a5fa;
+
+  --sp-radius-xl: 1.5rem;
+  --sp-shadow-soft: 0 22px 45px rgba(15, 23, 42, 0.16);
+
+  --sp-blob-1: linear-gradient(135deg, #60a5fa, #6366f1);
+  --sp-blob-2: linear-gradient(135deg, #22c55e, #06b6d4);
+}
+
+:root.dark,
+:root[class~="dark"] {
+  --sp-ink: #e5e7eb;
+  --sp-ink-soft: #cbd5e1;
+  --sp-ink-mute: #64748b;
+
+  --sp-surface: #020617;
+  --sp-surface-soft: rgba(15, 23, 42, 0.92);
+  --sp-surface-subtle: #020617;
+  --sp-border: rgba(15, 23, 42, 0.9);
+
+  --sp-shadow-soft: 0 22px 45px rgba(0, 0, 0, 0.55);
+}
+
+/* ------------------ Genel Layout ------------------ */
+
+.container {
+  max-width: var(--sp-max);
+  margin-inline: auto;
+  padding-inline: var(--sp-pad-x);
+}
+
+/* ------------------ HERO ------------------ */
+
+.sp-hero {
+  position: relative;
+  padding: 4.5rem 0 2.5rem;
+  overflow: hidden;
+  isolation: isolate;
+  background: radial-gradient(circle at top left, #e0f2fe 0, transparent 55%),
+              radial-gradient(circle at top right, #ddd6fe 0, transparent 60%),
+              linear-gradient(to bottom, #eff6ff 0, #ffffff 55%);
+}
+
+:root.dark .sp-hero,
+:root[class~="dark"] .sp-hero {
+  background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.5) 0, transparent 55%),
+              radial-gradient(circle at top right, rgba(129, 140, 248, 0.45) 0, transparent 60%),
+              radial-gradient(circle at bottom, rgba(15, 23, 42, 0.9) 0, #020617 60%);
+}
+
+/* Dekoratif blob’lar */
+
+.sp-hero__decor {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.sp-hero__decor::before,
+.sp-hero__decor::after {
+  content: "";
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(70px);
+  opacity: 0.6;
+  transform: translateZ(0);
+  animation: spFloat 14s ease-in-out infinite;
+}
+
+.sp-hero__decor::before {
+  top: -8rem;
+  right: -6rem;
+  width: 24rem;
+  height: 24rem;
+  background: var(--sp-blob-1);
+}
+
+.sp-hero__decor::after {
+  left: -8rem;
+  bottom: -8rem;
+  width: 26rem;
+  height: 26rem;
+  background: var(--sp-blob-2);
+  animation-delay: 1.9s;
+}
+
+@keyframes spFloat {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(0, -10px, 0) scale(1.03); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+/* Hero media (opsiyonel görsel) */
+
+.sp-hero__media {
+  position: relative;
+  width: min(100%, var(--sp-max));
+  margin-inline: auto;
+  border-radius: 2rem;
+  overflow: hidden;
+  box-shadow: var(--sp-shadow-soft);
+}
+
+.sp-hero__img,
+.sp-hero__fallback {
+  width: 100%;
+  aspect-ratio: 21 / 7;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.sp-hero__fallback {
+  background: radial-gradient(120% 120% at 0% 0%, #e0f2fe 0, transparent 55%),
+              radial-gradient(120% 120% at 100% 0%, #ddd6fe 0, transparent 55%),
+              linear-gradient(135deg, #38bdf8, #6366f1, #a855f7);
+}
+
+.sp-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.2), transparent 55%),
+    radial-gradient(150% 130% at 50% 10%, rgba(0, 0, 0, 0.25) 0, transparent 60%);
+  pointer-events: none;
+}
+
+.sp-hero__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(160% 130% at -5% 50%, rgba(0, 0, 0, 0.45), transparent 60%),
+    radial-gradient(160% 130% at 105% 50%, rgba(0, 0, 0, 0.45), transparent 60%);
+  mix-blend-mode: soft-light;
+}
+
+@media (max-width: 768px) {
+  .sp-hero__img,
+  .sp-hero__fallback {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+/* Hero içerik */
+
+.sp-hero__inner {
+  margin-top: 1.75rem;
+}
+
+.sp-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--sp-ink-mute);
+}
+
+.sp-crumbs__link {
+  text-decoration: none;
+  color: inherit;
+  padding-inline: 0.1rem;
+  border-radius: 999px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sp-crumbs__link:hover {
+  background-color: rgba(148, 163, 184, 0.12);
+  color: var(--sp-ink);
+}
+
+.sp-crumbs__sep {
+  opacity: 0.7;
+}
+
+.sp-title {
+  margin-top: 0.75rem;
+  font-size: clamp(2rem, 3vw, 3.1rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  color: var(--sp-ink);
+}
+
+.sp-subtitle {
+  margin-top: 0.4rem;
+  max-width: 60ch;
+  color: var(--sp-ink-soft);
+  font-size: 1rem;
+}
+
+/* HERO invert (görsel üstüne yazı) istersen kullanabilirsin */
+.sp-hero--invert .sp-title,
+.sp-hero--invert .sp-subtitle,
+.sp-hero--invert .sp-crumbs {
+  color: #f9fafb !important;
+}
+
+.sp-hero--invert .sp-crumbs__link:hover {
+  background-color: rgba(15, 23, 42, 0.35);
+}
+
+/* ------------------ CONTENT ------------------ */
+
+.sp-content {
+  position: relative;
+  padding: 2.75rem 0 3.5rem;
+  background: radial-gradient(circle at top, #eff6ff 0, #f8fafc 35%, #ffffff 80%);
+}
+
+:root.dark .sp-content,
+:root[class~="dark"] .sp-content {
+  background: radial-gradient(circle at top, rgba(30, 64, 175, 0.5) 0, #020617 60%);
+}
+
+.sp-card {
+  border-radius: var(--sp-radius-xl);
+  border: 1px solid var(--sp-border);
+  background: var(--sp-surface-soft);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--sp-shadow-soft);
+}
+
+.sp-card__body {
+  padding: 1.75rem 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .sp-card__body {
+    padding: 2.5rem 2.4rem;
+  }
+}
+
+/* Fade-up animasyonu (gizleme yok, sadece geçiş) */
+
+.sp-fadeup {
+  animation: spFadeUp 0.6s ease both;
+}
+
+@keyframes spFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-fadeup {
+    animation: none;
+  }
+}
+
+/* ------------------ Tipografi / Prose ------------------ */
+
+.sp-prose {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--sp-ink-soft);
+}
+
+.sp-prose > *:first-child {
+  margin-top: 0;
+}
+
+.sp-prose p {
+  margin: 0.45rem 0 0.85rem;
+}
+
+.sp-prose h2,
+.sp-prose h3,
+.sp-prose h4 {
+  color: var(--sp-ink);
+  font-weight: 700;
+  margin-top: 1.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.sp-prose h2 {
+  font-size: 1.35rem;
+}
+
+.sp-prose h3 {
+  font-size: 1.15rem;
+}
+
+.sp-prose ul,
+.sp-prose ol {
+  padding-left: 1.3rem;
+  margin: 0.4rem 0 0.9rem;
+}
+
+.sp-prose li + li {
+  margin-top: 0.2rem;
+}
+
+.sp-prose a {
+  color: var(--sp-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.sp-prose a:hover {
+  color: var(--sp-accent-soft);
+}
+
+/* Liste bileşeni (eğer StaticPage içinde kullanırsan) */
+
+.sp-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem 0.9rem;
+  margin-top: 0.6rem;
+}
+
+@media (min-width: 640px) {
+  .sp-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.sp-list__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  color: var(--sp-ink);
+}
+
+.sp-bullet {
+  flex-shrink: 0;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-top: 0.45rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, var(--sp-accent), var(--sp-accent-soft));
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* ------------------ Yardımcı ------------------ */
+
+.sp-muted {
+  color: var(--sp-ink-mute);
+  font-size: 0.95rem;
+}
