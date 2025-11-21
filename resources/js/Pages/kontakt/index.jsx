@@ -211,45 +211,6 @@ export default function ContactIndex({
 
     return (
         <AppLayout currentRoute={currentRoute}>
-            <Head>
-                <title>{pageTitle}</title>
-                <meta name="description" content={pageDescription} />
-                <meta
-                    name="robots"
-                    content="index,follow,max-image-preview:large"
-                />
-                <meta
-                    name="viewport"
-                    content="width=device-width, initial-scale=1"
-                />
-                <meta name="theme-color" content="#0f172a" />
-
-                <link rel="canonical" href={currentUrl} />
-
-                {/* Open Graph */}
-                <meta property="og:type" content="website" />
-                <meta property="og:title" content={pageTitle} />
-                <meta property="og:description" content={pageDescription} />
-                <meta property="og:url" content={currentUrl} />
-                <meta property="og:site_name" content="O&I CLEAN group GmbH" />
-
-                {/* Twitter */}
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content={pageTitle} />
-                <meta name="twitter:description" content={pageDescription} />
-
-                {/* JSON-LD */}
-                <script type="application/ld+json">
-                    {JSON.stringify(schemaWebPage)}
-                </script>
-                <script type="application/ld+json">
-                    {JSON.stringify(schemaOrganization)}
-                </script>
-                <script type="application/ld+json">
-                    {JSON.stringify(schemaBreadcrumbs)}
-                </script>
-            </Head>
-
             <div className="contact-page">
                 <section className="contact-intro max-w-4xl mx-auto px-4 pt-10 pb-4">
                     <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">

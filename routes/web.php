@@ -11,13 +11,10 @@ use App\Http\Controllers\StaticPageController;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/services', [ServicesController::class, 'index'])->name('services.index');
-Route::get('/services/{slug}', [ServicesController::class, 'show'])->name('services.show');
 
 Route::get('/dienstleistungen', fn () => redirect()->route('services.index'), 301);
 
-Route::get('/standorte/{slug}', [LocationsController::class, 'show'])->name('locations.show');
 Route::get('/standorte', [LocationsController::class, 'index'])->name('locations.index');
-
 
 Route::get('/kontakt', function () {
     return Inertia::render('kontakt/index', [
@@ -40,7 +37,6 @@ Route::get('/lang/{locale}', function ($locale) {
     return back(); // aynı sayfaya geri
 })->name('lang.switch');
 
-// EN SONA: static sayfalar
 Route::get('/{slug}', [StaticPageController::class, 'show'])
-    ->where('slug', '^(?!services$)(?!standorte)(?!kontakt$)(?!dienstleistungen$)[-a-z0-9]+$')
+    ->where('slug', '^(?!services$)(?!standorte$)(?!kontakt$)(?!dienstleistungen$)[-a-z0-9]+$')
     ->name('static.show');

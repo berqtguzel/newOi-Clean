@@ -178,3 +178,22 @@
     height: 80px;
   }
 }
+
+/* KAPALI DURUM – sadece mavi tab görünsün */
+.odock--collapsed {
+  /* paneli tamamen sola it */
+  --panel-x: calc(-1 * var(--panel-w)) !important;
+}
+
+/* panel ekran dışında, görünmesin */
+.odock--collapsed .odock__panel {
+  border-color: transparent;
+  box-shadow: none;
+  background: transparent;
+}
+
+/* tab’ı tam sol kenara getir (sadece mavi kısım) */
+.odock--collapsed .odock__tab {
+  left: 0 !important;
+}
+

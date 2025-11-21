@@ -10,10 +10,8 @@ import parse, { domToReact, Element } from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
 import { useTranslation } from "react-i18next";
 
-import { useLocale } from "@/hooks/useLocale";
 import { fetchPageBySlug } from "@/services/pageService";
 
-/** Güvenli HTML parser */
 function safeParse(html = "") {
     const clean = DOMPurify.sanitize(html, {
         ALLOWED_TAGS: [
@@ -86,7 +84,17 @@ function safeParse(html = "") {
     return parse(clean, { replace });
 }
 
-export default function StaticPage({ slug, page: initialPage = {}, meta = {} }) {
+function normalizeLang(code) {
+    return String(code || "de")
+        .toLowerCase()
+        .split("-")[0];
+}
+
+export default function StaticPage({
+    slug,
+    page: initialPage = {},
+    meta = {},
+}) {
     const { t } = useTranslation();
     const { props, url: inertiaUrl } = usePage();
 
@@ -96,8 +104,9 @@ export default function StaticPage({ slug, page: initialPage = {}, meta = {} }) 
         props?.global?.talentId ||
         "";
 
-    // UI dili (de/en/tr) – değişince API tekrar çağrılacak
-    const locale = useLocale("de");
+    // Locale'i DOĞRUDAN Inertia'dan al:
+    const inertiaLocale = props?.locale || props?.ziggy?.locale || "de";
+    const locale = normalizeLang(inertiaLocale);
 
     const [page, setPage] = React.useState(initialPage || null);
     const [loading, setLoading] = React.useState(false);
@@ -115,12 +124,12 @@ export default function StaticPage({ slug, page: initialPage = {}, meta = {} }) 
             try {
                 const { page: apiPage } = await fetchPageBySlug(slug, {
                     tenantId,
-                    locale,
+                    locale, // <-- buraya net olarak "de/en/tr" gidiyor
                 });
 
                 if (cancelled) return;
 
-                console.log("[StaticPage] apiPage:", apiPage);
+                console.log("[StaticPage] locale:", locale, "page:", apiPage);
                 setPage(apiPage || null);
             } catch (e) {
                 if (cancelled) return;
@@ -190,61 +199,6 @@ export default function StaticPage({ slug, page: initialPage = {}, meta = {} }) 
 
     return (
         <AppLayout>
-            <Head>
-                <title>{seoTitle}</title>
-                <meta name="description" content={seoDescription} />
-                <meta
-                    name="robots"
-                    content="index,follow,max-image-preview:large"
-                />
-                <meta
-                    name="viewport"
-                    content="width=device-width, initial-scale=1"
-                />
-                <meta name="theme-color" content="#0f172a" />
-
-                <link rel="canonical" href={currentUrl} />
-
-                <meta property="og:type" content="website" />
-                <meta property="og:title" content={seoTitle} />
-                <meta property="og:description" content={seoDescription} />
-                <meta property="og:url" content={currentUrl} />
-                {heroImage && <meta property="og:image" content={heroImage} />}
-                <meta property="og:site_name" content="O&I CLEAN group GmbH" />
-
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content={seoTitle} />
-                <meta name="twitter:description" content={seoDescription} />
-                {heroImage && (
-                    <meta name="twitter:image" content={heroImage} />
-                )}
-
-                <script type="application/ld+json">
-                    {JSON.stringify(schemaWebPage)}
-                </script>
-
-                <script type="application/ld+json">
-                    {JSON.stringify({
-                        "@context": "https://schema.org",
-                        "@type": "BreadcrumbList",
-                        itemListElement: [
-                            {
-                                "@type": "ListItem",
-                                position: 1,
-                                name: homeLabel,
-                                item: originUrl,
-                            },
-                            {
-                                "@type": "ListItem",
-                                position: 2,
-                                name: seoTitle || pageLabel,
-                                item: currentUrl,
-                            },
-                        ],
-                    })}
-                </script>
-            </Head>
-
             {/* HERO */}
             <section
                 className={`sp-hero ${heroImage ? "sp-hero--has-img" : ""}`}
@@ -269,11 +223,11 @@ export default function StaticPage({ slug, page: initialPage = {}, meta = {} }) 
                     <nav className="sp-crumbs" aria-label="Breadcrumb">
                         <ol>
                             <li>
-                                <Link href="/">{homeLabel}</Link>
+                                <Link className="sp-crumbs__link" href="/">
+                                    {homeLabel}
+                                </Link>
                             </li>
-                            <li aria-current="page">
-                                {title || pageLabel}
-                            </li>
+                            <li aria-current="page">{title || pageLabel}</li>
                         </ol>
                     </nav>
 
@@ -286,7 +240,6 @@ export default function StaticPage({ slug, page: initialPage = {}, meta = {} }) 
                 <div className="container">
                     <article className="sp-card sp-fadeup">
                         <div className="sp-card__body">
-                        
                             {loading && (
                                 <p className="sp-muted">Seite wird geladen…</p>
                             )}
@@ -296,9 +249,7 @@ export default function StaticPage({ slug, page: initialPage = {}, meta = {} }) 
                             )}
 
                             {!loading && !error && !hasContent && (
-                                <p className="sp-muted">
-                                    {contentComingSoon}
-                                </p>
+                                <p className="sp-muted">{contentComingSoon}</p>
                             )}
 
                             {!loading && !error && hasContent && (

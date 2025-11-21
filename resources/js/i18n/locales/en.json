@@ -339,6 +339,12 @@
           "body": "All content published on this page is subject to German copyright law. Any unauthorised duplication or distribution is not permitted."
         }
       ]
+    },
+    "locations": {
+    "card": {
+      "cta": "Learn more",
+      "cta_aria": "Learn more about our cleaning services in {{city}}"
     }
+  }
   }
 }

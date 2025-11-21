@@ -1,73 +1,59 @@
 // resources/js/services/pageService.js
-import { httpRequest } from "../lib/http";
-import { remoteConfig } from "./remoteConfig";
+import axios from "axios";
+import remoteConfig from "./remoteConfig";
 
-function pickTranslation(it, locale) {
-    if (!Array.isArray(it?.translations)) return null;
-
-    const lang = locale || remoteConfig.locale || "de";
-
-    return (
-        it.translations.find((t) => t.language_code === lang) ||
-        it.translations.find((t) => t.language_code === it?._meta?.current_language) ||
-        it.translations[0] ||
-        null
-    );
+function normalizeLang(code) {
+    return String(code || "de").toLowerCase().split("-")[0];
 }
 
-function normalizePage(it, locale) {
-    if (!it) return null;
+// Burada base url'i güvenli şekilde belirliyoruz
+const API_BASE =
+    remoteConfig.baseUrl ||            // senin projende varsa
+    remoteConfig.apiBaseUrl ||         // bazı projelerde böyle oluyor
+    remoteConfig.apiUrl ||             // ya da böyle
+    "/api/v1";                         // hiçbirini bulamazsa fallback
 
-    const tr = pickTranslation(it, locale);
-
-    // Başlık
-    const title =
-        tr?.name ||
-        it.name ||
-        it.title ||
-        "";
-
-    // İçerik (dashboarddaki Content alanı)
-    const content =
-        tr?.content ||
-        it.content ||
-        it.body ||
-        it.description ||
-        "";
-
-    return {
-        id: it.id,
-        slug: it.slug,
-        title,
-        content,
-        metaTitle: it.meta_title || "",
-        metaDescription: it.meta_description || "",
-        image: it.image || null,
-        raw: it,
-    };
-}
-
-/**
- * /api/v1/pages/{id|slug}
- */
 export async function fetchPageBySlug(slug, { tenantId, locale } = {}) {
     if (!slug) throw new Error("slug is required");
 
-    const headers = {};
-    if (tenantId) headers["X-Tenant-ID"] = String(tenantId);
+    const tenant = tenantId || remoteConfig.tenant;
+    const lang = normalizeLang(locale || remoteConfig.locale || "de");
 
-    const lang = locale || remoteConfig.locale || "de";
-
-    const res = await httpRequest(`/v1/pages/${slug}`, {
-        method: "GET",
-        headers,
-        params: { locale: lang },
-        timeoutMs: remoteConfig.timeout,
-        retries: 1,
+    const res = await axios.get(`${API_BASE}/pages/${slug}`, {
+        params: {
+            tenant,
+            lang,
+        },
     });
 
-    const raw = res?.data || res;
-    const page = normalizePage(raw, lang);
+    const raw = res?.data?.data || res?.data || {};
+    const translations = Array.isArray(raw.translations)
+        ? raw.translations
+        : [];
+
+    const tLang =
+        translations.find(
+            (t) => normalizeLang(t.language_code) === lang
+        ) || {};
+
+    const title = tLang.name || raw.name || "";
+    const content = tLang.content || raw.content || "";
+    const metaTitle = tLang.meta_title || raw.meta_title || "";
+    const metaDescription =
+        tLang.meta_description || raw.meta_description || "";
+
+    const page = {
+        id: raw.id,
+        slug: raw.slug,
+        title,
+        content,
+        image: raw.image || null,
+        metaTitle,
+        metaDescription,
+        raw,
+        translations,
+        _meta: raw._meta || res?.data?._meta || {},
+    };
 
     return { page };
 }

@@ -339,6 +339,14 @@
           "body": "Alle auf dieser Seite veröffentlichten Inhalte unterliegen dem deutschen Urheberrecht. Unerlaubte Vervielfältigung oder Verbreitung ist nicht gestattet."
         }
       ]
+    },
+     "locations": {
+    "card": {
+      "cta": "Mehr erfahren",
+      "cta_aria": "Mehr über unsere Reinigungsservices in {{city}} erfahren"
     }
   }
+
+  }
+
 }

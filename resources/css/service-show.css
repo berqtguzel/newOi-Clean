@@ -84,8 +84,7 @@
   overflow: hidden;
   z-index: -1;
   transform: translateZ(0);
-  -webkit-clip-path: path("M1050,40 C1130,120 1190,240 1170,340 C1150,440 1040,520 900,540 C760,560 590,520 470,500 C350,480 280,480 200,460 C120,440 30,380 20,300 C10,220 60,120 150,80 C240,40 370,60 480,70 C590,80 780,-40 900,0 C970,20 1000,0 1050,40 Z");
-          clip-path: path("M1050,40 C1130,120 1190,240 1170,340 C1150,440 1040,520 900,540 C760,560 590,520 470,500 C350,480 280,480 200,460 C120,440 30,380 20,300 C10,220 60,120 150,80 C240,40 370,60 480,70 C590,80 780,-40 900,0 C970,20 1000,0 1050,40 Z");
+
 }
 
 .svx-hero__fallback{
@@ -142,10 +141,10 @@
   font-size: .9rem; color: rgba(255,255,255,.85);
   margin-bottom: .75rem;
 }
-.svx-crumbs__link{ text-decoration:none; color:inherit; opacity:.95; }
+.svx-crumbs__link{ text-decoration:none; color:black; opacity:.95; }
 .svx-crumbs__link:hover{ text-decoration:underline; }
-.svx-crumbs__sep{ padding-inline:.45rem; opacity:.9; }
-.svx-crumbs__current{ color:#fff; }
+.svx-crumbs__sep{ padding-inline:.45rem; color:black; opacity:.9; }
+.svx-crumbs__current{ color:black; }
 .svx-hero:not(.svx-hero--hasimg) .svx-crumbs{ color: var(--svx-ink-mute); }
 .svx-hero:not(.svx-hero--hasimg) .svx-crumbs__current{ color: var(--svx-ink); }
 

@@ -4,11 +4,14 @@ import { Link } from "@inertiajs/react";
 import "./ServiceCard.css";
 import SafeHtml from "@/Components/Common/SafeHtml";
 
-function buildHref({ link, slug, basePath = "/services" }) {
-    if (link) return link;
-    if (!slug) return basePath;
-    if (slug.startsWith("/")) return slug;
-    return `${basePath}/${slug}`.replace(/([^:]\/)\/+/g, "$1");
+/**
+ * Artık /services/... değil, doğrudan /slug kullanıyoruz
+ */
+function buildHref({ link, slug }) {
+    if (link) return link; // tam URL ya da özel link verilmişse onu kullan
+    if (!slug) return "/"; // slug yoksa ana sayfaya fallback
+    if (slug.startsWith("/")) return slug; // zaten /ile başlıyorsa dokunma
+    return `/${slug}`.replace(/([^:]\/)\/+/g, "$1"); // normalde → /wohnungsrenovierung
 }
 
 function stripHtml(str = "") {
@@ -24,7 +27,7 @@ const ServiceCard = ({
     description,
     link,
     slug,
-    basePath,
+    // basePath, // ⬅️ artık kullanmıyoruz, ama kalsın istersek props bozmasın
 }) => {
     const imageRef = React.useRef(null);
     const [isLoaded, setIsLoaded] = React.useState(false);
@@ -35,7 +38,8 @@ const ServiceCard = ({
         }
     }, []);
 
-    const href = buildHref({ link, slug, basePath });
+    // ⬅️ basePath yerine sadece slug/link'e göre href hesaplıyoruz
+    const href = buildHref({ link, slug });
 
     const plainTitle = stripHtml(title) || "diesen Service";
 

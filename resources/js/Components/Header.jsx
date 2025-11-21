@@ -7,12 +7,20 @@ import {
     FaPhoneAlt,
     FaBars,
     FaTimes,
+    // --- Yeni eklenen ikonlar ---
+    FaFacebook,
+    FaInstagram,
+    FaLinkedin,
+    FaTwitter,
+    FaYoutube,
+    FaTiktok,
 } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import ThemeToggle from "./ThemeToggle";
 import DecryptedText from "./ReactBits/Texts/DescryptedText";
 import { useMenus } from "../hooks/useMenus";
 import { useLanguages } from "../hooks/useLanguages";
+import { useSettings } from "@/hooks/useSettings";
 import SafeHtml from "@/Components/Common/SafeHtml";
 
 /* ============================== helpers ============================== */
@@ -245,8 +253,54 @@ const LanguageSwitcher = ({ currentLang, languages, onChange }) => {
     );
 };
 
-const Header = ({ currentRoute, settings }) => {
+const Header = ({ currentRoute, settings: propSettings }) => {
     const { i18n, t } = useTranslation();
+
+    const { data: apiSettings, loading: settingsLoading } = useSettings();
+
+    const settings = useMemo(() => {
+        return { ...propSettings, ...apiSettings };
+    }, [propSettings, apiSettings]);
+
+    useEffect(() => {
+        if (apiSettings) {
+            console.log(
+                "⚡ Header: Güncel Ayarlar API'den Yüklendi:",
+                apiSettings
+            );
+        }
+    }, [apiSettings]);
+
+    // --- SOSYAL MEDYA ENTEGRASYONU BAŞLANGIÇ ---
+    const [socialLinks, setSocialLinks] = useState(null);
+
+    useEffect(() => {
+        const fetchSocials = async () => {
+            try {
+                const response = await fetch(
+                    "https://omerdogan.de/api/v1/settings/social"
+                );
+                if (!response.ok)
+                    throw new Error("Network response was not ok");
+                const data = await response.json();
+                // API verisinin yapısına göre (data.data veya direkt data)
+                setSocialLinks(data.data || data);
+            } catch (error) {
+                console.error("Sosyal medya verisi çekilemedi:", error);
+            }
+        };
+        fetchSocials();
+    }, []);
+
+    const socialMapping = [
+        { key: "facebook_url", icon: <FaFacebook />, label: "Facebook" },
+        { key: "instagram_url", icon: <FaInstagram />, label: "Instagram" },
+        { key: "twitter_url", icon: <FaTwitter />, label: "Twitter" },
+        { key: "linkedin_url", icon: <FaLinkedin />, label: "LinkedIn" },
+        { key: "youtube_url", icon: <FaYoutube />, label: "Youtube" },
+        { key: "tiktok_url", icon: <FaTiktok />, label: "TikTok" },
+    ];
+    // --- SOSYAL MEDYA ENTEGRASYONU BİTİŞ ---
 
     const currentPath =
         typeof window !== "undefined"
@@ -364,9 +418,15 @@ const Header = ({ currentRoute, settings }) => {
         [omrWebsites, omrTalentId, currentHost]
     );
 
-    const siteName = settings?.branding?.site_name || site?.name || "O&I CLEAN";
+    const siteName =
+        settings?.branding?.site_name ||
+        settings?.site_name ||
+        site?.name ||
+        "O&I CLEAN";
+
     const sitePhone =
         settings?.contact?.phone ||
+        settings?.phone ||
         site?.contact?.phone ||
         "+49 (0)36874 38 55 67";
 
@@ -386,24 +446,28 @@ const Header = ({ currentRoute, settings }) => {
             t("header.cta_label", { defaultValue: "Termin vereinbaren" }),
     };
 
-    const siteLogos = {
-        light:
-            settings?.branding?.logo_light ||
-            settings?.branding?.logo_light_url ||
-            settings?.branding?.logo ||
-            settings?.branding?.logo_url ||
-            settings?.general?.logo ||
-            site?.branding?.logoLight ||
-            "/images/logo/Logo.png",
-        dark:
-            settings?.branding?.logo_dark ||
-            settings?.branding?.logo_dark_url ||
-            settings?.branding?.logo ||
-            settings?.branding?.logo_url ||
-            settings?.general?.logo_dark ||
-            site?.branding?.logoDark ||
-            "/images/logo/darkLogo.png",
-    };
+    const siteLogos = useMemo(() => {
+        const getUrl = (src) =>
+            src?.url || (typeof src === "string" ? src : null);
+
+        const lightUrl =
+            getUrl(settings?.logo) ||
+            getUrl(settings?.data?.logo) ||
+            getUrl(settings?.branding?.logo) ||
+            getUrl(settings?.general?.logo) ||
+            "/images/logo/Logo.png";
+
+        // 2. Dark Logo
+        const darkUrl =
+            getUrl(settings?.logo_dark) ||
+            getUrl(settings?.branding?.logo_dark) ||
+            "/images/logo/darkLogo.png";
+
+        return {
+            light: lightUrl,
+            dark: darkUrl,
+        };
+    }, [settings]);
 
     const { languages: fetchedLanguages } = useLanguages();
 
@@ -653,61 +717,89 @@ const Header = ({ currentRoute, settings }) => {
         <header ref={headerRef} className="site-header">
             <BitsBackground />
 
-            {isTopBarVisible && (
-                <div className="topbar">
-                    <div className="container">
-                        <div className="topbar__inner">
-                            <div className="topbar__left">
-                                <span className="topbar__phone">
-                                    <FaPhoneAlt aria-hidden="true" />
-                                    <a
-                                        href={`tel:${sitePhone.replace(
-                                            /\s+/g,
-                                            ""
-                                        )}`}
-                                    >
-                                        <DecryptedText
-                                            text={sitePhone}
-                                            animateOn="view"
-                                            speed={100}
-                                            revealDirection="center"
-                                        />
-                                    </a>
-                                </span>
-                                <span className="topbar__tagline">
-                                    <div style={{ marginTop: 0 }}>
-                                        <DecryptedText
-                                            text={topbarTagline}
-                                            animateOn="view"
-                                            speed={100}
-                                            revealDirection="center"
-                                        />
-                                    </div>
-                                </span>
-                            </div>
-                            <div className="topbar__right">
+            <div className="topbar">
+                <div className="container">
+                    <div className="topbar__inner">
+                        <div className="topbar__left">
+                            <span className="topbar__phone">
+                                <FaPhoneAlt aria-hidden="true" />
                                 <a
-                                    href={cta.href}
-                                    onClick={navigate(cta.href)}
-                                    className="btn btn--ghost"
+                                    href={`tel:${sitePhone.replace(
+                                        /\s+/g,
+                                        ""
+                                    )}`}
                                 >
-                                    <SafeHtml html={cta.label} as="span" />
+                                    <DecryptedText
+                                        text={sitePhone}
+                                        animateOn="view"
+                                        speed={100}
+                                        revealDirection="center"
+                                    />
                                 </a>
-                                <button
-                                    className="btn btn--ghost btn--circle"
-                                    aria-label={t(
-                                        "header.hide_topbar",
-                                        "Top-Leiste ausblenden"
-                                    )}
-                                    onClick={() => setIsTopBarVisible(false)}
+                            </span>
+                            <span className="topbar__tagline">
+                                <div style={{ marginTop: 0 }}>
+                                    <DecryptedText
+                                        text={topbarTagline}
+                                        animateOn="view"
+                                        speed={100}
+                                        revealDirection="center"
+                                    />
+                                </div>
+                            </span>
+                        </div>
+                        <div
+                            className="topbar__right"
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "15px",
+                            }}
+                        >
+                            {/* --- SOSYAL MEDYA İKONLARI --- */}
+                            {socialLinks && (
+                                <div
+                                    className="social-icons"
+                                    style={{ display: "flex", gap: "10px" }}
                                 >
-                                    ×
-                                </button>
-                            </div>
+                                    {socialMapping.map((item) => {
+                                        const link = socialLinks[item.key];
+                                        // Link varsa ve boş string değilse göster
+                                        if (link && link.trim() !== "") {
+                                            return (
+                                                <a
+                                                    key={item.key}
+                                                    href={link}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    aria-label={item.label}
+                                                    style={{
+                                                        color: "inherit",
+                                                        fontSize: "1.1em",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                    }}
+                                                >
+                                                    {item.icon}
+                                                </a>
+                                            );
+                                        }
+                                        return null;
+                                    })}
+                                </div>
+                            )}
+
+                            <a
+                                href={cta.href}
+                                onClick={navigate(cta.href)}
+                                className="btn btn--ghost"
+                            >
+                                <SafeHtml html={cta.label} as="span" />
+                            </a>
                         </div>
                     </div>
                 </div>
-            )}
+            </div>
 
             <div className="navwrap">
                 <div className="container">
@@ -718,16 +810,23 @@ const Header = ({ currentRoute, settings }) => {
                             className="brand"
                             aria-label={t("header.home_aria", "Startseite")}
                         >
-                            <img
-                                src={siteLogos.light}
-                                alt={`${siteName} Logo`}
-                                className="brand__logo brand__logo--light"
-                            />
-                            <img
-                                src={siteLogos.dark}
-                                alt={`${siteName} Logo (Dark)`}
-                                className="brand__logo brand__logo--dark"
-                            />
+                            {/* Logo Loading Kontrolü */}
+                            {settingsLoading && !siteLogos.light ? (
+                                <div className="w-32 h-10 bg-gray-200 animate-pulse rounded" />
+                            ) : (
+                                <>
+                                    <img
+                                        src={siteLogos.light}
+                                        alt={`${siteName} Logo`}
+                                        className="brand__logo brand__logo--light"
+                                    />
+                                    <img
+                                        src={siteLogos.dark}
+                                        alt={`${siteName} Logo (Dark)`}
+                                        className="brand__logo brand__logo--dark"
+                                    />
+                                </>
+                            )}
                         </a>
 
                         <nav
@@ -1091,42 +1190,42 @@ const Header = ({ currentRoute, settings }) => {
                                                                             }
                                                                             as="span"
                                                                         />
-                                                                    </summary>
-                                                                    <div className="acc__submenu">
-                                                                        {subItem.submenu.map(
-                                                                            (
-                                                                                inner,
-                                                                                j
-                                                                            ) => (
-                                                                                <a
-                                                                                    key={
-                                                                                        j
-                                                                                    }
-                                                                                    href={
-                                                                                        inner.url
-                                                                                    }
-                                                                                    className="acc__link"
-                                                                                    onClick={(
-                                                                                        e
-                                                                                    ) =>
-                                                                                        navigate(
-                                                                                            inner.url,
-                                                                                            true
-                                                                                        )(
-                                                                                            e
-                                                                                        )
-                                                                                    }
-                                                                                >
-                                                                                    <SafeHtml
-                                                                                        html={
-                                                                                            inner.name
+                                                                        <div className="acc__submenu">
+                                                                            {subItem.submenu.map(
+                                                                                (
+                                                                                    inner,
+                                                                                    j
+                                                                                ) => (
+                                                                                    <a
+                                                                                        key={
+                                                                                            j
                                                                                         }
-                                                                                        as="span"
-                                                                                    />
-                                                                                </a>
-                                                                            )
-                                                                        )}
-                                                                    </div>
+                                                                                        href={
+                                                                                            inner.url
+                                                                                        }
+                                                                                        className="acc__link"
+                                                                                        onClick={(
+                                                                                            e
+                                                                                        ) =>
+                                                                                            navigate(
+                                                                                                inner.url,
+                                                                                                true
+                                                                                            )(
+                                                                                                e
+                                                                                            )
+                                                                                        }
+                                                                                    >
+                                                                                        <SafeHtml
+                                                                                            html={
+                                                                                                inner.name
+                                                                                            }
+                                                                                            as="span"
+                                                                                        />
+                                                                                    </a>
+                                                                                )
+                                                                            )}
+                                                                        </div>
+                                                                    </summary>
                                                                 </details>
                                                             ) : (
                                                                 <a

@@ -13,6 +13,34 @@ import { useLocale } from "@/hooks/useLocale";
 import { fetchServiceBySlug } from "@/services/servicesService";
 import { useTranslation } from "react-i18next";
 
+/**
+ * Slug içinden denenecek aday service-slug listesini üretir.
+ *
+ * wohnungsrenovierung-bad-vilbel ->
+ *   ["wohnungsrenovierung-bad-vilbel",
+ *    "wohnungsrenovierung-bad",
+ *    "wohnungsrenovierung"]
+ *
+ * teppichreinigung-bad ->
+ *   ["teppichreinigung-bad", "teppichreinigung"]
+ *
+ * wohnungsrenovierung ->
+ *   ["wohnungsrenovierung"]
+ */
+function buildServiceSlugCandidates(rawSlug) {
+    if (!rawSlug) return [];
+
+    const parts = String(rawSlug).split("-");
+    const cands = [];
+
+    for (let cut = parts.length; cut >= 1; cut--) {
+        cands.push(parts.slice(0, cut).join("-"));
+    }
+
+    // olası tekrarları temizle
+    return Array.from(new Set(cands));
+}
+
 /** Güvenli HTML parser */
 function safeParse(html, options) {
     const clean = DOMPurify.sanitize(html || "", {
@@ -55,6 +83,7 @@ function safeParse(html, options) {
             "allowfullscreen",
             "class",
             "id",
+            "style",
         ],
     });
 
@@ -96,11 +125,11 @@ export default function ServiceShow({ slug, page = {} }) {
         props?.global?.talentId ||
         "";
 
-    // locale (de/en/tr) – değişince endpoint de o dile göre dönecek
     const locale = useLocale("de");
 
     const [service, setService] = useState(null);
     const [rawService, setRawService] = useState(null);
+    const [baseSlug, setBaseSlug] = useState(null); // backend'de bulunan gerçek slug
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -111,28 +140,54 @@ export default function ServiceShow({ slug, page = {} }) {
     );
     const emptyText = t("service.empty", "Inhalt wird bald hinzugefügt.");
 
-    // 🔥 /api/v1/services/{slug} ile tek service çek
+    // --- API: birden fazla slug adayı ile dene ---
     useEffect(() => {
         if (!slug) return;
 
         let cancelled = false;
         setLoading(true);
         setError(null);
+        setBaseSlug(null);
 
         (async () => {
             try {
-                const { service, raw } = await fetchServiceBySlug(slug, {
-                    tenantId,
-                    locale,
-                });
+                const candidates = buildServiceSlugCandidates(slug);
+                let res = null;
+                let successSlug = null;
+                let lastError = null;
+
+                for (const candidate of candidates) {
+                    try {
+                        res = await fetchServiceBySlug(candidate, {
+                            tenantId,
+                            locale,
+                        });
+                        successSlug = candidate;
+                        break; // ilk başarılı istekte dur
+                    } catch (e) {
+                        lastError = e;
+                        const status = e?.response?.status;
+                        // 404 ise sıradaki adaya geç; başka hata ise direkt fırlat
+                        if (status && status !== 404) {
+                            throw e;
+                        }
+                    }
+                }
+
+                if (!res && lastError) {
+                    throw lastError;
+                }
 
                 if (cancelled) return;
 
+                const { service, raw } = res || {};
                 setService(service || null);
                 setRawService(raw || null);
+                setBaseSlug(successSlug || null);
             } catch (e) {
                 if (cancelled) return;
                 console.error("Service fetch failed:", {
+                    slug,
                     message: e?.message,
                     status: e?.response?.status,
                     data: e?.response?.data,
@@ -150,36 +205,68 @@ export default function ServiceShow({ slug, page = {} }) {
         };
     }, [slug, tenantId, locale, defaultErrorText]);
 
-    // ------------ VERİLERİ HAZIRLA ------------
+    // --- Şehir adını baseSlug'a göre çıkar ---
+    const citySlug = useMemo(() => {
+        if (!baseSlug) return null;
+        if (!slug.startsWith(baseSlug)) return null;
 
-    // isim – backend zaten locale paramına göre correct name dönecek
-    const title = service?.name || service?.title || page?.title || "Service";
+        const rest = slug.slice(baseSlug.length); // "" veya "-bad-vilbel"
+        if (!rest || !rest.startsWith("-")) return null;
 
-    // açıklama için birkaç fallback
-    const translationDescription = useMemo(() => {
-        const translations = rawService?.translations || [];
-        const current = rawService?._meta?.current_language;
-        const currentTr =
-            translations.find((t) => t.language_code === current) ||
-            translations[0];
+        return rest.slice(1); // "bad-vilbel"
+    }, [slug, baseSlug]);
 
-        return currentTr?.description || null;
-    }, [rawService]);
+    const cityFromSlug = useMemo(() => {
+        if (!citySlug) return null;
+        return citySlug
+            .split("-")
+            .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+            .join(" ");
+    }, [citySlug]);
 
-    const description =
-        service?.shortDescription ||
+    // --- translations / içerik seçimi ---
+    const activeTranslation = useMemo(() => {
+        const list = rawService?.translations;
+        if (!Array.isArray(list) || list.length === 0) return null;
+
+        let found = list.find((tr) => tr.language_code === locale);
+        if (!found) {
+            found = list.find((tr) => tr.language_code === "de");
+        }
+        if (!found) {
+            found = list[0];
+        }
+
+        return found || null;
+    }, [rawService, locale]);
+
+    // --- VERİ HAZIRLIK ---
+    const baseTitle =
+        activeTranslation?.name ||
+        activeTranslation?.title ||
+        service?.name ||
+        service?.title ||
+        page?.title ||
+        "Service";
+
+    const title =
+        cityFromSlug &&
+        !baseTitle.toLowerCase().includes(cityFromSlug.toLowerCase())
+            ? `${baseTitle} in ${cityFromSlug}`
+            : baseTitle;
+
+    const descriptionText =
+        activeTranslation?.description ||
         service?.description ||
-        translationDescription ||
+        service?.shortDescription ||
         page?.subtitle ||
         `Leistung: ${title}`;
 
     const heroImage = service?.image || page?.hero?.image || null;
     const heroAlt = page?.hero?.alt || title;
-
     const sectionsFromPage = Array.isArray(page?.sections) ? page.sections : [];
 
-    // CONTENT: önce description, sonra translation.description
-    const introHtml = service?.description || translationDescription || null;
+    const introHtml = descriptionText || null;
 
     const introParsed = useMemo(
         () => (introHtml ? safeParse(introHtml) : null),
@@ -189,13 +276,16 @@ export default function ServiceShow({ slug, page = {} }) {
     const currentUrl =
         typeof window !== "undefined"
             ? window.location.href
-            : page?.canonical || `https://oi-clean.de/services/${slug || ""}`;
+            : page?.canonical || `https://oi-clean.de/${slug || ""}`;
 
     const schema = {
         "@context": "https://schema.org",
         "@type": "Service",
         name: title,
-        description,
+        description:
+            typeof descriptionText === "string"
+                ? descriptionText.substring(0, 160)
+                : "",
         provider: {
             "@type": "Organization",
             name: "O&I CLEAN group GmbH",
@@ -208,60 +298,33 @@ export default function ServiceShow({ slug, page = {} }) {
         url: currentUrl,
     };
 
-    const metaRows = useMemo(() => {
-        if (!service) return [];
-        return [
-            service.categoryName && {
-                label: t("service.meta.category", "Kategorie"),
-                value: service.categoryName,
-            },
-            (service.city || service.district || service.country) && {
-                label: t("service.meta.location", "Standort"),
-                value: service.city || service.district || service.country,
-            },
-            service.parentName && {
-                label: t("service.meta.parent", "Übergeordneter Service"),
-                value: service.parentName,
-            },
-        ].filter(Boolean);
-    }, [service, t]);
-
     return (
         <AppLayout>
             <Head>
-                <title>{`${title} – Leistungen`}</title>
-                <meta name="description" content={description} />
-
+                <title>{title}</title>
                 <meta
-                    name="robots"
-                    content="index,follow,max-image-preview:large"
+                    name="description"
+                    content={
+                        typeof descriptionText === "string"
+                            ? descriptionText
+                                  .replace(/<[^>]*>?/gm, "")
+                                  .substring(0, 160)
+                            : ""
+                    }
                 />
-                <link rel="canonical" href={currentUrl} />
-
-                <meta property="og:type" content="website" />
-                <meta property="og:title" content={`${title} – Leistungen`} />
-                <meta property="og:description" content={description} />
-                <meta property="og:url" content={currentUrl} />
-                {heroImage && <meta property="og:image" content={heroImage} />}
-                <meta property="og:site_name" content="O&I CLEAN group GmbH" />
-
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content={`${title} – Leistungen`} />
-                <meta name="twitter:description" content={description} />
-                {heroImage && <meta name="twitter:image" content={heroImage} />}
-
                 <script type="application/ld+json">
                     {JSON.stringify(schema)}
                 </script>
             </Head>
 
-            {/* LOADING / ERROR */}
+            {/* LOADING */}
             {loading && (
                 <section className="svx-loading container">
                     <p>{loadingText}</p>
                 </section>
             )}
 
+            {/* HATA */}
             {error && !loading && !service && (
                 <section className="svx-error container">
                     <p>{error}</p>
@@ -307,21 +370,6 @@ export default function ServiceShow({ slug, page = {} }) {
                         </nav>
 
                         <h1 className="svx-title">{title}</h1>
-
-                        {description && (
-                            <p className="svx-subtitle">{description}</p>
-                        )}
-
-                        {metaRows.length > 0 && (
-                            <dl className="svx-meta">
-                                {metaRows.map((row, idx) => (
-                                    <div key={idx} className="svx-meta__row">
-                                        <dt>{row.label}</dt>
-                                        <dd>{row.value}</dd>
-                                    </div>
-                                ))}
-                            </dl>
-                        )}
                     </div>
                 </section>
             )}
@@ -330,21 +378,18 @@ export default function ServiceShow({ slug, page = {} }) {
             {!loading && (
                 <section className="svx-content">
                     <div className="container">
-                        {/* API'den gelen CONTENT (description) */}
                         {introParsed && (
                             <article className="svx-card svx-fadeup svx-intro">
                                 <div className="svx-prose">{introParsed}</div>
                             </article>
                         )}
 
-                        {/* content hiç yoksa fallback */}
                         {!introParsed && (
                             <article className="svx-card svx-fadeup">
                                 <p className="svx-muted">{emptyText}</p>
                             </article>
                         )}
 
-                        {/* CMS sections (isteğe bağlı, istersen silebilirsin) */}
                         {sectionsFromPage.map((s, i) => {
                             const reversed = i % 2 === 1;
                             const items = Array.isArray(s.items) ? s.items : [];

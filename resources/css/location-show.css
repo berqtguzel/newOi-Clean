@@ -58,3 +58,31 @@
 .dark .locx-title{
     color: white;
 }
+/* 5'li grid */
+.services-grid-5 {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2rem;
+    margin: 3rem auto;
+    padding-bottom: 4rem;
+}
+
+/* Tablet için */
+@media (max-width: 1280px) {
+    .services-grid-5 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Mobil için */
+@media (max-width: 768px) {
+    .services-grid-5 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .services-grid-5 {
+        grid-template-columns: repeat(1, 1fr);
+    }
+}

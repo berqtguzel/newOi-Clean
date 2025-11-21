@@ -339,6 +339,12 @@
           "body": "Bu sayfada yayınlanan tüm içerikler Alman telif hakkına tabidir. İzinsiz çoğaltma veya dağıtım yasaktır."
         }
       ]
+    },
+     "locations": {
+    "card": {
+      "cta": "Daha fazla bilgi",
+      "cta_aria": "{{city}} içindeki temizlik hizmetlerimiz hakkında daha fazla bilgi alın"
     }
+  }
   }
 }

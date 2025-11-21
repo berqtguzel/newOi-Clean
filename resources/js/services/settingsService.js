@@ -1,4 +1,5 @@
 import axios from "axios";
+// Dosya yolunun doğru olduğundan emin ol (örn: ../Config/remoteConfig veya ./remoteConfig)
 import remoteConfig from "./remoteConfig";
 
 const api = axios.create({
@@ -9,8 +10,18 @@ const api = axios.create({
 function buildRequestConfig({ tenantId, locale, signal } = {}) {
     const headers = {};
 
-    if (tenantId) {
-        headers["X-Tenant-ID"] = String(tenantId);
+    // --- DÜZELTME BURADA ---
+    // Eğer parametre olarak tenantId gelmediyse, remoteConfig'den veya .env'den al
+    const effectiveTenantId =
+        tenantId ||
+        remoteConfig.talentId ||
+        remoteConfig.tenantId ||
+        import.meta.env.VITE_REMOTE_TALENT_ID;
+
+    if (effectiveTenantId) {
+        headers["X-Tenant-ID"] = String(effectiveTenantId);
+    } else {
+        console.warn("⚠️ SettingsService: Tenant ID bulunamadı! İstek muhtemelen 400 dönecek.");
     }
 
     const params = {};
@@ -27,11 +38,17 @@ function buildRequestConfig({ tenantId, locale, signal } = {}) {
 
 async function fetchSettings(endpoint, options = {}) {
     const config = buildRequestConfig(options);
-    const res = await api.get(`/settings/${endpoint}`, config);
 
-    return res?.data?.data ?? res?.data ?? {};
+    try {
+        const res = await api.get(`/settings/${endpoint}`, config);
+        // API bazen direkt data, bazen data.data dönüyor, garantiye alalım:
+        return res?.data?.data ?? res?.data ?? {};
+    } catch (error) {
+        console.error(`❌ Settings API Error (${endpoint}):`, error?.response?.status, error?.message);
+        // Hata durumunda boş obje dön ki site patlamasın
+        return {};
+    }
 }
-
 
 export function getGeneralSettings(options = {}) {
     return fetchSettings("general", options);
@@ -77,21 +94,9 @@ export function getFooterSettings(options = {}) {
     return fetchSettings("footer", options);
 }
 
-
 export async function getAllSettings(options = {}) {
-    const [
-        general,
-        contact,
-        social,
-        branding,
-        colors,
-        analytics,
-        seo,
-        performance,
-        email,
-        customCode,
-        footer,
-    ] = await Promise.all([
+    // Promise.allSettled kullanarak bir tanesi hata verse bile diğerlerinin yüklenmesini sağlıyoruz
+    const results = await Promise.allSettled([
         getGeneralSettings(options),
         getContactSettings(options),
         getSocialSettings(options),
@@ -105,17 +110,20 @@ export async function getAllSettings(options = {}) {
         getFooterSettings(options),
     ]);
 
+    // Helper: Sonuç başarılıysa değerini, değilse boş obje dön
+    const val = (index) => (results[index].status === 'fulfilled' ? results[index].value : {});
+
     return {
-        general,
-        contact,
-        social,
-        branding,
-        colors,
-        analytics,
-        seo,
-        performance,
-        email,
-        customCode,
-        footer,
+        general: val(0),
+        contact: val(1),
+        social: val(2),
+        branding: val(3),
+        colors: val(4),
+        analytics: val(5),
+        seo: val(6),
+        performance: val(7),
+        email: val(8),
+        customCode: val(9),
+        footer: val(10),
     };
 }

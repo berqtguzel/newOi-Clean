@@ -21,7 +21,7 @@ import { useServices } from "@/hooks/useServices";
 import { useLocale } from "@/hooks/useLocale";
 import SafeHtml from "@/Components/Common/SafeHtml";
 
-const BASE_PATH = "/services";
+// ⬇️ ARTIK /services İSTEMİYORUZ
 const BASE_DOMAIN = "https://oi-clean.de";
 
 function useIsDark() {
@@ -168,19 +168,17 @@ const ServicesGrid = ({ services = defaultServices, content = {} }) => {
         locale,
     });
 
-    // useServices -> fetchServices -> normalizeService çıktısı zaten düzgün array
     const safeRemoteServices = React.useMemo(() => {
         if (Array.isArray(remoteServices)) return remoteServices;
         return [];
     }, [remoteServices]);
 
-    // 🔥 SADECE parentId null olan (üst seviye) servisler
+    // sadece üst seviye servisler
     const topLevelServices = React.useMemo(
         () => safeRemoteServices.filter((s) => s.parentId == null),
         [safeRemoteServices]
     );
 
-    // ServiceCard için map
     const mappedRemote = React.useMemo(
         () =>
             topLevelServices.map((s) => ({
@@ -205,23 +203,27 @@ const ServicesGrid = ({ services = defaultServices, content = {} }) => {
     const lightColors = ["#085883", "#0C9FE2", "#2EA7E0"];
     const darkColors = ["#47B3FF", "#7CCBFF", "#B5E3FF"];
 
+    // ⬇️ Artık schema URL’leri de /services/... değil, direkt /slug
     const schemaData = React.useMemo(
         () => ({
             "@context": "https://schema.org",
             "@type": "ItemList",
             itemListElement: servicesToRender.map((s, i) => {
-                const path = s.link
-                    ? s.link
-                    : s.slug
-                    ? `${BASE_PATH}/${s.slug}`
-                    : BASE_PATH;
+                const path =
+                    s.link && s.link.startsWith("http")
+                        ? s.link
+                        : s.link
+                        ? `${BASE_DOMAIN}${s.link}`
+                        : s.slug
+                        ? `${BASE_DOMAIN}/${s.slug}`
+                        : BASE_DOMAIN;
 
                 return {
                     "@type": "Service",
                     position: i + 1,
                     name: s.title,
                     description: s.description,
-                    url: `${BASE_DOMAIN}${path}`,
+                    url: path,
                     provider: {
                         "@type": "Organization",
                         name: "O&I CLEAN group GmbH",
@@ -327,7 +329,6 @@ const ServicesGrid = ({ services = defaultServices, content = {} }) => {
                                 image={s.image}
                                 slug={s.slug}
                                 link={s.link}
-                                basePath={BASE_PATH}
                                 icon={s.icon}
                             />
                         ))}

@@ -8,7 +8,8 @@ class StaticPageController extends Controller
 {
     public function show(string $slug)
     {
-        $allowedSlugs = [
+        // 1) Statik sayfalar
+        $staticSlugs = [
             'uber-uns',
             'qualitatsmanagement',
             'mitarbeiter-schulungen',
@@ -18,18 +19,48 @@ class StaticPageController extends Controller
             'impressum',
         ];
 
-        abort_unless(in_array($slug, $allowedSlugs, true), 404);
+        if (in_array($slug, $staticSlugs, true)) {
+            return Inertia::render('StaticPage', [
+                'slug' => $slug,
+                'meta' => [
+                    'title'       => 'O&I CLEAN group GmbH',
+                    'description' => 'Professionelle Reinigungsdienstleistungen',
+                    'canonical'   => url()->current(),
+                ],
+            ]);
+        }
 
-        // Meta başlığını istersen şimdilik generic tut
-        $meta = [
-            'title'       => 'O&I CLEAN group GmbH',
-            'description' => 'Professionelle Reinigungsdienstleistungen',
-            'canonical'   => url()->current(),
+        // 2) LOKASYON SLUG mu? (Locations/Show.jsx)
+        if ($this->isLocationSlug($slug)) {
+            return Inertia::render('Locations/Show', [
+                'slug' => $slug,
+                'page' => [],        // istersen burada ekstra props gönderebilirsin
+            ]);
+        }
+return Inertia::render('Services/Show', [
+    'slug' => $slug,
+    'page' => [],
+]);
+    }
+
+    protected function isLocationSlug(string $slug): bool
+    {
+
+        $locationPrefixes = [
+            'gebaudereinigung-',
+            'gebaudereinigung-in-',
+            'building-cleaning-',
         ];
 
-        return Inertia::render('StaticPage', [
-            'slug' => $slug,
-            'meta' => $meta,
-        ]);
+        foreach ($locationPrefixes as $prefix) {
+
+            if (str_starts_with($slug, $prefix)) {
+                return true;
+            }
+
+
+        }
+
+        return false;
     }
 }

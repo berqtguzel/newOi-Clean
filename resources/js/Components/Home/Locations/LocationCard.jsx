@@ -1,16 +1,24 @@
-import React, { useEffect, useState } from "react";
+// resources/js/Components/Home/Locations/LocationCard.jsx
+import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "@inertiajs/react";
 import "react-lazy-load-image-component/src/effects/blur.css";
 import "../../../../css/LocationCard.css";
 
 import SafeHtml from "@/Components/Common/SafeHtml";
+import { useLocale } from "@/hooks/useLocale";
+import { useTranslation } from "react-i18next";
 
-const stripHtml = (s = "") => s.replace(/<[^>]*>/g, "").trim();
+const stripHtml = (s = "") =>
+    String(s)
+        .replace(/<[^>]*>/g, "")
+        .trim();
 
 let FallbackImg = (props) => <img {...props} />;
 
 export default function LocationCard({ location, onHover, isActive }) {
     const [Img, setImg] = useState(() => FallbackImg);
+    const locale = useLocale("de");
+    const { t } = useTranslation();
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -21,13 +29,35 @@ export default function LocationCard({ location, onHover, isActive }) {
         }
     }, []);
 
-    const titleHtml = location.title || location.name || "";
+    const activeTranslation = useMemo(() => {
+        const list = location?.translations;
+        if (!Array.isArray(list) || list.length === 0) return null;
+
+        let found = list.find((tr) => tr.language_code === locale);
+        if (!found) {
+            found = list.find((tr) => tr.language_code === "de");
+        }
+        if (!found) {
+            found = list[0];
+        }
+        return found || null;
+    }, [location, locale]);
+
+    const titleHtml =
+        activeTranslation?.title ||
+        activeTranslation?.name ||
+        location.title ||
+        location.name ||
+        "";
 
     const cityRaw =
+        activeTranslation?.city ||
         location.city ||
         location.district ||
         location.country ||
+        activeTranslation?.title ||
         location.title ||
+        activeTranslation?.name ||
         location.name ||
         "";
 
@@ -43,7 +73,15 @@ export default function LocationCard({ location, onHover, isActive }) {
     const hasMaps = Array.isArray(location.maps) && location.maps.length > 0;
     const primaryMap = hasMaps ? location.maps[0] : null;
 
-    const href = `/standorte/${slug}`;
+    const href = `/${slug}`;
+
+    // i18n metinleri
+    const ctaLabel = t("locations.card.cta", "Mehr erfahren");
+    const ctaAria = t(
+        "locations.card.cta_aria",
+        "Mehr über unsere Reinigungsservices in {{city}} erfahren",
+        { city: cityText }
+    );
 
     return (
         <article
@@ -79,13 +117,13 @@ export default function LocationCard({ location, onHover, isActive }) {
 
             <div className="location-card-content">
                 <div className="location-card-footer">
-                    <Link
+                    <a
                         href={href}
                         className="location-card-button"
-                        aria-label={`Mehr über unsere Reinigungsservices in ${cityText} erfahren`}
+                        aria-label={ctaAria}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        Mehr erfahren
+                        {ctaLabel}
                         <svg
                             className="location-card-arrow"
                             viewBox="0 0 24 24"
@@ -99,7 +137,7 @@ export default function LocationCard({ location, onHover, isActive }) {
                                 strokeLinejoin="round"
                             />
                         </svg>
-                    </Link>
+                    </a>
                 </div>
             </div>
         </article>
