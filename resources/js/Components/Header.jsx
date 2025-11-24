@@ -19,7 +19,7 @@ import ThemeToggle from "./ThemeToggle";
 import DecryptedText from "./ReactBits/Texts/DescryptedText";
 import { useMenus } from "../hooks/useMenus";
 import { useSettings } from "@/hooks/useSettings";
-import { useGlobalWebsites } from "@/hooks/useGlobal"; // YENİ HOOK
+import { useGlobalWebsites } from "@/hooks/useGlobal";
 import SafeHtml from "@/Components/Common/SafeHtml";
 import { getSocialSettings } from "@/services/settingsService";
 import Cookies from "js-cookie";
@@ -244,6 +244,13 @@ const Header = ({ currentRoute, settings: propSettings }) => {
     const { i18n, t } = useTranslation();
     const { props } = usePage();
 
+    // 🔥 HYDRATION FIX İÇİN MOUNT KONTROLÜ
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
     // 1. Mevcut Host ve Tenant Bilgilerini Al
     const [currentHost, setCurrentHost] = useState("");
     useEffect(() => {
@@ -260,13 +267,12 @@ const Header = ({ currentRoute, settings: propSettings }) => {
     const initialLocale = normalizeLang(props?.locale || "de");
     const omrTalentId = props?.global?.talentId || "";
 
-    // 2. Global Siteleri (ve içindeki dilleri) Çek
+    // 2. Global Siteleri Çek
     const { websites: globalWebsites, loading: globalLoading } =
         useGlobalWebsites();
 
     // 3. Şu anki siteyi bul
     const currentSite = useMemo(() => {
-        // Props'tan gelen siteler varsa onlara bak, yoksa global hook'tan gelene bak
         const sites =
             props?.global?.websites?.length > 0
                 ? props.global.websites
@@ -458,26 +464,18 @@ const Header = ({ currentRoute, settings: propSettings }) => {
         } catch (e) {}
     }, [initialLocale, i18n]);
 
-    // ===================================================================
-    // 🔥 DİLLERİ GLOBAL SİTE BİLGİSİNDEN ÇEK
-    // ===================================================================
     const allLanguages = useMemo(() => {
         let source = [];
 
-        // 1. Globalden (API) gelen site bilgisi içinde diller var mı?
         if (
             currentSite &&
             currentSite.languages &&
             currentSite.languages.length > 0
         ) {
             source = currentSite.languages;
-        }
-        // 2. Props (Backend)
-        else if (props?.languages && props.languages.length > 0) {
+        } else if (props?.languages && props.languages.length > 0) {
             source = props.languages;
-        }
-        // 3. Hardcoded Yedek
-        else {
+        } else {
             source = [
                 { locale: "de", name: "Deutsch" },
                 { locale: "en", name: "English" },
@@ -657,28 +655,43 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                         <div className="topbar__left">
                             <span className="topbar__phone">
                                 <FaPhoneAlt aria-hidden="true" />
-                                <a
-                                    href={`tel:${sitePhone.replace(
-                                        /\s+/g,
-                                        ""
-                                    )}`}
-                                >
-                                    <DecryptedText
-                                        text={sitePhone}
-                                        animateOn="view"
-                                        speed={100}
-                                        revealDirection="center"
-                                    />
-                                </a>
+                                {/* TELEFON NUMARASI İÇİN HYDRATION FIX */}
+                                {isMounted ? (
+                                    <a
+                                        href={`tel:${sitePhone.replace(
+                                            /\s+/g,
+                                            ""
+                                        )}`}
+                                    >
+                                        <DecryptedText
+                                            text={sitePhone}
+                                            animateOn="view"
+                                            speed={100}
+                                            revealDirection="center"
+                                            key={currentLang} // Dil değişince yeniden render
+                                        />
+                                    </a>
+                                ) : (
+                                    // Sunucudan gelen statik içerik (SSR ile eşleşir)
+                                    <span>{sitePhone}</span>
+                                )}
                             </span>
+
                             <span className="topbar__tagline">
                                 <div style={{ marginTop: 0 }}>
-                                    <DecryptedText
-                                        text={topbarTagline}
-                                        animateOn="view"
-                                        speed={100}
-                                        revealDirection="center"
-                                    />
+                                    {/* TAGLINE İÇİN HYDRATION FIX */}
+                                    {isMounted ? (
+                                        <DecryptedText
+                                            text={topbarTagline}
+                                            animateOn="view"
+                                            speed={100}
+                                            revealDirection="center"
+                                            key={currentLang} // Dil değişince yeniden render
+                                        />
+                                    ) : (
+                                        // Sunucu tarafında oluşturulan metni göster
+                                        <span>{topbarTagline}</span>
+                                    )}
                                 </div>
                             </span>
                         </div>

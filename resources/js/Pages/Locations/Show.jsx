@@ -116,6 +116,35 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
     const servicesToRender = useMemo(() => {
         const list = Array.isArray(remoteServices) ? remoteServices : [];
 
+        // 1) SEO hizmetlerini ayıkla
+        const withoutSeo = list.filter((s) => {
+            const slugStr = (s.slug || "").toString().toLowerCase();
+            const nameStr = (s.title || s.name || "").toString().toLowerCase();
+
+            const catRaw =
+                s.category_name ||
+                s.category_slug ||
+                s.categorySlug ||
+                s.category?.name ||
+                s.category?.slug ||
+                "";
+            const catStr = catRaw.toString().toLowerCase().trim();
+
+            const isSeoCategory = catStr === "seo";
+            const isSeoSlug =
+                slugStr === "seo" ||
+                slugStr.startsWith("seo-") ||
+                slugStr.endsWith("-seo") ||
+                slugStr.includes("-seo-");
+            const isSeoName =
+                nameStr === "seo" ||
+                nameStr.startsWith("seo ") ||
+                nameStr.includes(" seo");
+
+            // true ise LISTEDEN ÇIKAR
+            return !(isSeoCategory || isSeoSlug || isSeoName);
+        });
+
         const citySlug =
             city
                 ?.toString()
@@ -125,7 +154,8 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
                 .replace(/[^a-z0-9]+/g, "-")
                 .replace(/^-+|-+$/g, "") || "";
 
-        return list
+        // 2) Geri kalanlarla kartları üret
+        return withoutSeo
             .filter((s) => s.parentId == null)
             .map((s) => {
                 const baseServiceSlug = s.slug; // örn: "wohnungsrenovierung"
@@ -133,7 +163,6 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
                     ? `${baseServiceSlug}-${citySlug}` // "wohnungsrenovierung-amberg"
                     : baseServiceSlug;
 
-                // detect whether server provided translations for this service
                 const hasTranslations =
                     Array.isArray(s.raw?.translations) &&
                     s.raw.translations.length > 0;
@@ -142,11 +171,14 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
                     s.raw?._meta?.languages?.default ||
                     null;
 
+                const baseTitle = s.title || s.name || "";
+                const title = baseTitle.includes(city)
+                    ? baseTitle
+                    : `${baseTitle} in ${city}`;
+
                 return {
                     id: s.id,
-                    title: (s.title || s.name || "").includes(city)
-                        ? s.title || s.name
-                        : `${s.title || s.name} in ${city}`,
+                    title,
                     description: s.description || "",
                     image: s.image || null,
                     slug: seoSlug,

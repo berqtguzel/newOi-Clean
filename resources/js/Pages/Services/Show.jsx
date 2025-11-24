@@ -21,11 +21,7 @@ import { useTranslation } from "react-i18next";
  *    "wohnungsrenovierung-bad",
  *    "wohnungsrenovierung"]
  *
- * teppichreinigung-bad ->
- *   ["teppichreinigung-bad", "teppichreinigung"]
- *
- * wohnungsrenovierung ->
- *   ["wohnungsrenovierung"]
+ * wohnungsrenovierung -> ["wohnungsrenovierung"]
  */
 function buildServiceSlugCandidates(rawSlug) {
     if (!rawSlug) return [];
@@ -115,6 +111,12 @@ function safeParse(html, options) {
     return parse(clean, { replace, ...(options || {}) });
 }
 
+const SERVICE_LABELS = {
+    gebaudereinigung: "Gebäudereinigung",
+    wohnungsrenovierung: "Wohnungsrenovierung",
+    hotelreinigung: "Hotelreinigung",
+};
+
 export default function ServiceShow({ slug, page = {} }) {
     const { t } = useTranslation();
     const { props } = usePage();
@@ -125,6 +127,7 @@ export default function ServiceShow({ slug, page = {} }) {
         props?.global?.talentId ||
         "";
 
+    // varsayılan locale 'de' ama hook zaten Inertia props'tan da bakıyordur
     const locale = useLocale("de");
 
     const [service, setService] = useState(null);
@@ -174,10 +177,33 @@ export default function ServiceShow({ slug, page = {} }) {
                     }
                 }
 
-                if (!res && lastError) {
-                    throw lastError;
+                // Hiçbir aday bulunamadıysa ve son hata 404 ise
+                if (!res && lastError && lastError?.response?.status === 404) {
+                    if (cancelled) return;
+
+                    // Fallback: local pseudo-service oluştur (404 bile olsa sayfa çıksın)
+                    const parts = String(slug).split("-");
+                    const prefix = parts[0] || "service";
+                    const baseName =
+                        SERVICE_LABELS[prefix] ||
+                        prefix.charAt(0).toUpperCase() + prefix.slice(1);
+
+                    const fallbackService = {
+                        id: null,
+                        slug,
+                        title: baseName,
+                        name: baseName,
+                        description: "",
+                    };
+
+                    setService(fallbackService);
+                    setRawService(null);
+                    setBaseSlug(slug);
+                    setError(null);
+                    return;
                 }
 
+                // başka tip hata varsa yukarıda throw edilmiş olur; buraya gelirse success demektir
                 if (cancelled) return;
 
                 const { service, raw } = res || {};
@@ -205,12 +231,12 @@ export default function ServiceShow({ slug, page = {} }) {
         };
     }, [slug, tenantId, locale, defaultErrorText]);
 
-    // --- Şehir adını doğrudan `slug`'dan çıkar (örn. "wohnungsrenovierung-aalen" -> "aalen") ---
+    // --- Şehir adını slug'dan çıkar (örn. "wohnungsrenovierung-aalen" -> "aalen") ---
     const citySlug = useMemo(() => {
         if (!slug) return null;
         const parts = String(slug).split("-");
         if (parts.length < 2) return null;
-        return parts.slice(1).join("-"); // "bad-vilbel" veya "aalen"
+        return parts.slice(1).join("-"); // "bad-vilbel" veya "almanca-bad-oeynhausen"
     }, [slug]);
 
     const cityFromSlug = useMemo(() => {
@@ -237,31 +263,7 @@ export default function ServiceShow({ slug, page = {} }) {
         return found || null;
     }, [rawService, locale]);
 
-    // Eğer servis objesi yüklendiyse ve URL'den bir şehir çıktıysa,
-    // servis başlığını client-side olarak güncelle (ör: "Gebäudereinigung in Vilbel").
-    useEffect(() => {
-        if (!service) return;
-
-        const name =
-            activeTranslation?.name ||
-            activeTranslation?.title ||
-            service?.name ||
-            service?.title ||
-            page?.title ||
-            "Service";
-
-        if (
-            cityFromSlug &&
-            name &&
-            !name.toLowerCase().includes(cityFromSlug.toLowerCase())
-        ) {
-            setService((prev) =>
-                prev ? { ...prev, title: `${name} in ${cityFromSlug}` } : prev
-            );
-        }
-    }, [service, activeTranslation, cityFromSlug, page]);
-
-    // --- VERİ HAZIRLIK ---
+    // --- Başlık ve açıklama (cityFromSlug ile birlikte) ---
     const baseTitle =
         activeTranslation?.name ||
         activeTranslation?.title ||
