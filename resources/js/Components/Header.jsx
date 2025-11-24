@@ -244,9 +244,8 @@ const Header = ({ currentRoute, settings: propSettings }) => {
     const { i18n, t } = useTranslation();
     const { props } = usePage();
 
-    // 🔥 HYDRATION FIX İÇİN MOUNT KONTROLÜ
+    // 🔥 HYDRATION FIX – sadece client’ta true oluyor
     const [isMounted, setIsMounted] = useState(false);
-
     useEffect(() => {
         setIsMounted(true);
     }, []);
@@ -268,8 +267,7 @@ const Header = ({ currentRoute, settings: propSettings }) => {
     const omrTalentId = props?.global?.talentId || "";
 
     // 2. Global Siteleri Çek
-    const { websites: globalWebsites, loading: globalLoading } =
-        useGlobalWebsites();
+    const { websites: globalWebsites } = useGlobalWebsites();
 
     // 3. Şu anki siteyi bul
     const currentSite = useMemo(() => {
@@ -292,9 +290,154 @@ const Header = ({ currentRoute, settings: propSettings }) => {
 
     // 4. Ayarları Çek
     const { data: apiSettings, loading: settingsLoading } = useSettings();
+
+    // Tüm ayarları birleştir
     const settings = useMemo(() => {
         return { ...propSettings, ...apiSettings };
     }, [propSettings, apiSettings]);
+
+    // İletişim bilgisi
+    const contactInfo = useMemo(() => {
+        const contactInfos =
+            settings?.contact_infos || settings?.contact?.contact_infos || [];
+
+        if (Array.isArray(contactInfos) && contactInfos.length > 0) {
+            return contactInfos.find((c) => c.is_primary) || contactInfos[0];
+        }
+        return settings?.contact || {};
+    }, [settings]);
+
+    const siteName =
+        settings?.branding?.site_name ||
+        settings?.site_name ||
+        currentSite?.name ||
+        "O&I CLEAN";
+
+    const sitePhone =
+        contactInfo.phone ||
+        contactInfo.mobile ||
+        settings?.contact?.phone ||
+        settings?.phone ||
+        currentSite?.contact?.phone ||
+        "+49 (0)36874 38 55 67";
+
+    // 🔥 ÖNEMLİ: tagline artık sadece backend + sabit fallback
+    const topbarTagline =
+        currentSite?.content?.topbarTagline ||
+        settings?.branding?.topbar_tagline ||
+        settings?.general?.topbar_tagline ||
+        "Sauberkeit, auf die Sie sich verlassen können — 24/7 Service";
+
+    // CTA – yine backend + sabit fallback (i18n defaultValue yok)
+    const cta = {
+        href: currentSite?.cta?.href || settings?.cta?.href || "/contact",
+        label:
+            currentSite?.cta?.label ||
+            settings?.cta?.label ||
+            "Termin vereinbaren",
+    };
+
+    // Logolar
+    const siteLogos = useMemo(() => {
+        const getUrl = (src) =>
+            src?.url || (typeof src === "string" ? src : null);
+        const lightUrl =
+            getUrl(settings?.logo) ||
+            getUrl(settings?.data?.logo) ||
+            getUrl(settings?.branding?.logo) ||
+            getUrl(settings?.general?.logo) ||
+            "/images/logo/Logo.png";
+        const darkUrl =
+            getUrl(settings?.logo_dark) ||
+            getUrl(settings?.branding?.logo_dark) ||
+            "/images/logo/darkLogo.png";
+        return { light: lightUrl, dark: darkUrl };
+    }, [settings]);
+
+    const [currentLang, setCurrentLang] = useState(initialLocale || "de");
+
+    // i18n başlangıç dilini backend ile senkron tut
+    useEffect(() => {
+        if (!initialLocale) return;
+        const normInit = normalizeLang(initialLocale);
+        setCurrentLang((prev) => {
+            const normPrev = normalizeLang(prev);
+            if (normPrev === normInit) return prev;
+            try {
+                localStorage.setItem("locale", normInit);
+            } catch {}
+            return normInit;
+        });
+        try {
+            if (normalizeLang(i18n.language) !== normInit) {
+                i18n.changeLanguage(normInit);
+            }
+        } catch (e) {}
+    }, [initialLocale, i18n]);
+
+    const allLanguages = useMemo(() => {
+        let source = [];
+
+        if (
+            currentSite &&
+            currentSite.languages &&
+            currentSite.languages.length > 0
+        ) {
+            source = currentSite.languages;
+        } else if (props?.languages && props.languages.length > 0) {
+            source = props.languages;
+        } else {
+            source = [
+                { locale: "de", name: "Deutsch" },
+                { locale: "en", name: "English" },
+                { locale: "tr", name: "Türkçe" },
+            ];
+        }
+
+        return source.map((l) => {
+            const code = normalizeLang(l.code || l.language_code || l.locale);
+            return {
+                code,
+                label: l.name || l.label || code.toUpperCase(),
+            };
+        });
+    }, [currentSite, props?.languages]);
+
+    const changeLanguage = (codeRaw) => {
+        const code = normalizeLang(codeRaw);
+        if (!code || normalizeLang(currentLang) === code) return;
+
+        setCurrentLang(code);
+        try {
+            localStorage.setItem("locale", code);
+        } catch {}
+        Cookies.set("locale", code, {
+            expires: 365,
+            path: "/",
+            sameSite: "Lax",
+        });
+
+        try {
+            if (normalizeLang(i18n.language) !== code)
+                i18n.changeLanguage(code);
+        } catch (e) {}
+
+        window.dispatchEvent(
+            new CustomEvent("language-changed", { detail: { locale: code } })
+        );
+
+        let targetUrl = `/lang/${code}`;
+        try {
+            if (typeof route === "function")
+                targetUrl = route("lang.switch", { locale: code });
+        } catch {}
+
+        router.visit(targetUrl, {
+            method: "get",
+            preserveScroll: true,
+            preserveState: false,
+        });
+    };
 
     // --- SOSYAL MEDYA ---
     const [socialLinks, setSocialLinks] = useState(null);
@@ -319,6 +462,88 @@ const Header = ({ currentRoute, settings: propSettings }) => {
         { key: "youtube_url", icon: <FaYoutube />, label: "Youtube" },
         { key: "tiktok_url", icon: <FaTiktok />, label: "TikTok" },
     ];
+
+    // --- MENU ---
+    const {
+        data: menusResponse,
+        loading: menuLoading,
+        error: menuError,
+    } = useMenus({ perPage: 100, tenantId });
+
+    const remoteNavItems = useMemo(() => {
+        if (!menusResponse) return [];
+        const rawMenusSource =
+            Array.isArray(menusResponse?.data) || !menusResponse.data
+                ? menusResponse.data || menusResponse
+                : menusResponse;
+        const rawMenus = Array.isArray(rawMenusSource)
+            ? rawMenusSource
+            : Array.isArray(rawMenusSource?.data)
+            ? rawMenusSource.data
+            : [];
+        const headerMenu =
+            rawMenus.find((m) => m.slug === "header") || rawMenus[0] || null;
+        const items = Array.isArray(headerMenu?.items) ? headerMenu.items : [];
+        const lang = currentLang || "de";
+
+        const toDropdown = (children = []) =>
+            (children || []).map((it, idx) => {
+                const hasChildren =
+                    Array.isArray(it.children) && it.children.length > 0;
+                const label = resolveMenuLabel(it, lang, "de");
+                const url = resolveMenuUrl(it, lang);
+                if (!hasChildren) return { name: label, url };
+                return {
+                    name: label,
+                    submenuKey: `sub-${it.id || idx}`,
+                    submenu: (it.children || []).map((c) => ({
+                        name: resolveMenuLabel(c, lang, "de"),
+                        url: resolveMenuUrl(c, lang),
+                    })),
+                };
+            });
+
+        return items.map((node, i) => {
+            const routeKey = `menu-${node.id || i}`;
+            const hasChildren =
+                Array.isArray(node.children) && node.children.length > 0;
+            const label = resolveMenuLabel(node, lang, "de");
+            const url = resolveMenuUrl(node, lang);
+            return {
+                name: label,
+                route: routeKey,
+                url: url || "#",
+                ...(hasChildren
+                    ? {
+                          dropdownKey: routeKey,
+                          dropdown: toDropdown(node.children),
+                      }
+                    : {}),
+                isActive: () =>
+                    typeof window !== "undefined"
+                        ? window.location.pathname.replace(/\/+$/, "") ===
+                          url.replace(/\/+$/, "")
+                        : false,
+            };
+        });
+    }, [menusResponse, currentLang]);
+
+    const navItems = useMemo(() => {
+        if (remoteNavItems && remoteNavItems.length) return remoteNavItems;
+        if (menuLoading) return [];
+        const homeLabel = t("nav.home", "Startseite");
+        return [
+            {
+                name: homeLabel,
+                route: "home",
+                url: "/",
+                isActive: () =>
+                    typeof window !== "undefined"
+                        ? window.location.pathname.replace(/\/+$/, "") === "/"
+                        : false,
+            },
+        ];
+    }, [remoteNavItems, menuLoading, t]);
 
     const currentPath =
         typeof window !== "undefined"
@@ -403,212 +628,6 @@ const Header = ({ currentRoute, settings: propSettings }) => {
             return nextOpen ? { [key]: true } : {};
         });
 
-    const siteName =
-        settings?.branding?.site_name ||
-        settings?.site_name ||
-        currentSite?.name ||
-        "O&I CLEAN";
-    const sitePhone =
-        settings?.contact?.phone ||
-        settings?.phone ||
-        currentSite?.contact?.phone ||
-        "+49 (0)36874 38 55 67";
-    const topbarTagline =
-        currentSite?.content?.topbarTagline ||
-        t("header.topbar_tagline", {
-            defaultValue:
-                "Sauberkeit, auf die Sie sich verlassen können — 24/7 Service",
-        });
-    const cta = {
-        href:
-            currentSite?.cta?.href ||
-            t("header.cta_href", { defaultValue: "/contact" }),
-        label:
-            currentSite?.cta?.label ||
-            t("header.cta_label", { defaultValue: "Termin vereinbaren" }),
-    };
-
-    const siteLogos = useMemo(() => {
-        const getUrl = (src) =>
-            src?.url || (typeof src === "string" ? src : null);
-        const lightUrl =
-            getUrl(settings?.logo) ||
-            getUrl(settings?.data?.logo) ||
-            getUrl(settings?.branding?.logo) ||
-            getUrl(settings?.general?.logo) ||
-            "/images/logo/Logo.png";
-        const darkUrl =
-            getUrl(settings?.logo_dark) ||
-            getUrl(settings?.branding?.logo_dark) ||
-            "/images/logo/darkLogo.png";
-        return { light: lightUrl, dark: darkUrl };
-    }, [settings]);
-
-    const [currentLang, setCurrentLang] = useState(initialLocale || "de");
-
-    useEffect(() => {
-        if (!initialLocale) return;
-        const normInit = normalizeLang(initialLocale);
-        setCurrentLang((prev) => {
-            const normPrev = normalizeLang(prev);
-            if (normPrev === normInit) return prev;
-            try {
-                localStorage.setItem("locale", normInit);
-            } catch {}
-            return normInit;
-        });
-        try {
-            if (normalizeLang(i18n.language) !== normInit) {
-                i18n.changeLanguage(normInit);
-            }
-        } catch (e) {}
-    }, [initialLocale, i18n]);
-
-    const allLanguages = useMemo(() => {
-        let source = [];
-
-        if (
-            currentSite &&
-            currentSite.languages &&
-            currentSite.languages.length > 0
-        ) {
-            source = currentSite.languages;
-        } else if (props?.languages && props.languages.length > 0) {
-            source = props.languages;
-        } else {
-            source = [
-                { locale: "de", name: "Deutsch" },
-                { locale: "en", name: "English" },
-                { locale: "tr", name: "Türkçe" },
-            ];
-        }
-
-        return source.map((l) => {
-            const code = normalizeLang(l.code || l.language_code || l.locale);
-            return {
-                code,
-                label: l.name || l.label || code.toUpperCase(),
-            };
-        });
-    }, [currentSite, props?.languages]);
-
-    const changeLanguage = (codeRaw) => {
-        const code = normalizeLang(codeRaw);
-        if (!code || normalizeLang(currentLang) === code) return;
-
-        setCurrentLang(code);
-        try {
-            localStorage.setItem("locale", code);
-        } catch {}
-        Cookies.set("locale", code, {
-            expires: 365,
-            path: "/",
-            sameSite: "Lax",
-        });
-
-        try {
-            if (normalizeLang(i18n.language) !== code)
-                i18n.changeLanguage(code);
-        } catch (e) {}
-
-        window.dispatchEvent(
-            new CustomEvent("language-changed", { detail: { locale: code } })
-        );
-
-        let targetUrl = `/lang/${code}`;
-        try {
-            if (typeof route === "function")
-                targetUrl = route("lang.switch", { locale: code });
-        } catch {}
-
-        router.visit(targetUrl, {
-            method: "get",
-            preserveScroll: true,
-            preserveState: false,
-        });
-    };
-
-    const {
-        data: menusResponse,
-        loading: menuLoading,
-        error: menuError,
-    } = useMenus({ perPage: 100, tenantId });
-
-    const remoteNavItems = useMemo(() => {
-        if (!menusResponse) return [];
-        const rawMenusSource =
-            Array.isArray(menusResponse?.data) || !menusResponse.data
-                ? menusResponse.data || menusResponse
-                : menusResponse;
-        const rawMenus = Array.isArray(rawMenusSource)
-            ? rawMenusSource
-            : Array.isArray(rawMenusSource?.data)
-            ? rawMenusSource.data
-            : [];
-        const headerMenu =
-            rawMenus.find((m) => m.slug === "header") || rawMenus[0] || null;
-        const items = Array.isArray(headerMenu?.items) ? headerMenu.items : [];
-        const lang = currentLang || "de";
-
-        const toDropdown = (children = []) =>
-            (children || []).map((it, idx) => {
-                const hasChildren =
-                    Array.isArray(it.children) && it.children.length > 0;
-                const label = resolveMenuLabel(it, lang, "de");
-                const url = resolveMenuUrl(it, lang);
-                if (!hasChildren) return { name: label, url };
-                return {
-                    name: label,
-                    submenuKey: `sub-${it.id || idx}`,
-                    submenu: (it.children || []).map((c) => ({
-                        name: resolveMenuLabel(c, lang, "de"),
-                        url: resolveMenuUrl(c, lang),
-                    })),
-                };
-            });
-
-        return items.map((node, i) => {
-            const routeKey = `menu-${node.id || i}`;
-            const hasChildren =
-                Array.isArray(node.children) && node.children.length > 0;
-            const label = resolveMenuLabel(node, lang, "de");
-            const url = resolveMenuUrl(node, lang);
-            return {
-                name: label,
-                route: routeKey,
-                url: url || "#",
-                ...(hasChildren
-                    ? {
-                          dropdownKey: routeKey,
-                          dropdown: toDropdown(node.children),
-                      }
-                    : {}),
-                isActive: () =>
-                    typeof window !== "undefined"
-                        ? window.location.pathname.replace(/\/+$/, "") ===
-                          url.replace(/\/+$/, "")
-                        : false,
-            };
-        });
-    }, [menusResponse, currentLang]);
-
-    const navItems = useMemo(() => {
-        if (remoteNavItems && remoteNavItems.length) return remoteNavItems;
-        if (menuLoading) return [];
-        const homeLabel = t("nav.home", "Startseite");
-        return [
-            {
-                name: homeLabel,
-                route: "home",
-                url: "/",
-                isActive: () =>
-                    typeof window !== "undefined"
-                        ? window.location.pathname.replace(/\/+$/, "") === "/"
-                        : false,
-            },
-        ];
-    }, [remoteNavItems, menuLoading, t]);
-
     const navigate =
         (url, close = false) =>
         (e) => {
@@ -655,7 +674,6 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                         <div className="topbar__left">
                             <span className="topbar__phone">
                                 <FaPhoneAlt aria-hidden="true" />
-                                {/* TELEFON NUMARASI İÇİN HYDRATION FIX */}
                                 {isMounted ? (
                                     <a
                                         href={`tel:${sitePhone.replace(
@@ -668,28 +686,32 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                             animateOn="view"
                                             speed={100}
                                             revealDirection="center"
-                                            key={currentLang} // Dil değişince yeniden render
+                                            key={currentLang}
                                         />
                                     </a>
                                 ) : (
-                                    // Sunucudan gelen statik içerik (SSR ile eşleşir)
-                                    <span>{sitePhone}</span>
+                                    <a
+                                        href={`tel:${sitePhone.replace(
+                                            /\s+/g,
+                                            ""
+                                        )}`}
+                                    >
+                                        {sitePhone}
+                                    </a>
                                 )}
                             </span>
 
                             <span className="topbar__tagline">
                                 <div style={{ marginTop: 0 }}>
-                                    {/* TAGLINE İÇİN HYDRATION FIX */}
                                     {isMounted ? (
                                         <DecryptedText
                                             text={topbarTagline}
                                             animateOn="view"
                                             speed={100}
                                             revealDirection="center"
-                                            key={currentLang} // Dil değişince yeniden render
+                                            key={currentLang}
                                         />
                                     ) : (
-                                        // Sunucu tarafında oluşturulan metni göster
                                         <span>{topbarTagline}</span>
                                     )}
                                 </div>
