@@ -36,7 +36,7 @@ protected $middlewareGroups = [
         \Illuminate\Session\Middleware\StartSession::class,
         // IMPORTANT: locale session’dan burada set ediliyor
         \App\Http\Middleware\SetLocale::class,
-
+ \App\Http\Middleware\LocaleFromCookie::class,
         \Illuminate\View\Middleware\ShareErrorsFromSession::class,
         \App\Http\Middleware\VerifyCsrfToken::class,
         \Illuminate\Routing\Middleware\SubstituteBindings::class,

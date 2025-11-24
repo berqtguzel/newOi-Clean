@@ -303,9 +303,7 @@ void main() {
             if (!paused && programRef.current && meshRef.current) {
                 try {
                     renderer.render({ scene: meshRef.current });
-                } catch (e) {
-                    console.error(e);
-                }
+                } catch (e) {}
             }
         };
         rafRef.current = requestAnimationFrame(loop);

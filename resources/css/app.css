@@ -100,3 +100,6 @@ html, body { overflow-x: hidden; scroll-behavior: smooth; }
 html, body { overflow-x: hidden; scroll-behavior: smooth; }
 body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); }
 * { border-color: hsl(var(--border)); }
+html.inertia-loading body {
+    visibility: hidden;
+}

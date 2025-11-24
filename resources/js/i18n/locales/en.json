@@ -5,7 +5,6 @@
     "button_services": "Discover our services",
     "button_contact": "Get in touch now"
   },
-
   "services": {
     "section_title": "Our wide range of services",
     "section_subtitle": "We offer turnkey solutions for all requirements of your facilities and buildings – with German precision and quality.",
@@ -23,49 +22,56 @@
         "title": "Renovation, repair & maintenance",
         "description": "Painting, filling and drywall work as well as floor installation and minor repairs."
       }
+    },
+    "card": {
+      "aria": "Learn more about {{service}}",
+      "button": "Details"
     }
   },
-
   "servicesList": {
     "title": "Services",
     "subtitle": "Discover our comprehensive services for your home and business",
     "meta_title": "Our Services - O&I CLEAN group GmbH",
     "meta_description": "Professional cleaning, renovation and facility management in Hamburg. ★ Expertise ★ German quality ★ Reliable service",
-    "loading": "Loading services…",
+    "loading": "",
     "contact_cta": "Contact us",
     "contact_cta_aria": "Get in touch now"
   },
-
   "locations": {
     "page_title": "Locations - O&I CLEAN group GmbH",
     "page_description": "Professional cleaning services at various locations in Germany. Local expertise, nationwide quality.",
     "title": "Locations",
     "subtitle": "Discover our locations in Germany",
-    "loading": "Loading locations...",
+    "loading": "",
     "empty": "No locations are currently available.",
     "cta_label": "Request location",
     "cta_aria": "Get in touch now",
-    "contact_href": "/kontakt"
+    "contact_href": "/kontakt",
+    "card": {
+      "cta": "Learn more",
+      "cta_aria": "Learn more about our cleaning services in {{city}}"
+    }
   },
-
   "contact": {
+    "page_title": "Contact",
+    "intro_text": "Free & non-binding – <strong>we will get back to you shortly</strong>.",
     "title": "Contact us",
     "description": "Professional cleaning services for your company. We are happy to advise you personally.",
     "submit_label": "Send message",
     "submit_failed": "Message could not be sent.",
     "select_placeholder": "Please choose",
-
+    "success_title": "Success!",
+    "success_message": "Your message has been sent successfully. We will get back to you as soon as possible.",
+    "redirecting": "Page reloading...",
     "phone_label": "Phone",
     "email_label": "Email",
     "address_label": "Address",
     "hours_label": "Opening hours",
     "hours_value": "Mon - Fri: 08:00 - 17:00",
-
     "phone_number": "+49 (0)36874 38 55 67",
     "email_address": "info@oi-clean.de",
     "address_street": "Musterstraße 123",
     "address_city": "12345 Berlin",
-
     "form": {
       "name": "Name",
       "phone": "Phone",
@@ -74,17 +80,14 @@
       "other": "Field"
     }
   },
-
   "footer": {
     "description": "Your partner for professional cleaning, care and facility management – with German precision and reliability.",
     "address": "Spaldingstr. 77–79, 20097 Hamburg",
     "phone": "+49 (0)40 46 63 35 19",
     "phone_raw": "+494046633519",
     "email": "info@oi-clean.de",
-
     "links_title": "Links",
     "contact_title": "Contact",
-
     "link_about": "About us",
     "link_contact": "Contact",
     "link_contact_href": "/contact",
@@ -92,11 +95,8 @@
     "link_privacy": "Privacy",
     "link_imprint": "Imprint",
     "link_privacy_bottom": "Privacy",
-
     "copyright": "All rights reserved.",
-
     "back_to_top": "Back to top",
-
     "region_label": "Footer and contact information",
     "home_aria": "O&I CLEAN - Home",
     "linkedin_aria": "LinkedIn - O&I CLEAN",
@@ -106,7 +106,6 @@
     "phone_aria": "Phone number",
     "email_aria": "Email"
   },
-
   "header": {
     "topbar_tagline": "Cleanliness you can rely on — 24/7 service",
     "cta_label": "Schedule an appointment",
@@ -119,17 +118,14 @@
     "language": "Language",
     "impressum": "Imprint"
   },
-
   "nav": {
     "home": "Home"
   },
-
   "staticPage": {
     "breadcrumbs_home": "Home",
     "breadcrumbs_page": "Page",
     "empty_content": "Content will be added soon."
   },
-
   "offerDock": {
     "title": "Quote",
     "subtitle": "Free & without obligation",
@@ -137,7 +133,6 @@
     "aria_open": "Open quote bar",
     "aria_close": "Close quote bar"
   },
-
   "quote_modal": {
     "title": "Request a quote",
     "scrim_aria": "Close modal",
@@ -170,7 +165,6 @@
     "thank_you_text": "We have received your request and will get back to you shortly.",
     "close_button": "Close"
   },
-
   "static": {
     "uber-uns": {
       "title": "About us",
@@ -194,7 +188,6 @@
         }
       ]
     },
-
     "qualitatsmanagement": {
       "title": "Quality management",
       "subtitle": "For us, quality is more than a word – it is our commitment.",
@@ -209,7 +202,6 @@
         }
       ]
     },
-
     "mitarbeiter-schulungen": {
       "title": "Employee trainings",
       "subtitle": "Regular trainings and further education for social and technical skills.",
@@ -224,7 +216,6 @@
         }
       ]
     },
-
     "haufig-gestellte-fragen-faq": {
       "title": "Frequently asked questions (FAQ)",
       "subtitle": "Answers to the most common questions about our cleaning services.",
@@ -251,7 +242,6 @@
         }
       ]
     },
-
     "datenschutzhinweise": {
       "title": "Privacy notice",
       "subtitle": "The protection of your personal data is particularly important to us.",
@@ -274,7 +264,6 @@
         }
       ]
     },
-
     "stockfotos": {
       "title": "Stock photos",
       "subtitle": "Information about the images used on our website.",
@@ -297,7 +286,6 @@
         }
       ]
     },
-
     "impressum": {
       "title": "Imprint",
       "subtitle": "Information according to § 5 TMG",
@@ -340,11 +328,59 @@
         }
       ]
     },
-    "locations": {
-    "card": {
-      "cta": "Learn more",
-      "cta_aria": "Learn more about our cleaning services in {{city}}"
+    "cookie-policy": {
+      "title": "Cookie policy",
+      "subtitle": "How we use cookies and similar technologies",
+      "hero": {
+        "image": "/images/template.jpg",
+        "alt": "Cookie policy – O&I CLEAN group GmbH"
+      },
+      "sections": [
+        {
+          "heading": "What are cookies?",
+          "body": "Cookies are small text files stored on your device that help us improve the site, personalise content and provide certain functions."
+        },
+        {
+          "heading": "How we use cookies",
+          "body": "We use cookies for essential site functionality, analytics and to remember your language and preferences. You can control cookie settings in your browser."
+        },
+        {
+          "heading": "Contact",
+          "body": "If you have questions about our cookie policy, please contact us via the contact page."
+        }
+      ]
     }
-  }
+  },
+  "errors": {
+    "notFound": {
+      "title": "404 — Page not found",
+      "desc": "The page you were looking for could not be found or has been moved. Try returning to the homepage or use the site search.",
+      "cta_home": "Home",
+      "cta_contact": "Contact us",
+      "hint": "If the problem persists, please contact us."
+    }
+  },
+  "ui": {
+    "loading": {
+      "message": "Loading content…"
+    }
+  },
+  "cookies": {
+    "title": "Cookie Preferences",
+    "message": "We use cookies to ensure you get the best experience on our website.",
+    "cat_necessary": "Necessary Cookies",
+    "cat_analytics": "Analytics Cookies",
+    "cat_marketing": "Marketing Cookies",
+    "desc_necessary": "These cookies are essential for the website to function.",
+    "desc_analytics": "These cookies collect information about how you use our website.",
+    "desc_marketing": "These cookies are used to deliver relevant advertisements to you.",
+    "required": "Required",
+    "accept_all": "Accept All",
+    "reject": "Reject",
+    "save": "Save Preferences",
+    "settings": "Settings",
+    "hide_details": "Hide",
+    "privacy_policy": "Privacy Policy",
+    "imprint": "Imprint"
   }
 }

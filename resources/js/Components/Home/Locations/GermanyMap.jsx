@@ -96,14 +96,9 @@ const GermanyMap = ({ activeId, setActiveId }) => {
                         }
                     });
 
-                    console.log(
-                        "Harita İçin Bulunan Lokasyonlar:",
-                        Array.from(uniqueLocationsMap.values())
-                    );
                     setLocations(Array.from(uniqueLocationsMap.values()));
                 }
             } catch (error) {
-                console.error("Harita verileri hatası:", error);
             } finally {
                 if (isMounted) setLoading(false);
             }

@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Http;
 
 class StaticPageController extends Controller
 {
     public function show(string $slug)
     {
-        // 1) Statik sayfalar
+        $slugLower = strtolower($slug);
+
+        // Static pages (content from local i18n/static JSON)
         $staticSlugs = [
             'uber-uns',
             'qualitatsmanagement',
@@ -17,11 +20,12 @@ class StaticPageController extends Controller
             'datenschutzhinweise',
             'stockfotos',
             'impressum',
+            'cookie-policy'
         ];
 
-        if (in_array($slug, $staticSlugs, true)) {
+        if (in_array($slugLower, $staticSlugs, true)) {
             return Inertia::render('StaticPage', [
-                'slug' => $slug,
+                'slug' => $slugLower,
                 'meta' => [
                     'title'       => 'O&I CLEAN group GmbH',
                     'description' => 'Professionelle Reinigungsdienstleistungen',
@@ -30,37 +34,65 @@ class StaticPageController extends Controller
             ]);
         }
 
-        // 2) LOKASYON SLUG mu? (Locations/Show.jsx)
-        if ($this->isLocationSlug($slug)) {
-            return Inertia::render('Locations/Show', [
-                'slug' => $slug,
-                'page' => [],        // istersen burada ekstra props gönderebilirsin
-            ]);
+        //-------------------------------------
+        // DASHBOARD'DAN TÜM SERVISLERI ÇEK
+        //-------------------------------------
+        $tenantId = config('services.omr.talent_id');
+        $base = rtrim(config('services.omr.base'), '/');
+
+        $resp = Http::withHeaders([
+            'X-Tenant-ID' => $tenantId,
+            'Accept' => 'application/json',
+        ])->get($base . '/v1/services?per_page=500');
+
+        $services = $resp->json()['data'] ?? [];
+
+        //-------------------------------------
+        // SLUG EŞLEME (gebaudereinigung-aalen → aalen)
+        //-------------------------------------
+        $normalizedMap = [];
+        foreach ($services as $svc) {
+            $original = strtolower($svc['slug']);
+            $normalized = $this->normalizeSlug($original);
+            $normalizedMap[$normalized] = $original;
         }
-return Inertia::render('Services/Show', [
-    'slug' => $slug,
-    'page' => [],
-]);
-    }
 
-    protected function isLocationSlug(string $slug): bool
-    {
+        //-------------------------------------
+        // BU SLUG NEREDEN GELIYOR?
+        //-------------------------------------
 
-        $locationPrefixes = [
-            'gebaudereinigung-',
-            'gebaudereinigung-in-',
-            'building-cleaning-',
+        // 1) ANA SERVISLER (Services/Show.jsx)
+        $mainServices = [
+            'gebaudereinigung',
+            'wohnungsrenovierung',
+            'hotelreinigung'
         ];
 
-        foreach ($locationPrefixes as $prefix) {
-
-            if (str_starts_with($slug, $prefix)) {
-                return true;
-            }
-
-
+        if (in_array($slugLower, $mainServices)) {
+            return Inertia::render('Services/Show', [
+                'slug' => $slugLower
+            ]);
         }
 
-        return false;
+        // 2) ŞEHİR SLUG’U MU? (Locations/Show.jsx)
+        if (array_key_exists($slugLower, $normalizedMap)) {
+            return Inertia::render('Locations/Show', [
+                'slug' => $normalizedMap[$slugLower]   // gerçek slug
+            ]);
+        }
+
+        // 3) Hiçbir şeye uymuyorsa → 404
+        abort(404);
+    }
+
+    protected function normalizeSlug(string $slug)
+    {
+        if (str_contains($slug, '-')) {
+            $parts = explode('-', $slug);
+            array_shift($parts);
+            return implode('-', $parts);
+        }
+
+        return $slug;
     }
 }

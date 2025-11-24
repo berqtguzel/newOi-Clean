@@ -104,9 +104,9 @@ export default function ServiceCategories({ content = {} }) {
                     <h2 className="svc-title">
                         <SafeHtml html={sectionTitle} />
                     </h2>
-                    <p className="svc-subtitle">
+                    <div className="svc-subtitle">
                         <SafeHtml html={sectionSubtitle} />
-                    </p>
+                    </div>
                 </motion.div>
 
                 <div className="svc-grid">
@@ -146,36 +146,9 @@ export default function ServiceCategories({ content = {} }) {
                                         <SafeHtml html={cat.title} />
                                     </h3>
 
-                                    <p className="svc-card-desc">
+                                    <div className="svc-card-desc">
                                         <SafeHtml html={cat.description} />
-                                    </p>
-
-                                    <Link
-                                        href={cat.url}
-                                        className="svc-card-link"
-                                        aria-label={`${plainTitle} – ${learnMoreLabel}`}
-                                    >
-                                        {learnMoreLabel}
-                                        <motion.svg
-                                            className="svc-card-link-arrow"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            whileHover={{ x: 4 }}
-                                            transition={{
-                                                type: "spring",
-                                                stiffness: 300,
-                                            }}
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="2"
-                                                d="M9 5l7 7-7 7"
-                                            />
-                                        </motion.svg>
-                                    </Link>
+                                    </div>
                                 </div>
                             </motion.article>
                         );

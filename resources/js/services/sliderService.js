@@ -3,13 +3,12 @@ import { httpRequest } from "../lib/http";
 import { remoteConfig } from "./remoteConfig";
 
 function pickImage(it) {
-
     return (
         it?.image_url ||
         it?.image ||
         it?.cover ||
         it?.thumbnail ||
-        "/images/default-slider.jpg"
+      null
     );
 }
 

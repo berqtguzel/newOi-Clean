@@ -42,10 +42,8 @@ const mapServiceToLocation = (svc) => {
     };
 };
 
-// 🔥 BURAYI backend'deki GERÇEK slug / isimle eşleştir
-const CATEGORY_SLUG = "gebaedereinugung"; // backend'de category_slug alanı buysa
-const CATEGORY_NAME = "Gebäudereinigung"; // panelde gördüğün kategori ismi
-
+const CATEGORY_SLUG = "gebaedereinugung";
+const CATEGORY_NAME = "Gebäudereinigung";
 const LocationsGrid = () => {
     const { t } = useTranslation();
     const { props } = usePage();
@@ -80,7 +78,6 @@ const LocationsGrid = () => {
 
                 const list = Array.isArray(services) ? services : [];
 
-                // --- FRONTEND FİLTRE ---
                 const filtered = list.filter((svc) => {
                     const catSlug = svc.categorySlug;
                     const catName = svc.categoryName;

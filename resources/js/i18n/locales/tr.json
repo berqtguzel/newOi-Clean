@@ -5,7 +5,6 @@
     "button_services": "Hizmetlerimizi keşfedin",
     "button_contact": "Hemen iletişime geçin"
   },
-
   "services": {
     "section_title": "Geniş hizmet yelpazemiz",
     "section_subtitle": "Tesisleriniz ve binalarınızın tüm ihtiyaçları için anahtar teslim çözümler sunuyoruz – Alman titizliği ve kalitesiyle.",
@@ -23,68 +22,73 @@
         "title": "Tadilat, onarım & bakım",
         "description": "Boyama, alçı ve alçıpan işleri, zemin döşeme ve küçük onarımlar."
       }
+    },
+    "card": {
+      "aria": "{{service}} hakkında daha fazla bilgi al",
+      "button": "Detaylar"
     }
   },
-
   "servicesList": {
     "title": "Hizmetler",
     "subtitle": "Eviniz ve işiniz için sunduğumuz kapsamlı hizmetleri keşfedin",
     "meta_title": "Hizmetlerimiz - O&I CLEAN group GmbH",
     "meta_description": "Hamburg’da profesyonel temizlik, tadilat ve bina yönetimi. ★ Uzmanlık ★ Alman kalitesi ★ Güvenilir hizmet",
-    "loading": "Hizmetler yükleniyor…",
+    "loading": "",
     "contact_cta": "Bizimle iletişime geçin",
     "contact_cta_aria": "Şimdi iletişime geçin"
   },
-
   "locations": {
     "page_title": "Lokasyonlar - O&I CLEAN group GmbH",
     "page_description": "Almanya’nın farklı şehirlerinde profesyonel temizlik hizmetleri. Yerel uzmanlık, ülke çapında kalite.",
     "title": "Lokasyonlar",
     "subtitle": "Almanya’daki hizmet verdiğimiz bölgeleri keşfedin",
-    "loading": "Lokasyonlar yükleniyor...",
+    "loading": "",
     "empty": "Şu anda görüntülenecek lokasyon bulunmamaktadır.",
     "cta_label": "Lokasyon talep et",
     "cta_aria": "Şimdi iletişime geçin",
-    "contact_href": "/kontakt"
+    "contact_href": "/kontakt",
+    "card": {
+      "cta": "Daha fazla bilgi",
+      "cta_aria": "{{city}} içindeki temizlik hizmetlerimiz hakkında daha fazla bilgi alın"
+    }
   },
-
   "contact": {
+    "page_title": "İletişim",
+    "intro_text": "Ücretsiz & bağlayıcı değil – <strong>en kısa sürede size dönüş yapıyoruz</strong>.",
     "title": "Bizimle iletişime geçin",
     "description": "Şirketiniz için profesyonel temizlik hizmetleri. Sizi memnuniyetle bireysel olarak bilgilendiririz.",
     "submit_label": "Mesaj gönder",
     "submit_failed": "Mesaj gönderilemedi.",
     "select_placeholder": "Lütfen seçin",
-
+    "success_title": "Başarılı!",
+    "success_message": "Mesajınız başarıyla gönderildi. En kısa sürede size geri dönüş yapacağız.",
+    "redirecting": "Sayfa yenileniyor...",
     "phone_label": "Telefon",
     "email_label": "E-posta",
     "address_label": "Adres",
     "hours_label": "Çalışma saatleri",
     "hours_value": "Pzt. - Cum.: 08:00 - 17:00",
-
     "phone_number": "+49 (0)36874 38 55 67",
     "email_address": "info@oi-clean.de",
     "address_street": "Musterstraße 123",
     "address_city": "12345 Berlin",
-
     "form": {
       "name": "İsim",
       "phone": "Telefon",
       "email": "E-posta",
       "message": "Mesaj",
       "other": "Alan"
-    }
+    },
+    "error_generic": "Bir hata oluştu. Lütfen tekrar deneyin."
   },
-
   "footer": {
     "description": "Profesyonel temizlik, bakım ve bina yönetiminde Alman titizliği ve güvenilirliğiyle yanınızdayız.",
     "address": "Spaldingstr. 77–79, 20097 Hamburg",
     "phone": "+49 (0)40 46 63 35 19",
     "phone_raw": "+494046633519",
     "email": "info@oi-clean.de",
-
     "links_title": "Bağlantılar",
     "contact_title": "İletişim",
-
     "link_about": "Hakkımızda",
     "link_contact": "İletişim",
     "link_contact_href": "/contact",
@@ -92,11 +96,8 @@
     "link_privacy": "Gizlilik",
     "link_imprint": "İmpressum",
     "link_privacy_bottom": "Gizlilik",
-
     "copyright": "Tüm hakları saklıdır.",
-
     "back_to_top": "Başa dön",
-
     "region_label": "Alt bilgi ve iletişim bilgileri",
     "home_aria": "O&I CLEAN - Ana sayfa",
     "linkedin_aria": "LinkedIn - O&I CLEAN",
@@ -106,7 +107,6 @@
     "phone_aria": "Telefon numarası",
     "email_aria": "E-posta"
   },
-
   "header": {
     "topbar_tagline": "Güvenebileceğiniz temizlik — 7/24 hizmet",
     "cta_label": "Randevu al",
@@ -117,19 +117,16 @@
     "menu_open": "Menüyü aç",
     "menu_close": "Menüyü kapat",
     "language": "Dil",
-    "impressum": "İmpressum"
+    "impressum": "Damga"
   },
-
   "nav": {
     "home": "Ana sayfa"
   },
-
   "staticPage": {
     "breadcrumbs_home": "Ana sayfa",
     "breadcrumbs_page": "Sayfa",
     "empty_content": "İçerik yakında eklenecek."
   },
-
   "offerDock": {
     "title": "Teklif",
     "subtitle": "Ücretsiz & bağlayıcı değil",
@@ -137,7 +134,6 @@
     "aria_open": "Teklif panelini aç",
     "aria_close": "Teklif panelini kapat"
   },
-
   "quote_modal": {
     "title": "Teklif talep et",
     "scrim_aria": "Modalı kapat",
@@ -170,7 +166,6 @@
     "thank_you_text": "Talebiniz bize ulaştı, en kısa sürede sizinle iletişime geçeceğiz.",
     "close_button": "Kapat"
   },
-
   "static": {
     "uber-uns": {
       "title": "Hakkımızda",
@@ -194,7 +189,6 @@
         }
       ]
     },
-
     "qualitatsmanagement": {
       "title": "Kalite yönetimi",
       "subtitle": "Bizim için kalite sadece bir kelime değil – bir taahhüttür.",
@@ -209,7 +203,6 @@
         }
       ]
     },
-
     "mitarbeiter-schulungen": {
       "title": "Çalışan eğitimleri",
       "subtitle": "Sosyal ve teknik yetkinlikler için düzenli eğitim ve geliştirme programları.",
@@ -224,7 +217,6 @@
         }
       ]
     },
-
     "haufig-gestellte-fragen-faq": {
       "title": "Sıkça sorulan sorular (SSS)",
       "subtitle": "Temizlik hizmetlerimizle ilgili en sık sorulan soruların yanıtları.",
@@ -251,7 +243,6 @@
         }
       ]
     },
-
     "datenschutzhinweise": {
       "title": "Gizlilik bildirimi",
       "subtitle": "Kişisel verilerinizin korunması bizim için özel bir önem taşımaktadır.",
@@ -274,7 +265,6 @@
         }
       ]
     },
-
     "stockfotos": {
       "title": "Stok fotoğraflar",
       "subtitle": "Web sitemizde kullanılan görsellerle ilgili bilgiler.",
@@ -297,7 +287,6 @@
         }
       ]
     },
-
     "impressum": {
       "title": "İmpressum",
       "subtitle": "§ 5 TMG uyarınca yasal bilgiler",
@@ -340,11 +329,59 @@
         }
       ]
     },
-     "locations": {
-    "card": {
-      "cta": "Daha fazla bilgi",
-      "cta_aria": "{{city}} içindeki temizlik hizmetlerimiz hakkında daha fazla bilgi alın"
+    "cookie-policy": {
+      "title": "Çerez Politikası",
+      "subtitle": "Çerezleri ve benzer teknolojileri nasıl kullandığımız",
+      "hero": {
+        "image": "/images/template.jpg",
+        "alt": "Çerez Politikası – O&I CLEAN group GmbH"
+      },
+      "sections": [
+        {
+          "heading": "Çerez nedir?",
+          "body": "Çerezler, siteyi geliştirmemize, içeriği kişiselleştirmemize ve belirli işlevleri sağlamamıza yardımcı olan cihazınıza kaydedilen küçük metin dosyalarıdır."
+        },
+        {
+          "heading": "Çerezleri nasıl kullanıyoruz",
+          "body": "Site işlevselliği, analiz ve dil/tercih hatırlama için çerezler kullanıyoruz. Çerez ayarlarını tarayıcınızdan kontrol edebilirsiniz."
+        },
+        {
+          "heading": "İletişim",
+          "body": "Çerez politikamızla ilgili sorularınız varsa lütfen iletişim sayfası üzerinden bize ulaşın."
+        }
+      ]
     }
-  }
+  },
+  "errors": {
+    "notFound": {
+      "title": "404 — Sayfa bulunamadı",
+      "desc": "Aradığınız sayfa bulunamadı veya taşınmış olabilir. Lütfen ana sayfaya dönmeyi veya site içi aramayı deneyin.",
+      "cta_home": "Ana sayfa",
+      "cta_contact": "İletişime geçin",
+      "hint": "Sorun devam ederse lütfen bizimle iletişime geçin."
+    }
+  },
+  "ui": {
+    "loading": {
+      "message": "İçerik yükleniyor…"
+    }
+  },
+  "cookies": {
+    "title": "Çerez Tercihleri",
+    "message": "Web sitemizde en iyi deneyimi yaşamanız için çerezleri kullanıyoruz.",
+    "cat_necessary": "Zorunlu Çerezler",
+    "cat_analytics": "Analiz Çerezleri",
+    "cat_marketing": "Pazarlama Çerezleri",
+    "desc_necessary": "Bu çerezler web sitesinin çalışması için gereklidir.",
+    "desc_analytics": "Bu çerezler sitemizi nasıl kullandığınız hakkında bilgi toplar.",
+    "desc_marketing": "Bu çerezler size uygun reklamlar göstermek için kullanılır.",
+    "required": "Zorunlu",
+    "accept_all": "Tümünü Kabul Et",
+    "reject": "Reddet",
+    "save": "Seçimi Kaydet",
+    "settings": "Tercihler",
+    "hide_details": "Gizle",
+    "privacy_policy": "Gizlilik Politikası",
+    "imprint": "Künye"
   }
 }

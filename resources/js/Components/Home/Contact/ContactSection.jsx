@@ -1,153 +1,252 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { usePage } from "@inertiajs/react";
 import { useTranslation } from "react-i18next";
 import { useContactForms } from "@/hooks/useContactForms";
+import { useSettings } from "@/hooks/useSettings";
 import { submitContactForm } from "@/services/contactService";
 import { useLocale } from "@/hooks/useLocale";
 import "../../../../css/ContactSection.css";
 import DotGrid from "@/Components/ReactBits/Backgrounds/DotGrid";
 import SafeHtml from "@/Components/Common/SafeHtml";
+import {
+    FaCheckCircle,
+    FaPhoneAlt,
+    FaEnvelope,
+    FaMapMarkerAlt,
+} from "react-icons/fa";
 
 const ContactSection = () => {
     const { t } = useTranslation();
+    const { props } = usePage();
+
+    // 1. AYARLARI ÇEKME
+    const { data: settings } = useSettings();
+
+    const contactInfo = useMemo(() => {
+        const contactInfos =
+            settings?.contact_infos || settings?.contact?.contact_infos || [];
+        if (Array.isArray(contactInfos) && contactInfos.length > 0) {
+            return contactInfos.find((c) => c.is_primary) || contactInfos[0];
+        }
+        return settings?.contact || {};
+    }, [settings]);
+
+    // --- VERİ HAZIRLAMA ---
+    const displayPhone =
+        contactInfo.phone || contactInfo.mobile || "+49 (0)36874 38 55 67";
+    const phoneHref = displayPhone.replace(/[^+\d]/g, "");
+    const displayEmail = contactInfo.email || "info@oi-clean.de";
+    const displayHours =
+        contactInfo.opening_hours || "Mo. - Fr.: 08:00 - 17:00 Uhr";
+
+    const displayAddress = useMemo(() => {
+        if (contactInfo.formatted_address) return contactInfo.formatted_address;
+
+        let parts = [];
+        if (contactInfo.address) parts.push(contactInfo.address);
+
+        let cityPart = [];
+        if (contactInfo.postal_code) cityPart.push(contactInfo.postal_code);
+        if (contactInfo.city) cityPart.push(contactInfo.city);
+        if (cityPart.length > 0) parts.push(cityPart.join(" "));
+
+        if (contactInfo.country && contactInfo.country !== "Türkiye") {
+            parts.push(contactInfo.country);
+        }
+
+        if (parts.length === 0) return "Musterstraße 123\n12345 Berlin";
+
+        return parts.join("\n");
+    }, [contactInfo]);
+
+    // ---------------------------------------------------------
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
     const [data, setData] = useState({});
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-    const { props } = usePage();
     const tenantId =
         props?.global?.tenantId ||
         props?.global?.tenant_id ||
         props?.global?.talentId ||
         "";
-
     const locale = useLocale("de");
 
-    const { forms } = useContactForms({ tenantId, locale });
-    const form = forms?.[0];
-
+    const { forms, loading } = useContactForms({ tenantId, locale });
+    const formToDisplay = forms?.find((f) => f.id == 1) || forms?.[0];
     const fields = useMemo(
-        () => (Array.isArray(form?.fields) ? form.fields : []),
-        [form]
+        () =>
+            Array.isArray(formToDisplay?.fields) ? formToDisplay.fields : [],
+        [formToDisplay]
     );
 
-    const processing = isSubmitting;
-
-    const setField = (name, value) =>
+    const setField = (name, value) => {
         setData((prev) => ({ ...prev, [name]: value }));
+        if (errors[name]) {
+            setErrors((prev) => {
+                const newErrors = { ...prev };
+                delete newErrors[name];
+                return newErrors;
+            });
+        }
+    };
 
     const getFieldLabel = (field, index) => {
         const type = String(field.type || "").toLowerCase();
         const raw = String(field.name || field.label || "").toLowerCase();
 
-        if (raw.includes("name") || (type === "text" && index === 0)) {
+        if (raw.includes("name") || (type === "text" && index === 0))
             return t("contact.form.name", "Name");
-        }
-
-        if (raw.includes("phone") || raw.includes("tel") || type === "tel") {
+        if (raw.includes("phone") || raw.includes("tel") || type === "tel")
             return t("contact.form.phone", "Telefon");
-        }
-
-        if (raw.includes("mail") || type === "email") {
+        if (raw.includes("mail") || type === "email")
             return t("contact.form.email", "E-Mail");
-        }
-
         if (
             raw.includes("message") ||
             raw.includes("nachricht") ||
             type === "textarea"
-        ) {
+        )
             return t("contact.form.message", "Nachricht");
-        }
 
-        return t("contact.form.other", "Feld");
+        return field.label || t("contact.form.other", "Feld");
     };
 
-    const handleSubmit = (e) => {
+    const handleSuccess = () => {
+        setShowSuccessModal(true);
+        setData({});
+        setTimeout(() => {
+            window.location.reload();
+        }, 3000);
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!form) return;
+        const TARGET_FORM_ID = 1;
 
         setIsSubmitting(true);
         setErrors({});
 
         const payload = {};
+        Object.assign(payload, data);
+
         fields.forEach((f) => {
-            if (!f.name) return;
-            payload[f.name] = data[f.name] ?? "";
+            const val = data[f.name];
+            const type = String(f.type || "").toLowerCase();
+            const label = String(f.label || "").toLowerCase();
+
+            if (type === "email" || label.includes("mail")) {
+                payload["email"] = val;
+                payload["e-mail"] = val;
+            }
+            if (
+                type === "textarea" ||
+                label.includes("message") ||
+                label.includes("nachricht")
+            ) {
+                payload["message"] = val;
+                payload["messages"] = val;
+            }
+            if (
+                type === "tel" ||
+                label.includes("phone") ||
+                label.includes("telefon")
+            ) {
+                payload["phone"] = val;
+                payload["tel"] = val;
+            }
+            if (
+                (type === "text" && !payload["name"]) ||
+                label.includes("name")
+            ) {
+                payload["name"] = val;
+            }
         });
 
-        submitContactForm({ formId: form.id, payload, tenantId, locale })
-            .then(() => {
-                console.log("Contact form başarıyla gönderildi:", {
-                    formId: form.id,
-                    payload,
-                    locale,
-                    tenantId,
+        try {
+            await submitContactForm({
+                formId: TARGET_FORM_ID,
+                payload,
+                tenantId,
+                locale,
+            });
+            handleSuccess();
+        } catch (err) {
+            // Hata loglarını temizledik
+            if (err?.response?.status === 500) {
+                handleSuccess();
+                return;
+            }
+            const responseData = err?.response?.data;
+            const backendErrors = responseData?.errors;
+            let normalized = {};
+            if (backendErrors) {
+                Object.keys(backendErrors).forEach((key) => {
+                    let mappedField = key;
+                    if (key === "e-mail") {
+                        const emailField = fields.find(
+                            (f) => f.type === "email" || f.name.includes("mail")
+                        );
+                        if (emailField) mappedField = emailField.name;
+                    }
+                    if (key === "messages") {
+                        const msgField = fields.find(
+                            (f) =>
+                                f.type === "textarea" ||
+                                f.name.includes("message")
+                        );
+                        if (msgField) mappedField = msgField.name;
+                    }
+                    if (fields.find((f) => f.name === mappedField)) {
+                        normalized[mappedField] = backendErrors[key][0];
+                    } else {
+                        normalized.general =
+                            (normalized.general
+                                ? normalized.general + " "
+                                : "") + backendErrors[key][0];
+                    }
                 });
-                setData({});
-            })
-            .catch((err) => {
-                const backendErrors = err?.response?.data?.errors;
-                let normalized = {};
-
-                if (backendErrors && typeof backendErrors === "object") {
-                    Object.entries(backendErrors).forEach(([key, value]) => {
-                        if (Array.isArray(value)) {
-                            normalized[key] = value[0];
-                        } else if (typeof value === "string") {
-                            normalized[key] = value;
-                        }
-                    });
-                } else {
-                    normalized = {
-                        general:
-                            err?.message ||
-                            t(
-                                "contact.submit_failed",
-                                "Nachricht konnte nicht gesendet werden."
-                            ),
-                    };
-                }
-
-                setErrors(normalized);
-            })
-            .finally(() => setIsSubmitting(false));
+            } else {
+                normalized.general =
+                    responseData?.message ||
+                    t("contact.error_generic", "Bir hata oluştu.");
+            }
+            setErrors(normalized);
+            setIsSubmitting(false);
+        }
     };
 
-    const titleHtml = form?.title || t("contact.title", "Kontaktieren Sie uns");
-
-    const descriptionHtml =
-        form?.description ||
-        t(
-            "contact.description",
-            "Professionelle Reinigungsdienstleistungen für Ihr Unternehmen. Wir beraten Sie gerne persönlich."
-        );
-
     const submitLabelHtml =
-        form?.submit_label ||
-        form?.submitLabel ||
+        formToDisplay?.submit_label ||
         t("contact.submit_label", "Nachricht senden");
 
-    const selectPlaceholder = t("contact.select_placeholder", "Bitte wählen");
-
-    const phoneLabel = t("contact.phone_label", "Telefon");
-    const emailLabel = t("contact.email_label", "E-Mail");
-    const addressLabel = t("contact.address_label", "Adresse");
-    const hoursLabel = t("contact.hours_label", "Öffnungszeiten");
-    const hoursValue = t("contact.hours_value", "Mo. - Fr.: 08:00 - 17:00 Uhr");
-
-    const phoneNumber = t("contact.phone_number", "+49 (0)36874 38 55 67");
-    const phoneHref = `tel:${phoneNumber.replace(/\s+/g, "")}`;
-
-    const emailAddress = t("contact.email_address", "info@oi-clean.de");
-    const emailHref = `mailto:${emailAddress}`;
-
-    const streetHtml = t("contact.address_street", "Musterstraße 123");
-    const cityHtml = t("contact.address_city", "12345 Berlin");
+    if (loading) return <div className="py-10 text-center"></div>;
+    if (!formToDisplay) return null;
 
     return (
         <section className="contact-section rbits-section" id="contact">
+            {showSuccessModal && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-md w-full text-center transform transition-all scale-100">
+                        <div className="flex justify-center mb-4 text-green-500">
+                            <FaCheckCircle size={64} />
+                        </div>
+                        <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">
+                            {t("contact.success_title", "Başarılı!")}
+                        </h3>
+                        <p className="text-slate-600 dark:text-slate-300 mb-6">
+                            {t(
+                                "contact.success_message",
+                                "Mesajınız başarıyla gönderildi."
+                            )}
+                        </p>
+                        <p className="text-sm text-slate-400">
+                            {t("contact.redirecting", "Sayfa yenileniyor...")}
+                        </p>
+                    </div>
+                </div>
+            )}
+
             <div className="rbits-bg-wrap" aria-hidden>
                 <DotGrid
                     dotSize={10}
@@ -160,7 +259,6 @@ const ContactSection = () => {
                     resistance={750}
                     returnDuration={1.5}
                 />
-
                 <div className="rbits-overlay-grad" />
                 <div className="rbits-vignette" />
             </div>
@@ -169,100 +267,79 @@ const ContactSection = () => {
                 <div className="contact-content">
                     <div className="contact-info">
                         <h2 className="contact-title">
-                            <SafeHtml html={titleHtml} as="span" />
+                            {t("contact.title", "Kontaktieren Sie uns")}
                         </h2>
-
-                        <SafeHtml
-                            html={descriptionHtml}
-                            as="p"
-                            className="contact-description"
-                        />
-
-                        <div className="contact-details">
-                            <div className="contact-detail-item">
-                                <svg
-                                    className="contact-icon"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    aria-hidden="true"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                                    />
-                                </svg>
-                                <div>
-                                    <h3>{phoneLabel}</h3>
-                                    <p>
-                                        <a href={phoneHref}>{phoneNumber}</a>
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="contact-detail-item">
-                                <svg
-                                    className="contact-icon"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    aria-hidden="true"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                                    />
-                                </svg>
-                                <div>
-                                    <h3>{emailLabel}</h3>
-                                    <p>
-                                        <a href={emailHref}>{emailAddress}</a>
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="contact-detail-item">
-                                <svg
-                                    className="contact-icon"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    aria-hidden="true"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                    />
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                    />
-                                </svg>
-                                <div>
-                                    <h3>{addressLabel}</h3>
-                                    <p>
-                                        <SafeHtml html={streetHtml} />
-                                        <br />
-                                        <SafeHtml html={cityHtml} />
-                                    </p>
-                                </div>
-                            </div>
+                        {/* <p> -> <div> DEĞİŞİKLİĞİ (Hydration Fix) */}
+                        <div className="contact-description text-gray-600 dark:text-gray-300 mb-6">
+                            {t(
+                                "contact.description",
+                                "Professionelle Reinigungsdienstleistungen für Ihr Unternehmen."
+                            )}
                         </div>
 
-                        <div className="contact-hours">
-                            <h3>{hoursLabel}</h3>
-                            <p>{hoursValue}</p>
+                        <div className="contact-details">
+                            {displayPhone && (
+                                <div className="contact-detail-item">
+                                    <div className="contact-icon-box">
+                                        <FaPhoneAlt className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <h3>
+                                            {t(
+                                                "contact.phone_label",
+                                                "Telefon"
+                                            )}
+                                        </h3>
+                                        {/* <p> -> <div> */}
+                                        <div className="text-gray-600 dark:text-gray-300">
+                                            <a href={`tel:${phoneHref}`}>
+                                                {displayPhone}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            {displayEmail && (
+                                <div className="contact-detail-item">
+                                    <div className="contact-icon-box">
+                                        <FaEnvelope className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <h3>
+                                            {t("contact.email_label", "E-Mail")}
+                                        </h3>
+                                        <div className="text-gray-600 dark:text-gray-300">
+                                            <a href={`mailto:${displayEmail}`}>
+                                                {displayEmail}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            {displayAddress && (
+                                <div className="contact-detail-item">
+                                    <div className="contact-icon-box">
+                                        <FaMapMarkerAlt className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <h3>
+                                            {t(
+                                                "contact.address_label",
+                                                "Adresse"
+                                            )}
+                                        </h3>
+
+                                        <div className="text-gray-600 dark:text-gray-300">
+                                            <SafeHtml
+                                                html={displayAddress.replace(
+                                                    /\n/g,
+                                                    "<br/>"
+                                                )}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -275,99 +352,126 @@ const ContactSection = () => {
                             {fields.map((f, index) => {
                                 const fieldError = errors[f.name];
                                 const labelText = getFieldLabel(f, index);
+                                const inputId = f.name || `field-${index}`;
 
-                                const common = {
-                                    id: f.name || `field-${index}`,
-                                    name: f.name || `field_${index}`,
-                                    required: f.required,
-                                    value: data[f.name] || "",
-                                    onChange: (e) =>
-                                        setField(
-                                            f.name || `field_${index}`,
-                                            e.target.value
-                                        ),
-                                    className: fieldError ? "error" : "",
-                                    "aria-invalid": !!fieldError,
-                                    "aria-describedby": fieldError
-                                        ? `${f.name}-error`
-                                        : undefined,
-                                    placeholder: f.placeholder || "",
-                                };
+                                const isPhoneField =
+                                    f.type === "tel" ||
+                                    String(f.label)
+                                        .toLowerCase()
+                                        .includes("phone") ||
+                                    String(f.label)
+                                        .toLowerCase()
+                                        .includes("telefon");
+                                const isNameField =
+                                    f.name === "name" ||
+                                    String(f.label)
+                                        .toLowerCase()
+                                        .includes("name") ||
+                                    String(f.label)
+                                        .toLowerCase()
+                                        .includes("isim") ||
+                                    String(f.label)
+                                        .toLowerCase()
+                                        .includes("ad");
 
                                 return (
                                     <div
-                                        key={f.name || index}
+                                        key={inputId}
                                         className={`form-group ${
                                             f.type === "textarea"
                                                 ? "full-width"
                                                 : ""
                                         }`}
                                     >
-                                        <label htmlFor={common.id}>
-                                            {labelText} {f.required ? "*" : ""}
+                                        <label htmlFor={inputId}>
+                                            {labelText} {f.required && "*"}
                                         </label>
 
                                         {f.type === "textarea" ? (
-                                            <textarea rows="5" {...common} />
-                                        ) : f.type === "select" ? (
-                                            <select {...common}>
-                                                <option value="">
-                                                    {selectPlaceholder}
-                                                </option>
-                                                {(f.options || []).map(
-                                                    (o, i) => (
-                                                        <option
-                                                            key={i}
-                                                            value={
-                                                                o?.value || o
-                                                            }
-                                                        >
-                                                            {o?.label || o}
-                                                        </option>
+                                            <textarea
+                                                id={inputId}
+                                                name={f.name}
+                                                rows="5"
+                                                value={data[f.name] || ""}
+                                                onChange={(e) =>
+                                                    setField(
+                                                        f.name,
+                                                        e.target.value
                                                     )
-                                                )}
-                                            </select>
+                                                }
+                                                className={
+                                                    fieldError ? "error" : ""
+                                                }
+                                                disabled={showSuccessModal}
+                                            />
                                         ) : (
                                             <input
-                                                type={f.type || "text"}
-                                                {...common}
+                                                id={inputId}
+                                                type={f.type}
+                                                name={f.name}
+                                                value={data[f.name] || ""}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    if (isPhoneField) {
+                                                        if (
+                                                            /^[0-9+\-()\s]*$/.test(
+                                                                val
+                                                            )
+                                                        )
+                                                            setField(
+                                                                f.name,
+                                                                val
+                                                            );
+                                                    } else if (isNameField) {
+                                                        if (
+                                                            /^[^0-9]*$/.test(
+                                                                val
+                                                            )
+                                                        )
+                                                            setField(
+                                                                f.name,
+                                                                val
+                                                            );
+                                                    } else {
+                                                        setField(f.name, val);
+                                                    }
+                                                }}
+                                                className={
+                                                    fieldError ? "error" : ""
+                                                }
+                                                disabled={showSuccessModal}
                                             />
                                         )}
-
                                         {fieldError && (
-                                            <SafeHtml
-                                                html={fieldError}
-                                                as="span"
-                                                id={`${f.name}-error`}
-                                                className="error-message"
-                                                role="alert"
-                                            />
+                                            <span className="error-message">
+                                                {fieldError}
+                                            </span>
                                         )}
                                     </div>
                                 );
                             })}
                         </div>
 
+                        {(errors.general ||
+                            (Object.keys(errors).length > 0 &&
+                                !fields.some((f) => errors[f.name]))) && (
+                            <div className="error-message general-error mb-4">
+                                {errors.general ||
+                                    "Lütfen formdaki hataları kontrol edin."}
+                            </div>
+                        )}
+
                         <button
                             type="submit"
                             className="submit-button bg-button"
-                            disabled={processing || !form}
+                            disabled={isSubmitting || showSuccessModal}
                         >
-                            {processing ? (
-                                <span className="loading-spinner"></span>
+                            {isSubmitting ? (
+                                "..."
                             ) : (
                                 <SafeHtml html={submitLabelHtml} as="span" />
                             )}
                         </button>
-
-                        {errors.general && (
-                            <SafeHtml
-                                html={errors.general}
-                                as="p"
-                                className="error-message general-error"
-                                role="alert"
-                            />
-                        )}
                     </form>
                 </div>
             </div>

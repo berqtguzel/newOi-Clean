@@ -129,7 +129,7 @@ export default function ServiceShow({ slug, page = {} }) {
 
     const [service, setService] = useState(null);
     const [rawService, setRawService] = useState(null);
-    const [baseSlug, setBaseSlug] = useState(null); // backend'de bulunan gerçek slug
+    const [baseSlug, setBaseSlug] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -205,16 +205,13 @@ export default function ServiceShow({ slug, page = {} }) {
         };
     }, [slug, tenantId, locale, defaultErrorText]);
 
-    // --- Şehir adını baseSlug'a göre çıkar ---
+    // --- Şehir adını doğrudan `slug`'dan çıkar (örn. "wohnungsrenovierung-aalen" -> "aalen") ---
     const citySlug = useMemo(() => {
-        if (!baseSlug) return null;
-        if (!slug.startsWith(baseSlug)) return null;
-
-        const rest = slug.slice(baseSlug.length); // "" veya "-bad-vilbel"
-        if (!rest || !rest.startsWith("-")) return null;
-
-        return rest.slice(1); // "bad-vilbel"
-    }, [slug, baseSlug]);
+        if (!slug) return null;
+        const parts = String(slug).split("-");
+        if (parts.length < 2) return null;
+        return parts.slice(1).join("-"); // "bad-vilbel" veya "aalen"
+    }, [slug]);
 
     const cityFromSlug = useMemo(() => {
         if (!citySlug) return null;
@@ -239,6 +236,30 @@ export default function ServiceShow({ slug, page = {} }) {
 
         return found || null;
     }, [rawService, locale]);
+
+    // Eğer servis objesi yüklendiyse ve URL'den bir şehir çıktıysa,
+    // servis başlığını client-side olarak güncelle (ör: "Gebäudereinigung in Vilbel").
+    useEffect(() => {
+        if (!service) return;
+
+        const name =
+            activeTranslation?.name ||
+            activeTranslation?.title ||
+            service?.name ||
+            service?.title ||
+            page?.title ||
+            "Service";
+
+        if (
+            cityFromSlug &&
+            name &&
+            !name.toLowerCase().includes(cityFromSlug.toLowerCase())
+        ) {
+            setService((prev) =>
+                prev ? { ...prev, title: `${name} in ${cityFromSlug}` } : prev
+            );
+        }
+    }, [service, activeTranslation, cityFromSlug, page]);
 
     // --- VERİ HAZIRLIK ---
     const baseTitle =

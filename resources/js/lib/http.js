@@ -1,29 +1,28 @@
 import axios from "axios";
 
-// 1. .env dosyasından verileri çekiyoruz
+
 const BASE = (import.meta?.env?.VITE_REMOTE_API_BASE || "https://omerdogan.de/api/v1").replace(/\/$/, "");
 const TIMEOUT = Number(import.meta?.env?.VITE_REMOTE_TIMEOUT || 10000);
-const TALENT_ID = import.meta?.env?.VITE_REMOTE_TALENT_ID; // <-- Bunu ekledik
+const TALENT_ID = import.meta?.env?.VITE_REMOTE_TALENT_ID;
 
 export const http = axios.create({
   baseURL: BASE,
   timeout: TIMEOUT,
 });
 
-// 2. Her isteğe otomatik olarak Tenant ID ekliyoruz
+
 http.interceptors.request.use((config) => {
-  // URL'yi ve Header'ı konsola basalım ki ne gittiğini görelim
-  console.log("İstek Atılıyor ->", config.baseURL + config.url);
-  
+
+
   config.headers = {
     Accept: "application/json",
-    // ID varsa ekle, yoksa boş geç
+
     ...(import.meta.env.VITE_REMOTE_TALENT_ID ? { "X-Tenant-ID": import.meta.env.VITE_REMOTE_TALENT_ID } : {}),
     ...(config.data ? { "Content-Type": "application/json" } : {}),
     ...(config.headers || {}),
   };
-  
-  console.log("Giden Headerlar ->", config.headers);
+
+
   return config;
 });
 
@@ -58,6 +57,19 @@ export function httpRequest(path, opts = {}) {
     signal,
   } = opts;
 
+
+  const headersToSend = Object.assign({}, headers || {});
+  try {
+    const localeFromParams = params && params.locale ? String(params.locale) : null;
+    if (localeFromParams) {
+      const lang = localeFromParams.split("-")[0];
+      headersToSend["Accept-Language"] = lang;
+      headersToSend["X-Locale"] = lang;
+    }
+  } catch (e) {
+    // ignore
+  }
+
   return withRetry(
     () =>
       http.request({
@@ -65,12 +77,10 @@ export function httpRequest(path, opts = {}) {
         method,
         params,
         data,
-        headers,
+        headers: headersToSend,
         timeout: timeoutMs,
         signal,
       }),
     retries
   ).then((r) => r.data);
 }
-console.log("API URL:", import.meta.env.VITE_REMOTE_API_BASE);
-console.log("TENANT ID:", import.meta.env.VITE_REMOTE_TALENT_ID);

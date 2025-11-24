@@ -1,4 +1,3 @@
-// resources/js/Components/Home/QuoteModal.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { usePage } from "@inertiajs/react";
 import { createPortal } from "react-dom";
@@ -21,7 +20,7 @@ export default function QuoteModal() {
 
     const locale = useLocale("de");
 
-    // Bu modaldaki form her zaman ID = 2
+    // Bu modaldaki form her zaman ID = 2 (Emin misin? Değilse 1 yapabilirsin)
     const targetFormId = 2;
 
     const [open, setOpen] = useState(false);
@@ -115,13 +114,23 @@ export default function QuoteModal() {
 
     const onChange = (e) => {
         const { name, type, value, checked } = e.target;
+
+        // Hata varsa temizle
+        if (errors[name]) {
+            setErrors((prev) => {
+                const newErrors = { ...prev };
+                delete newErrors[name];
+                return newErrors;
+            });
+        }
+
         setFormState((f) => ({
             ...f,
             [name]: type === "checkbox" ? checked : value,
         }));
     };
 
-    const onSubmit = (e) => {
+    const onSubmit = async (e) => {
         e.preventDefault();
 
         setErrors({});
@@ -138,67 +147,74 @@ export default function QuoteModal() {
 
         setSubmitting(true);
 
-        // BACKEND’in istediği isimler + dashboard için alias’lar
+        // --- PAYLOAD HAZIRLIĞI (Backend Uyumu) ---
         const payload = {
-            // validation için
+            // Temel veriler
             name: formState.name,
-            "e-mail": formState.email,
-            telefon: formState.phone,
-            nachricht: formState.message,
-            leistung: formState.service || "",
-
-            // listeleme / diğer logic’ler için
             email: formState.email,
             phone: formState.phone,
             message: formState.message,
+            service: formState.service || "", // Ekstra alan
+
+            // Backend'in beklediği özel anahtarlar (Kopya)
+            "e-mail": formState.email, // <--- KRİTİK
+            messages: formState.message, // <--- KRİTİK
+            telefon: formState.phone,
+            nachricht: formState.message,
+            leistung: formState.service || "",
         };
 
-        submitContactForm({
-            formId: targetFormId,
-            payload,
-            tenantId,
-            locale,
-        })
-            .then((res) => {
-                console.log("QuoteModal contact form sent:", {
-                    res,
-                    formId: targetFormId,
-                    payload,
-                    tenantId,
-                    locale,
-                });
+        try {
+            await submitContactForm({
+                formId: targetFormId,
+                payload,
+                tenantId,
+                locale,
+            });
 
+            setOk(true);
+            resetState();
+        } catch (err) {
+            const status = err?.response?.status;
+            const data = err?.response?.data;
+
+            // 500 Hatası olsa bile başarılı say (Workaround)
+            if (status === 500) {
                 setOk(true);
                 resetState();
-            })
-            .catch((err) => {
-                const status = err?.response?.status;
-                const data = err?.response?.data;
+                return;
+            }
 
-                console.error("QuoteModal contact error:", data || err);
+            // 422 Validation Hataları
+            if (status === 422 && data?.errors) {
+                const backendErrors = data.errors;
+                let normalized = {};
 
-                // 422 ise: gerçekten validation hatası var
-                if (status === 422 && data?.errors) {
-                    setErrors(data.errors);
-                    const flat = Object.values(data.errors).flat().join("\n");
-                    alert(flat);
-                } else if (status === 500) {
-                    // 500: backend mail gönderirken patlıyor ama kayıt dashboard'a düşüyor
-                    console.warn(
-                        "Server 500 döndü ama submission büyük ihtimalle kaydedildi."
-                    );
-                    setOk(true);
-                    resetState();
-                } else {
-                    alert(
-                        t(
-                            "quote_modal.error_generic",
-                            "Bir hata oluştu, lütfen tekrar deneyin."
-                        )
-                    );
-                }
-            })
-            .finally(() => setSubmitting(false));
+                Object.keys(backendErrors).forEach((key) => {
+                    // Hata mesajını ilgili forma alanına eşle
+                    if (key === "e-mail")
+                        normalized["email"] = backendErrors[key][0];
+                    else if (key === "messages")
+                        normalized["message"] = backendErrors[key][0];
+                    else normalized[key] = backendErrors[key][0];
+                });
+
+                setErrors(normalized);
+
+                // Opsiyonel: Kullanıcıya alert ile de göster
+                // const flat = Object.values(normalized).join("\n");
+                // alert(flat);
+            } else {
+                alert(
+                    t(
+                        "quote_modal.error_generic",
+                        "Bir hata oluştu, lütfen tekrar deneyin."
+                    )
+                );
+            }
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     if (!open) return null;
@@ -243,8 +259,14 @@ export default function QuoteModal() {
                                     type="text"
                                     required
                                     value={formState.name}
-                                    onChange={onChange}
+                                    onChange={(e) => {
+                                        // Sadece harf girişi (Rakam engelleme)
+                                        if (/^[^0-9]*$/.test(e.target.value)) {
+                                            onChange(e);
+                                        }
+                                    }}
                                     autoFocus
+                                    className={errors.name ? "error" : ""}
                                 />
                                 {errors.name && (
                                     <span className="qdock__error">
@@ -263,10 +285,11 @@ export default function QuoteModal() {
                                     required
                                     value={formState.email}
                                     onChange={onChange}
+                                    className={errors.email ? "error" : ""}
                                 />
-                                {errors["e-mail"] && (
+                                {errors.email && (
                                     <span className="qdock__error">
-                                        {errors["e-mail"]}
+                                        {errors.email}
                                     </span>
                                 )}
                             </label>
@@ -280,11 +303,21 @@ export default function QuoteModal() {
                                     type="tel"
                                     required
                                     value={formState.phone}
-                                    onChange={onChange}
+                                    onChange={(e) => {
+                                        // Sadece rakam ve sembol girişi
+                                        if (
+                                            /^[0-9+\-()\s]*$/.test(
+                                                e.target.value
+                                            )
+                                        ) {
+                                            onChange(e);
+                                        }
+                                    }}
+                                    className={errors.phone ? "error" : ""}
                                 />
-                                {errors.telefon && (
+                                {errors.phone && (
                                     <span className="qdock__error">
-                                        {errors.telefon}
+                                        {errors.phone}
                                     </span>
                                 )}
                             </label>
@@ -347,9 +380,9 @@ export default function QuoteModal() {
                                         )}
                                     </option>
                                 </select>
-                                {errors.leistung && (
+                                {errors.service && (
                                     <span className="qdock__error">
-                                        {errors.leistung}
+                                        {errors.service}
                                     </span>
                                 )}
                             </label>
@@ -369,10 +402,11 @@ export default function QuoteModal() {
                                 )}
                                 value={formState.message}
                                 onChange={onChange}
+                                className={errors.message ? "error" : ""}
                             />
-                            {errors.nachricht && (
+                            {errors.message && (
                                 <span className="qdock__error">
-                                    {errors.nachricht}
+                                    {errors.message}
                                 </span>
                             )}
                         </label>

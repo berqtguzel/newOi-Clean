@@ -1,13 +1,29 @@
 import "./bootstrap";
 import "../css/app.css";
 import "../css/theme.css";
+import "../css/loading.css";
+import "../css/404.css";
 import "./i18n";
+
 import React from "react";
 import { createInertiaApp } from "@inertiajs/react";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 import route from "../../vendor/tightenco/ziggy/dist/index.m.js";
 import { ThemeProvider } from "./Context/ThemeContext";
+
+/*
+|--------------------------------------------------------------------------
+| 0. BODY'YI FOUC ENGELLEMEK İÇİN GİZLE
+|--------------------------------------------------------------------------
+*/
+document.documentElement.style.visibility = "hidden";
+
+/*
+|--------------------------------------------------------------------------
+| 1. Renkleri Uygula
+|--------------------------------------------------------------------------
+*/
 function applyCssVarsFromColors(colors = {}) {
     Object.entries(colors).forEach(([key, val]) => {
         if (!val) return;
@@ -21,9 +37,7 @@ function applyCssVarsFromColors(colors = {}) {
 if (typeof window !== "undefined" && window.__SITE_COLORS__) {
     try {
         applyCssVarsFromColors(window.__SITE_COLORS__);
-    } catch (e) {
-        console.error("Renkleri uygularken hata:", e);
-    }
+    } catch (e) {}
 }
 
 if (window.__SITE_COLORS__) {
@@ -40,6 +54,11 @@ if (window.__SITE_COLORS__) {
 
 const APP_NAME = "O&I CLEAN group GmbH";
 
+/*
+|--------------------------------------------------------------------------
+| 2. Dark Mode başlangıç modu
+|--------------------------------------------------------------------------
+*/
 function getInitialTheme() {
     if (typeof window === "undefined") return "light";
     try {
@@ -54,6 +73,11 @@ function getInitialTheme() {
     }
 }
 
+/*
+|--------------------------------------------------------------------------
+| 3. INERTIA APP
+|--------------------------------------------------------------------------
+*/
 createInertiaApp({
     title: (title) => (title ? `${title} - ${APP_NAME}` : APP_NAME),
 
@@ -81,6 +105,15 @@ createInertiaApp({
             </ThemeProvider>
         );
 
+        /*
+        |--------------------------------------------------------------------------
+        | 4. Rehidrasyon bittiğinde FOUC'i tamamen kaldır
+        |--------------------------------------------------------------------------
+        */
+        requestAnimationFrame(() => {
+            document.documentElement.style.visibility = "visible";
+        });
+
         if (el.hasChildNodes()) {
             hydrateRoot(el, Root);
         } else {
@@ -88,5 +121,13 @@ createInertiaApp({
         }
     },
 
-    progress: { color: "var(--site-primary-color)" },
+    /*
+    |--------------------------------------------------------------------------
+    | 5. Inertia Progress Bar
+    |--------------------------------------------------------------------------
+    */
+    progress: {
+        color: "var(--site-primary-color)",
+        delay: 80, // flicker azaltır
+    },
 });

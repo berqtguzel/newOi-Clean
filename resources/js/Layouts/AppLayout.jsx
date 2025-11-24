@@ -1,12 +1,14 @@
 import React, { useEffect } from "react";
-import { usePage, Head } from "@inertiajs/react"; // Head bileşeni eklendi
+import { usePage, Head } from "@inertiajs/react";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import OfferDock from "../Components/OfferDock";
 import QuoteModal from "../Components/Modals/QuoteModal";
+import Loading from "../Components/Common/Loading";
 import { useSettings } from "../hooks/useSettings";
 import SettingsInjector from "../Components/SettingsInjector";
 import { useLocale } from "../hooks/useLocale";
+import CookieBanner from "@/Components/CookieBanner";
 
 export default function AppLayout({ content, children, currentRoute }) {
     const { props } = usePage();
@@ -63,6 +65,7 @@ export default function AppLayout({ content, children, currentRoute }) {
                 <meta name="keywords" content={siteKeywords} />
             </Head>
 
+            <Loading />
             <SettingsInjector settings={settings} />
 
             <Header
@@ -77,6 +80,9 @@ export default function AppLayout({ content, children, currentRoute }) {
 
             <OfferDock />
             <QuoteModal />
+
+            {/* 🔥 ÇEREZ BİLDİRİMİ HER SAYFADA GÖRÜNSÜN */}
+            <CookieBanner />
         </div>
     );
 }

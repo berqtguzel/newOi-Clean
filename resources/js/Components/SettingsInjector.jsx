@@ -96,9 +96,7 @@ export default function SettingsInjector({ settings }) {
             applyPerformance(settings);
             applyAnalytics(settings);
             applyCustomCode(settings);
-        } catch (e) {
-            console.warn("SettingsInjector error", e);
-        }
+        } catch (e) {}
     }, [settings]);
 
     return null;

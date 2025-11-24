@@ -7,7 +7,6 @@ import {
     FaPhoneAlt,
     FaBars,
     FaTimes,
-    // --- Yeni eklenen ikonlar ---
     FaFacebook,
     FaInstagram,
     FaLinkedin,
@@ -19,9 +18,11 @@ import { useTranslation } from "react-i18next";
 import ThemeToggle from "./ThemeToggle";
 import DecryptedText from "./ReactBits/Texts/DescryptedText";
 import { useMenus } from "../hooks/useMenus";
-import { useLanguages } from "../hooks/useLanguages";
 import { useSettings } from "@/hooks/useSettings";
+import { useGlobalWebsites } from "@/hooks/useGlobal"; // YENİ HOOK
 import SafeHtml from "@/Components/Common/SafeHtml";
+import { getSocialSettings } from "@/services/settingsService";
+import Cookies from "js-cookie";
 
 /* ============================== helpers ============================== */
 
@@ -38,21 +39,18 @@ const getOffset = () => {
 };
 
 const smoothScrollTo = (hash) => {
-    const id = hash.replace(/^#/, "");
+    if (!hash) return;
+    const id = hash.replace("#", "");
     const el = document.getElementById(id);
-    if (!el) return;
+    if (!el) {
+        setTimeout(() => smoothScrollTo(hash), 120);
+        return;
+    }
     const headerOffset = getOffset();
     const rect = el.getBoundingClientRect();
-    const top = rect.top + window.pageYOffset - headerOffset;
-    window.scrollTo({ top, behavior: "smooth" });
+    const y = rect.top + window.pageYOffset - headerOffset;
+    window.scrollTo({ top: y, behavior: "smooth" });
     history.replaceState(null, "", `${location.pathname}#${id}`);
-};
-
-const isHashOnly = (url) => /^#/.test(url);
-
-const splitPathHash = (url) => {
-    const [path, hash] = url.split("#");
-    return { path: path || "/", hash: hash ? `#${hash}` : "" };
 };
 
 const dedupeByKey = (items = [], keyA = "url", keyB = "name") => {
@@ -67,7 +65,6 @@ const dedupeByKey = (items = [], keyA = "url", keyB = "name") => {
 
 function pickOmrSite(websites = [], { host, talentId } = {}) {
     if (!Array.isArray(websites)) return null;
-
     const byHost =
         host &&
         websites.find((w) => {
@@ -82,11 +79,10 @@ function pickOmrSite(websites = [], { host, talentId } = {}) {
             return domains.includes(String(host).toLowerCase());
         });
     if (byHost) return byHost;
-
     if (talentId) {
         const byTalent = websites.find(
             (w) =>
-                String(w?.talentId || w?.talent_id || "") === String(talentId)
+                String(w?.talentId || w?.tenant_id || "") === String(talentId)
         );
         if (byTalent) return byTalent;
     }
@@ -102,11 +98,9 @@ const normalizeLang = (code) =>
 
 function resolveMenuLabel(node, locale = "de", fallback = "de") {
     if (!node) return "";
-
     const lang = normalizeLang(locale);
     const fb = normalizeLang(fallback);
     const raw = node.raw || node;
-
     const translations = Array.isArray(raw.translations)
         ? raw.translations
         : Array.isArray(node.translations)
@@ -136,18 +130,14 @@ function resolveMenuLabel(node, locale = "de", fallback = "de") {
 
     if (node.name && String(node.name).trim() !== "") return node.name;
     if (raw.name && String(raw.name).trim() !== "") return raw.name;
-
     if (node.label && String(node.label).trim() !== "") return node.label;
-
     return "";
 }
 
 function resolveMenuUrl(node, locale = "de") {
     if (!node) return "#";
-
     const lang = normalizeLang(locale);
     const raw = node.raw || node;
-
     const pageTranslations =
         (Array.isArray(node.page_translations) && node.page_translations.length
             ? node.page_translations
@@ -165,14 +155,12 @@ function resolveMenuUrl(node, locale = "de") {
     if (byLang) {
         return cleanUrl(`/${byLang.slug}`);
     }
-
     return cleanUrl(node.url);
 }
 
 const LanguageSwitcher = ({ currentLang, languages, onChange }) => {
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
-
     const normalizedCurrent = normalizeLang(currentLang);
 
     useEffect(() => {
@@ -192,7 +180,7 @@ const LanguageSwitcher = ({ currentLang, languages, onChange }) => {
         };
     }, []);
 
-    if (!languages || !languages.length) return null;
+    if (!languages || languages.length <= 1) return null;
 
     const activeLang =
         languages.find((l) => normalizeLang(l.code) === normalizedCurrent) ||
@@ -208,7 +196,7 @@ const LanguageSwitcher = ({ currentLang, languages, onChange }) => {
                 onClick={() => setOpen((o) => !o)}
             >
                 <span className="lang-switch__label">
-                    {normalizeLang(activeLang.code).toUpperCase()}
+                    {normalizeLang(activeLang?.code || "DE").toUpperCase()}
                 </span>
                 <FaChevronDown
                     className="lang-switch__chev"
@@ -222,7 +210,6 @@ const LanguageSwitcher = ({ currentLang, languages, onChange }) => {
                         {languages.map((l) => {
                             const codeNorm = normalizeLang(l.code);
                             const isActive = codeNorm === normalizedCurrent;
-
                             return (
                                 <li key={l.code}>
                                     <button
@@ -255,42 +242,68 @@ const LanguageSwitcher = ({ currentLang, languages, onChange }) => {
 
 const Header = ({ currentRoute, settings: propSettings }) => {
     const { i18n, t } = useTranslation();
+    const { props } = usePage();
 
+    // 1. Mevcut Host ve Tenant Bilgilerini Al
+    const [currentHost, setCurrentHost] = useState("");
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            setCurrentHost(window.location.hostname);
+        }
+    }, []);
+
+    const tenantId =
+        props?.global?.tenantId ||
+        props?.global?.tenant_id ||
+        props?.global?.talentId ||
+        "";
+    const initialLocale = normalizeLang(props?.locale || "de");
+    const omrTalentId = props?.global?.talentId || "";
+
+    // 2. Global Siteleri (ve içindeki dilleri) Çek
+    const { websites: globalWebsites, loading: globalLoading } =
+        useGlobalWebsites();
+
+    // 3. Şu anki siteyi bul
+    const currentSite = useMemo(() => {
+        // Props'tan gelen siteler varsa onlara bak, yoksa global hook'tan gelene bak
+        const sites =
+            props?.global?.websites?.length > 0
+                ? props.global.websites
+                : globalWebsites;
+
+        return pickOmrSite(sites, {
+            host: currentHost,
+            talentId: tenantId || omrTalentId,
+        });
+    }, [
+        props?.global?.websites,
+        globalWebsites,
+        currentHost,
+        tenantId,
+        omrTalentId,
+    ]);
+
+    // 4. Ayarları Çek
     const { data: apiSettings, loading: settingsLoading } = useSettings();
-
     const settings = useMemo(() => {
         return { ...propSettings, ...apiSettings };
     }, [propSettings, apiSettings]);
 
-    useEffect(() => {
-        if (apiSettings) {
-            console.log(
-                "⚡ Header: Güncel Ayarlar API'den Yüklendi:",
-                apiSettings
-            );
-        }
-    }, [apiSettings]);
-
-    // --- SOSYAL MEDYA ENTEGRASYONU BAŞLANGIÇ ---
+    // --- SOSYAL MEDYA ---
     const [socialLinks, setSocialLinks] = useState(null);
-
     useEffect(() => {
         const fetchSocials = async () => {
             try {
-                const response = await fetch(
-                    "https://omerdogan.de/api/v1/settings/social"
-                );
-                if (!response.ok)
-                    throw new Error("Network response was not ok");
-                const data = await response.json();
-                // API verisinin yapısına göre (data.data veya direkt data)
-                setSocialLinks(data.data || data);
-            } catch (error) {
-                console.error("Sosyal medya verisi çekilemedi:", error);
-            }
+                const data = await getSocialSettings({
+                    tenantId,
+                    locale: initialLocale,
+                });
+                setSocialLinks(data);
+            } catch (error) {}
         };
         fetchSocials();
-    }, []);
+    }, [tenantId, initialLocale]);
 
     const socialMapping = [
         { key: "facebook_url", icon: <FaFacebook />, label: "Facebook" },
@@ -300,25 +313,21 @@ const Header = ({ currentRoute, settings: propSettings }) => {
         { key: "youtube_url", icon: <FaYoutube />, label: "Youtube" },
         { key: "tiktok_url", icon: <FaTiktok />, label: "TikTok" },
     ];
-    // --- SOSYAL MEDYA ENTEGRASYONU BİTİŞ ---
 
     const currentPath =
         typeof window !== "undefined"
             ? window.location.pathname.replace(/\/+$/, "")
             : "";
-
     const isPathActive = (urlOrList) => {
         const list = Array.isArray(urlOrList) ? urlOrList : [urlOrList];
         return list.some((u) => u && currentPath === u.replace(/\/+$/, ""));
     };
 
-    const [isTopBarVisible, setIsTopBarVisible] = useState(true);
     const [openMenu, setOpenMenu] = useState(false);
     const [openDropdown, setOpenDropdown] = useState(null);
     const [openSubmenu, setOpenSubmenu] = useState(null);
     const [mobileAccordions, setMobileAccordions] = useState({});
     const headerRef = useRef(null);
-
     const closeTimer = useRef(null);
     const subCloseTimer = useRef(null);
     const HOVER_INTENT = 160;
@@ -329,19 +338,16 @@ const Header = ({ currentRoute, settings: propSettings }) => {
             closeTimer.current = null;
         }
     };
-
     const cancelSubClose = () => {
         if (subCloseTimer.current) {
             clearTimeout(subCloseTimer.current);
             subCloseTimer.current = null;
         }
     };
-
     const openDrop = (key) => {
         cancelClose();
         setOpenDropdown(key);
     };
-
     const scheduleCloseDrop = () => {
         cancelClose();
         closeTimer.current = setTimeout(() => {
@@ -349,12 +355,10 @@ const Header = ({ currentRoute, settings: propSettings }) => {
             setOpenSubmenu(null);
         }, HOVER_INTENT);
     };
-
     const openSub = (key) => {
         cancelSubClose();
         setOpenSubmenu(key);
     };
-
     const scheduleCloseSub = () => {
         cancelSubClose();
         subCloseTimer.current = setTimeout(
@@ -393,90 +397,52 @@ const Header = ({ currentRoute, settings: propSettings }) => {
             return nextOpen ? { [key]: true } : {};
         });
 
-    const { props } = usePage();
-
-    const initialLocale = normalizeLang(props?.locale || "de");
-    const sharedLanguages = props?.languages || [];
-
-    const omrWebsites = props?.global?.websites || [];
-    const omrTalentId = props?.global?.talentId || "";
-
-    const [currentHost, setCurrentHost] = useState("");
-
-    useEffect(() => {
-        if (typeof window !== "undefined") {
-            setCurrentHost(window.location.hostname);
-        }
-    }, []);
-
-    const site = useMemo(
-        () =>
-            pickOmrSite(omrWebsites, {
-                host: currentHost,
-                talentId: omrTalentId,
-            }),
-        [omrWebsites, omrTalentId, currentHost]
-    );
-
     const siteName =
         settings?.branding?.site_name ||
         settings?.site_name ||
-        site?.name ||
+        currentSite?.name ||
         "O&I CLEAN";
-
     const sitePhone =
         settings?.contact?.phone ||
         settings?.phone ||
-        site?.contact?.phone ||
+        currentSite?.contact?.phone ||
         "+49 (0)36874 38 55 67";
-
     const topbarTagline =
-        site?.content?.topbarTagline ||
+        currentSite?.content?.topbarTagline ||
         t("header.topbar_tagline", {
             defaultValue:
                 "Sauberkeit, auf die Sie sich verlassen können — 24/7 Service",
         });
-
     const cta = {
         href:
-            site?.cta?.href ||
+            currentSite?.cta?.href ||
             t("header.cta_href", { defaultValue: "/contact" }),
         label:
-            site?.cta?.label ||
+            currentSite?.cta?.label ||
             t("header.cta_label", { defaultValue: "Termin vereinbaren" }),
     };
 
     const siteLogos = useMemo(() => {
         const getUrl = (src) =>
             src?.url || (typeof src === "string" ? src : null);
-
         const lightUrl =
             getUrl(settings?.logo) ||
             getUrl(settings?.data?.logo) ||
             getUrl(settings?.branding?.logo) ||
             getUrl(settings?.general?.logo) ||
             "/images/logo/Logo.png";
-
-        // 2. Dark Logo
         const darkUrl =
             getUrl(settings?.logo_dark) ||
             getUrl(settings?.branding?.logo_dark) ||
             "/images/logo/darkLogo.png";
-
-        return {
-            light: lightUrl,
-            dark: darkUrl,
-        };
+        return { light: lightUrl, dark: darkUrl };
     }, [settings]);
-
-    const { languages: fetchedLanguages } = useLanguages();
 
     const [currentLang, setCurrentLang] = useState(initialLocale || "de");
 
     useEffect(() => {
         if (!initialLocale) return;
         const normInit = normalizeLang(initialLocale);
-
         setCurrentLang((prev) => {
             const normPrev = normalizeLang(prev);
             if (normPrev === normInit) return prev;
@@ -485,73 +451,76 @@ const Header = ({ currentRoute, settings: propSettings }) => {
             } catch {}
             return normInit;
         });
-
         try {
             if (normalizeLang(i18n.language) !== normInit) {
                 i18n.changeLanguage(normInit);
             }
-        } catch (e) {
-            console.warn("i18n changeLanguage failed:", e);
-        }
+        } catch (e) {}
     }, [initialLocale, i18n]);
 
+    // ===================================================================
+    // 🔥 DİLLERİ GLOBAL SİTE BİLGİSİNDEN ÇEK
+    // ===================================================================
     const allLanguages = useMemo(() => {
-        if (Array.isArray(sharedLanguages) && sharedLanguages.length) {
-            return sharedLanguages.map((l) => {
-                const code = normalizeLang(l.code || l.locale || "de");
-                return {
-                    code,
-                    label:
-                        l.label || l.name || (code ? code.toUpperCase() : "DE"),
-                };
-            });
+        let source = [];
+
+        // 1. Globalden (API) gelen site bilgisi içinde diller var mı?
+        if (
+            currentSite &&
+            currentSite.languages &&
+            currentSite.languages.length > 0
+        ) {
+            source = currentSite.languages;
+        }
+        // 2. Props (Backend)
+        else if (props?.languages && props.languages.length > 0) {
+            source = props.languages;
+        }
+        // 3. Hardcoded Yedek
+        else {
+            source = [
+                { locale: "de", name: "Deutsch" },
+                { locale: "en", name: "English" },
+                { locale: "tr", name: "Türkçe" },
+            ];
         }
 
-        if (Array.isArray(fetchedLanguages) && fetchedLanguages.length) {
-            return fetchedLanguages.map((l) => {
-                const code = normalizeLang(l.code);
-                return {
-                    code,
-                    label: l.label || code.toUpperCase() || "DE",
-                };
-            });
-        }
-
-        return [
-            { code: "de", label: "Deutsch" },
-            { code: "en", label: "English" },
-            { code: "tr", label: "Türkçe" },
-        ];
-    }, [sharedLanguages, fetchedLanguages]);
+        return source.map((l) => {
+            const code = normalizeLang(l.code || l.language_code || l.locale);
+            return {
+                code,
+                label: l.name || l.label || code.toUpperCase(),
+            };
+        });
+    }, [currentSite, props?.languages]);
 
     const changeLanguage = (codeRaw) => {
         const code = normalizeLang(codeRaw);
         if (!code || normalizeLang(currentLang) === code) return;
 
         setCurrentLang(code);
-
         try {
             localStorage.setItem("locale", code);
         } catch {}
+        Cookies.set("locale", code, {
+            expires: 365,
+            path: "/",
+            sameSite: "Lax",
+        });
 
         try {
-            if (normalizeLang(i18n.language) !== code) {
+            if (normalizeLang(i18n.language) !== code)
                 i18n.changeLanguage(code);
-            }
-        } catch (e) {
-            console.warn("i18n changeLanguage failed:", e);
-        }
+        } catch (e) {}
 
         window.dispatchEvent(
             new CustomEvent("language-changed", { detail: { locale: code } })
         );
 
         let targetUrl = `/lang/${code}`;
-
         try {
-            if (typeof route === "function") {
+            if (typeof route === "function")
                 targetUrl = route("lang.switch", { locale: code });
-            }
         } catch {}
 
         router.visit(targetUrl, {
@@ -561,57 +530,35 @@ const Header = ({ currentRoute, settings: propSettings }) => {
         });
     };
 
-    const tenantId =
-        props?.global?.tenantId ||
-        props?.global?.tenant_id ||
-        props?.global?.talentId ||
-        "";
-
     const {
         data: menusResponse,
         loading: menuLoading,
         error: menuError,
-    } = useMenus({
-        perPage: 100,
-        tenantId,
-    });
+    } = useMenus({ perPage: 100, tenantId });
 
     const remoteNavItems = useMemo(() => {
         if (!menusResponse) return [];
-
         const rawMenusSource =
             Array.isArray(menusResponse?.data) || !menusResponse.data
                 ? menusResponse.data || menusResponse
                 : menusResponse;
-
         const rawMenus = Array.isArray(rawMenusSource)
             ? rawMenusSource
             : Array.isArray(rawMenusSource?.data)
             ? rawMenusSource.data
             : [];
-
         const headerMenu =
             rawMenus.find((m) => m.slug === "header") || rawMenus[0] || null;
-
         const items = Array.isArray(headerMenu?.items) ? headerMenu.items : [];
-
         const lang = currentLang || "de";
 
         const toDropdown = (children = []) =>
             (children || []).map((it, idx) => {
                 const hasChildren =
                     Array.isArray(it.children) && it.children.length > 0;
-
                 const label = resolveMenuLabel(it, lang, "de");
                 const url = resolveMenuUrl(it, lang);
-
-                if (!hasChildren) {
-                    return {
-                        name: label,
-                        url,
-                    };
-                }
-
+                if (!hasChildren) return { name: label, url };
                 return {
                     name: label,
                     submenuKey: `sub-${it.id || idx}`,
@@ -626,10 +573,8 @@ const Header = ({ currentRoute, settings: propSettings }) => {
             const routeKey = `menu-${node.id || i}`;
             const hasChildren =
                 Array.isArray(node.children) && node.children.length > 0;
-
             const label = resolveMenuLabel(node, lang, "de");
             const url = resolveMenuUrl(node, lang);
-
             return {
                 name: label,
                 route: routeKey,
@@ -650,16 +595,9 @@ const Header = ({ currentRoute, settings: propSettings }) => {
     }, [menusResponse, currentLang]);
 
     const navItems = useMemo(() => {
-        if (remoteNavItems && remoteNavItems.length) {
-            return remoteNavItems;
-        }
-
-        if (menuLoading) {
-            return [];
-        }
-
+        if (remoteNavItems && remoteNavItems.length) return remoteNavItems;
+        if (menuLoading) return [];
         const homeLabel = t("nav.home", "Startseite");
-
         return [
             {
                 name: homeLabel,
@@ -677,46 +615,42 @@ const Header = ({ currentRoute, settings: propSettings }) => {
         (url, close = false) =>
         (e) => {
             if (!url) return;
-            if (isHashOnly(url)) {
+            const raw = String(url).trim();
+            if (raw.startsWith("#")) {
                 e.preventDefault();
-                setOpenDropdown(null);
-                setOpenSubmenu(null);
+                smoothScrollTo(raw);
                 if (close) setOpenMenu(false);
-                smoothScrollTo(url);
                 return;
             }
-            if (/#/.test(url)) {
+            if (raw.includes("#")) {
                 e.preventDefault();
-                const { path, hash } = splitPathHash(url);
-                if (path.replace(/\/+$/, "") === currentPath) {
-                    setOpenDropdown(null);
-                    setOpenSubmenu(null);
-                    if (close) setOpenMenu(false);
+                const [path, hashOnly] = raw.split("#");
+                const hash = `#${hashOnly}`;
+                const current = window.location.pathname.replace(/\/+$/, "");
+                const target = path.replace(/\/+$/, "");
+                if (current === target) {
                     smoothScrollTo(hash);
-                } else {
-                    router.visit(path, {
-                        preserveScroll: true,
-                        onSuccess: () =>
-                            requestAnimationFrame(() => smoothScrollTo(hash)),
-                    });
+                    if (close) setOpenMenu(false);
+                    return;
                 }
+                router.visit(path, {
+                    preserveScroll: true,
+                    onSuccess: () =>
+                        requestAnimationFrame(() => smoothScrollTo(hash)),
+                });
+                if (close) setOpenMenu(false);
                 return;
             }
             e.preventDefault();
-            setOpenDropdown(null);
-            setOpenSubmenu(null);
+            router.visit(raw);
             if (close) setOpenMenu(false);
-            router.visit(url);
         };
-
-    /* ============================== render ============================== */
 
     const menuErrorText = menuError ? String(menuError) : "";
 
     return (
         <header ref={headerRef} className="site-header">
             <BitsBackground />
-
             <div className="topbar">
                 <div className="container">
                     <div className="topbar__inner">
@@ -756,7 +690,6 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                 gap: "15px",
                             }}
                         >
-                            {/* --- SOSYAL MEDYA İKONLARI --- */}
                             {socialLinks && (
                                 <div
                                     className="social-icons"
@@ -764,7 +697,6 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                 >
                                     {socialMapping.map((item) => {
                                         const link = socialLinks[item.key];
-                                        // Link varsa ve boş string değilse göster
                                         if (link && link.trim() !== "") {
                                             return (
                                                 <a
@@ -788,7 +720,6 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                     })}
                                 </div>
                             )}
-
                             <a
                                 href={cta.href}
                                 onClick={navigate(cta.href)}
@@ -810,7 +741,6 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                             className="brand"
                             aria-label={t("header.home_aria", "Startseite")}
                         >
-                            {/* Logo Loading Kontrolü */}
                             {settingsLoading && !siteLogos.light ? (
                                 <div className="w-32 h-10 bg-gray-200 animate-pulse rounded" />
                             ) : (
@@ -845,7 +775,6 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                     </span>
                                 </div>
                             )}
-
                             {navItems.map((item) => {
                                 const isActive =
                                     typeof item.isActive === "function"
@@ -856,7 +785,6 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                 const dropdownKey =
                                     item.dropdownKey || item.route;
                                 const isOpen = openDropdown === dropdownKey;
-
                                 return (
                                     <div
                                         key={item.route}
@@ -905,7 +833,6 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                                 />
                                             )}
                                         </a>
-
                                         {hasDropdown && isOpen && (
                                             <div
                                                 className={cx(
@@ -933,7 +860,6 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                                                 const subOpen =
                                                                     openSubmenu ===
                                                                     subKey;
-
                                                                 return (
                                                                     <div
                                                                         className="menu__item"
@@ -1001,7 +927,6 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                                                                 />
                                                                             </a>
                                                                         )}
-
                                                                         {hasSub &&
                                                                             subOpen && (
                                                                                 <div
@@ -1034,7 +959,8 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                                                                                         "is-active"
                                                                                                 )}
                                                                                                 onClick={navigate(
-                                                                                                    inner.url
+                                                                                                    inner.url,
+                                                                                                    true
                                                                                                 )}
                                                                                             >
                                                                                                 <SafeHtml
@@ -1063,13 +989,11 @@ const Header = ({ currentRoute, settings: propSettings }) => {
 
                         <div className="nav__cta">
                             <ThemeToggle />
-
                             <LanguageSwitcher
                                 currentLang={currentLang}
                                 languages={allLanguages}
                                 onChange={changeLanguage}
                             />
-
                             <a
                                 href="/impressum"
                                 onClick={navigate("/impressum")}
@@ -1127,13 +1051,11 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                             <FaTimes size={20} />
                         </button>
                     </div>
-
                     <div className="drawer__body">
                         {navItems.map((item, idx) => {
                             const key = item.dropdownKey || item.route;
                             const hasDropdown = !!item.dropdown || !!item.mega;
                             const expanded = !!mobileAccordions[key];
-
                             return (
                                 <div key={idx} className="acc">
                                     <button
@@ -1166,7 +1088,6 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                             />
                                         )}
                                     </button>
-
                                     {hasDropdown && (
                                         <div
                                             className={cx(
@@ -1259,11 +1180,9 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                 </div>
                             );
                         })}
-
                         <div className="drawer__theme-toggle">
                             <ThemeToggle />
                         </div>
-
                         <div className="drawer__lang">
                             <span className="drawer__lang-label">
                                 {t("header.language", "Sprache")}

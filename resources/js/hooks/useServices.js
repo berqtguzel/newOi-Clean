@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { fetchServices, fetchServiceBySlug } from "../services/servicesService";
 
 const cache = new Map();
@@ -17,6 +18,9 @@ export function useServices(params = {}) {
     locationId,
   } = params;
 
+  const { i18n } = useTranslation();
+  const effectiveLocale = locale || (i18n?.language ? i18n.language.split("-")[0] : undefined);
+
   const key = useMemo(
     () =>
       JSON.stringify({
@@ -24,7 +28,7 @@ export function useServices(params = {}) {
         page,
         perPage,
         tenantId,
-        locale,
+        locale: effectiveLocale,
         search,
         city,
         district,
@@ -74,7 +78,7 @@ export function useServices(params = {}) {
       page,
       perPage,
       tenantId,
-      locale,
+      locale: effectiveLocale,
       search,
       city,
       district,
@@ -116,6 +120,9 @@ export function useLocationServices(slug, options = {}) {
     locale,
   } = options;
 
+  const { i18n } = useTranslation();
+  const effectiveLocale = locale || (i18n?.language ? i18n.language.split("-")[0] : undefined);
+
   const key = useMemo(
     () =>
       JSON.stringify({
@@ -124,7 +131,7 @@ export function useLocationServices(slug, options = {}) {
         page,
         perPage,
         tenantId,
-        locale,
+        locale: effectiveLocale,
       }),
     [slug, page, perPage, tenantId, locale]
   );
@@ -174,7 +181,7 @@ export function useLocationServices(slug, options = {}) {
 
     const p = fetchServiceBySlug(slug, {
       tenantId,
-      locale,
+      locale: effectiveLocale,
       page,
       perPage,
     });

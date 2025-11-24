@@ -22,6 +22,9 @@ export default function LiquidEther({
     takeoverDuration = 0.25,
     autoResumeDelay = 1000,
     autoRampDuration = 0.6,
+    // If `containerRef` is provided, the component will attach the WebGL canvas
+    // into that existing DOM node instead of rendering its own wrapper div.
+    containerRef = null,
 }) {
     const mountRef = useRef(null);
     const webglRef = useRef(null);
@@ -1080,7 +1083,8 @@ export default function LiquidEther({
             }
         }
 
-        const container = mountRef.current;
+        const container =
+            (containerRef && containerRef.current) || mountRef.current;
         container.style.position = container.style.position || "relative";
         container.style.overflow = container.style.overflow || "hidden";
 
@@ -1241,6 +1245,10 @@ export default function LiquidEther({
         autoResumeDelay,
         autoRampDuration,
     ]);
+
+    // If an external containerRef was provided, we don't render an extra div
+    // here (parent already rendered it). Otherwise render our own mount node.
+    if (containerRef) return null;
 
     return (
         <div

@@ -27,7 +27,7 @@ export function useMaps({ tenantId, locale } = {}) {
                 setData(res);
             } catch (err) {
                 if (!isMounted) return;
-                console.error("useMaps error:", err);
+
                 setError(err);
             } finally {
                 if (isMounted) setLoading(false);

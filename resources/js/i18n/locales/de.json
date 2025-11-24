@@ -5,7 +5,6 @@
     "button_services": "Unsere Leistungen entdecken",
     "button_contact": "Jetzt Kontakt aufnehmen"
   },
-
   "services": {
     "section_title": "Unser breites Leistungsspektrum",
     "section_subtitle": "Wir bieten schlüsselfertige Lösungen für alle Anforderungen Ihrer Einrichtungen und Gebäude – mit deutscher Präzision und Qualität.",
@@ -23,49 +22,56 @@
         "title": "Renovierung, Reparatur & Instandhaltung",
         "description": "Maler-, Spachtel- und Trockenbauarbeiten sowie Bodenverlegung und kleinere Reparaturen."
       }
+    },
+    "card": {
+      "aria": "Mehr über {{service}} erfahren",
+      "button": "Details"
     }
   },
-
   "servicesList": {
     "title": "Leistungen",
     "subtitle": "Entdecken Sie unsere umfassenden Dienstleistungen für Ihr Zuhause",
     "meta_title": "Unsere Leistungen - O&I CLEAN group GmbH",
     "meta_description": "Professionelle Reinigung, Renovierung und Gebäudemanagement in Hamburg. ★ Expertise ★ Deutsche Qualität ★ Zuverlässiger Service",
-    "loading": "Lade Services…",
+    "loading": "",
     "contact_cta": "Kontaktiere Uns",
     "contact_cta_aria": "Jetzt Kontakt aufnehmen"
   },
-
   "locations": {
     "page_title": "Standorte - O&I CLEAN group GmbH",
     "page_description": "Professionelle Reinigungsservices an verschiedenen Standorten in Deutschland. Lokale Expertise, bundesweite Qualität.",
     "title": "Standorte",
     "subtitle": "Entdecken Sie unsere Standorte in Deutschland",
-    "loading": "Standorte werden geladen...",
+    "loading": "",
     "empty": "Derzeit sind keine Standorte verfügbar.",
     "cta_label": "Standort anfragen",
     "cta_aria": "Jetzt Kontakt aufnehmen",
-    "contact_href": "/kontakt"
+    "contact_href": "/kontakt",
+    "card": {
+      "cta": "Mehr erfahren",
+      "cta_aria": "Mehr über unsere Reinigungsservices in {{city}} erfahren"
+    }
   },
-
   "contact": {
+    "page_title": "Kontakt",
+    "intro_text": "Kostenlos & unverbindlich – <strong>wir melden uns zeitnah</strong>.",
     "title": "Kontaktieren Sie uns",
     "description": "Professionelle Reinigungsdienstleistungen für Ihr Unternehmen. Wir beraten Sie gerne persönlich.",
     "submit_label": "Nachricht senden",
     "submit_failed": "Nachricht konnte nicht gesendet werden.",
     "select_placeholder": "Bitte wählen",
-
+    "success_title": "Erfolgreich!",
+    "success_message": "Ihre Nachricht wurde erfolgreich versendet. Wir werden uns so schnell wie möglich bei Ihnen melden.",
+    "redirecting": "Seite wird neu geladen...",
     "phone_label": "Telefon",
     "email_label": "E-Mail",
     "address_label": "Adresse",
     "hours_label": "Öffnungszeiten",
     "hours_value": "Mo. - Fr.: 08:00 - 17:00 Uhr",
-
     "phone_number": "+49 (0)36874 38 55 67",
     "email_address": "info@oi-clean.de",
     "address_street": "Musterstraße 123",
     "address_city": "12345 Berlin",
-
     "form": {
       "name": "Name",
       "phone": "Telefon",
@@ -74,17 +80,14 @@
       "other": "Feld"
     }
   },
-
   "footer": {
     "description": "Ihr Partner für professionelle Reinigung, Pflege und Gebäudemanagement mit deutscher Präzision und Zuverlässigkeit.",
     "address": "Spaldingstr. 77–79, 20097 Hamburg",
     "phone": "+49 (0)40 46 63 35 19",
     "phone_raw": "+494046633519",
     "email": "info@oi-clean.de",
-
     "links_title": "Links",
     "contact_title": "Kontakt",
-
     "link_about": "Über uns",
     "link_contact": "Kontakt",
     "link_contact_href": "/contact",
@@ -92,11 +95,8 @@
     "link_privacy": "Datenschutz",
     "link_imprint": "Impressum",
     "link_privacy_bottom": "Datenschutz",
-
     "copyright": "Alle Rechte vorbehalten.",
-
     "back_to_top": "Nach oben",
-
     "region_label": "Fußzeile und Kontaktinformationen",
     "home_aria": "O&I CLEAN - Startseite",
     "linkedin_aria": "LinkedIn - O&I CLEAN",
@@ -106,7 +106,6 @@
     "phone_aria": "Telefonnummer",
     "email_aria": "E-Mail"
   },
-
   "header": {
     "topbar_tagline": "Sauberkeit, auf die Sie sich verlassen können — 24/7 Service",
     "cta_label": "Termin vereinbaren",
@@ -119,17 +118,14 @@
     "language": "Sprache",
     "impressum": "Impressum"
   },
-
   "nav": {
     "home": "Startseite"
   },
-
   "staticPage": {
     "breadcrumbs_home": "Startseite",
     "breadcrumbs_page": "Seite",
     "empty_content": "Inhalt wird bald hinzugefügt."
   },
-
   "offerDock": {
     "title": "Angebot",
     "subtitle": "Kostenlos & unverbindlich",
@@ -137,7 +133,6 @@
     "aria_open": "Angebotsleiste öffnen",
     "aria_close": "Angebotsleiste schließen"
   },
-
   "quote_modal": {
     "title": "Angebot anfordern",
     "scrim_aria": "Modal schließen",
@@ -170,7 +165,6 @@
     "thank_you_text": "Wir haben Ihre Anfrage erhalten und melden uns zeitnah bei Ihnen.",
     "close_button": "Schließen"
   },
-
   "static": {
     "uber-uns": {
       "title": "Über uns",
@@ -194,7 +188,6 @@
         }
       ]
     },
-
     "qualitatsmanagement": {
       "title": "Qualitätsmanagement",
       "subtitle": "Qualität ist bei uns mehr als ein Wort – sie ist unsere Verpflichtung.",
@@ -209,7 +202,6 @@
         }
       ]
     },
-
     "mitarbeiter-schulungen": {
       "title": "Mitarbeiter Schulungen",
       "subtitle": "Regelmäßige Schulungen und Weiterbildungen für soziale und fachliche Kompetenzen.",
@@ -224,7 +216,6 @@
         }
       ]
     },
-
     "haufig-gestellte-fragen-faq": {
       "title": "Häufig gestellte Fragen (FAQ)",
       "subtitle": "Antworten auf die häufigsten Fragen rund um unsere Reinigungsleistungen.",
@@ -251,7 +242,6 @@
         }
       ]
     },
-
     "datenschutzhinweise": {
       "title": "Datenschutzhinweise",
       "subtitle": "Der Schutz Ihrer persönlichen Daten ist uns ein besonderes Anliegen.",
@@ -274,7 +264,6 @@
         }
       ]
     },
-
     "stockfotos": {
       "title": "Stockfotos",
       "subtitle": "Informationen zu den auf unserer Website verwendeten Bildern.",
@@ -297,7 +286,6 @@
         }
       ]
     },
-
     "impressum": {
       "title": "Impressum",
       "subtitle": "Angaben gemäß § 5 TMG",
@@ -340,13 +328,59 @@
         }
       ]
     },
-     "locations": {
-    "card": {
-      "cta": "Mehr erfahren",
-      "cta_aria": "Mehr über unsere Reinigungsservices in {{city}} erfahren"
+    "cookie-policy": {
+      "title": "Cookie-Richtlinie",
+      "subtitle": "Wie wir Cookies und ähnliche Technologien verwenden",
+      "hero": {
+        "image": "/images/template.jpg",
+        "alt": "Cookie-Richtlinie – O&I CLEAN group GmbH"
+      },
+      "sections": [
+        {
+          "heading": "Was sind Cookies?",
+          "body": "Cookies sind kleine Textdateien, die auf Ihrem Gerät gespeichert werden und uns helfen, die Seite zu verbessern, Inhalte zu personalisieren und bestimmte Funktionen bereitzustellen."
+        },
+        {
+          "heading": "Wie wir Cookies verwenden",
+          "body": "Wir verwenden Cookies für die wesentliche Funktionalität der Website, für Analysen und um Ihre Sprache und Einstellungen zu speichern. Sie können Cookie-Einstellungen in Ihrem Browser verwalten."
+        },
+        {
+          "heading": "Kontakt",
+          "body": "Wenn Sie Fragen zu unserer Cookie-Richtlinie haben, kontaktieren Sie uns bitte über die Kontaktseite."
+        }
+      ]
     }
+  },
+  "errors": {
+    "notFound": {
+      "title": "404 — Seite nicht gefunden",
+      "desc": "Die gesuchte Seite wurde nicht gefunden oder wurde verschoben. Versuchen Sie, zur Startseite zurückzukehren oder die Suche zu verwenden.",
+      "cta_home": "Zur Startseite",
+      "cta_contact": "Kontakt aufnehmen",
+      "hint": "Wenn das Problem weiterhin besteht, kontaktieren Sie uns."
+    }
+  },
+  "ui": {
+    "loading": {
+      "message": "Inhalte werden geladen…"
+    }
+  },
+  "cookies": {
+    "title": "Cookie-Einstellungen",
+    "message": "Wir verwenden Cookies, um Ihnen das beste Erlebnis auf unserer Website zu bieten.",
+    "cat_necessary": "Notwendige Cookies",
+    "cat_analytics": "Analyse-Cookies",
+    "cat_marketing": "Marketing-Cookies",
+    "desc_necessary": "Diese Cookies sind für das Funktionieren der Website unerlässlich.",
+    "desc_analytics": "Diese Cookies sammeln Informationen darüber, wie Sie die Website nutzen.",
+    "desc_marketing": "Diese Cookies werden verwendet, um für Sie relevante Werbung anzuzeigen.",
+    "required": "Erforderlich",
+    "accept_all": "Alle akzeptieren",
+    "reject": "Ablehnen",
+    "save": "Auswahl speichern",
+    "settings": "Einstellungen",
+    "hide_details": "Verbergen",
+    "privacy_policy": "Datenschutzerklärung",
+    "imprint": "Impressum"
   }
-
-  }
-
 }

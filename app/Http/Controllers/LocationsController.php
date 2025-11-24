@@ -9,14 +9,13 @@ class LocationsController extends Controller
 {
     public function show(Request $request, string $slug)
     {
-        // Backend API çağrısı YOK.
-        // Sadece slug'ı React'e gönderiyoruz, geri kalan her şeyi frontend halledecek.
 
-        return Inertia::render('Locations/Show', [
+
+        return Inertia::render('Locations/LocationShow', [
             'slug'           => $slug,
             'page'           => [],          // şimdilik boş, React dolduracak
             'structuredData' => null,        // istersen sonra frontend'de de üretebilirsin
-            'currentRoute'   => 'locations.show',
+            'currentRoute'   => 'locations.LocationShow',
         ]);
     }
 }

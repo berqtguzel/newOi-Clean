@@ -20,7 +20,7 @@ export function useSliders({ tenantId, locale, lang } = {}) {
                 setSliders(sliders);
             })
             .catch((err) => {
-                console.error("useSliders error:", err);
+
                 if (!isMounted) return;
                 setError(err);
                 setSliders([]);

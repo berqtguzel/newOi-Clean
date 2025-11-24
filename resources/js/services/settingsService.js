@@ -1,17 +1,18 @@
 import axios from "axios";
-// Dosya yolunun doğru olduğundan emin ol (örn: ../Config/remoteConfig veya ./remoteConfig)
 import remoteConfig from "./remoteConfig";
 
+// Varsayılan API (v1 için)
+const BASE_URL = remoteConfig.apiBase || "https://omerdogan.de/api/v1";
+
 const api = axios.create({
-    baseURL: remoteConfig.apiBase || "https://omerdogan.de/api/v1",
+    baseURL: BASE_URL,
     timeout: remoteConfig.timeout || 10000,
 });
 
+// Header ve Tenant ID oluşturucu
 function buildRequestConfig({ tenantId, locale, signal } = {}) {
     const headers = {};
 
-    // --- DÜZELTME BURADA ---
-    // Eğer parametre olarak tenantId gelmediyse, remoteConfig'den veya .env'den al
     const effectiveTenantId =
         tenantId ||
         remoteConfig.talentId ||
@@ -20,8 +21,6 @@ function buildRequestConfig({ tenantId, locale, signal } = {}) {
 
     if (effectiveTenantId) {
         headers["X-Tenant-ID"] = String(effectiveTenantId);
-    } else {
-        console.warn("⚠️ SettingsService: Tenant ID bulunamadı! İstek muhtemelen 400 dönecek.");
     }
 
     const params = {};
@@ -36,19 +35,39 @@ function buildRequestConfig({ tenantId, locale, signal } = {}) {
     };
 }
 
+// Standart Fetch (v1 kullananlar için)
 async function fetchSettings(endpoint, options = {}) {
     const config = buildRequestConfig(options);
-
     try {
-        const res = await api.get(`/settings/${endpoint}`, config);
-        // API bazen direkt data, bazen data.data dönüyor, garantiye alalım:
+        const path = endpoint.startsWith('/') ? endpoint : `/settings/${endpoint}`;
+        const res = await api.get(path, config);
         return res?.data?.data ?? res?.data ?? {};
     } catch (error) {
-        console.error(`❌ Settings API Error (${endpoint}):`, error?.response?.status, error?.message);
-        // Hata durumunda boş obje dön ki site patlamasın
+
         return {};
     }
 }
+
+/* =========================================================
+   DÜZELTİLEN KISIM: LANGUAGES (v1 OLMADAN ÇAĞRILMALI)
+   ========================================================= */
+export async function getLanguageSettings(options = {}) {
+    const config = buildRequestConfig(options);
+
+    // URL'yi manuel ve tam olarak veriyoruz ki 'v1' eklemesin.
+    const url = "https://omerdogan.de/api/global/settings/languages";
+
+    try {
+        // 'api' instance yerine direkt 'axios' kullanıyoruz
+        const res = await axios.get(url, config);
+        return res?.data?.data ?? res?.data ?? [];
+    } catch (error) {
+
+        return [];
+    }
+}
+
+// --- Diğer Fonksiyonlar (Aynen Kalıyor) ---
 
 export function getGeneralSettings(options = {}) {
     return fetchSettings("general", options);
@@ -95,7 +114,6 @@ export function getFooterSettings(options = {}) {
 }
 
 export async function getAllSettings(options = {}) {
-    // Promise.allSettled kullanarak bir tanesi hata verse bile diğerlerinin yüklenmesini sağlıyoruz
     const results = await Promise.allSettled([
         getGeneralSettings(options),
         getContactSettings(options),
@@ -108,9 +126,9 @@ export async function getAllSettings(options = {}) {
         getEmailSettings(options),
         getCustomCodeSettings(options),
         getFooterSettings(options),
+        getLanguageSettings(options),
     ]);
 
-    // Helper: Sonuç başarılıysa değerini, değilse boş obje dön
     const val = (index) => (results[index].status === 'fulfilled' ? results[index].value : {});
 
     return {
@@ -125,5 +143,6 @@ export async function getAllSettings(options = {}) {
         email: val(8),
         customCode: val(9),
         footer: val(10),
+        languages: val(11),
     };
 }

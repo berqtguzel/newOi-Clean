@@ -3,8 +3,7 @@
    ========================================= */
 
 .location-card {
-  /* --- Yerel Değişkenler & Mapping --- */
-  /* Karmaşık global değişkenleri burada basit yerel isimlere atıyoruz */
+  /* --- Yerel Değişkenler & Renk Mapping (SABİT KORUNDU) --- */
   --card-primary: var(--site-primary-color, var(--site_primary_color, #3b82f6));
   --card-accent: var(--site-accent-color, var(--site_accent_color, var(--card-primary)));
   --card-bg: var(--surface, #ffffff);
@@ -16,29 +15,26 @@
   --btn-bg: var(--button_color, var(--button-color, var(--card-primary)));
   --btn-text: #ffffff;
 
-  /* Gölge ve Efekt Ayarları */
-  --shadow-sm: 0 2px 6px -2px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 10px 16px -8px rgba(0, 0, 0, 0.15);
-  --shadow-hover: 0 20px 30px -10px color-mix(in srgb, var(--card-primary) 20%, rgba(0,0,0,0.1));
-
-  --transition-base: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-
-  /* --- Layout & Box Model --- */
+  /* --- Layout & Box Model (GÜNCELLENDİ) --- */
   position: relative;
   display: flex;
   flex-direction: column;
-  isolation: isolate; /* Z-index çakışmalarını önler */
-  padding: 0;
+  isolation: isolate;
+
+  /* Service Card ile aynı yumuşak köşe yapısı */
+  border-radius: 1.25rem;
   background: var(--card-bg);
+  /* Hafif border eklendi */
   border: 1px solid var(--card-border);
-  border-radius: 16px;
   overflow: hidden;
 
-  box-shadow: var(--shadow-md), var(--shadow-sm);
-  transform: translateY(0);
-  transition: var(--transition-base);
+  /* Service Card ile aynı modern gölge ve geçişler */
+  box-shadow: 0 10px 40px rgba(2, 6, 23, 0.06);
+  transition: box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+              transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+              border-color 0.3s ease;
 
-  /* Render performansını artırır */
+  height: 100%; /* Grid içinde eşit boy */
   will-change: transform, box-shadow;
 }
 
@@ -46,9 +42,10 @@
 .location-card:hover,
 .location-card:focus-within,
 .location-card.active {
-  transform: translateY(-4px);
+  transform: translateY(-8px); /* Service Card gibi yukarı kalkma */
+  /* Renk mix'i korundu, sadece gölge derinliği artırıldı */
   border-color: color-mix(in srgb, var(--card-primary) 40%, transparent);
-  box-shadow: var(--shadow-hover);
+  box-shadow: 0 30px 60px rgba(2, 6, 23, 0.12);
 }
 
 .location-card.active {
@@ -63,8 +60,10 @@
 .location-card-media {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  /* 4/3 yerine 16/10 yapılarak sinematik genişlik sağlandı */
+  aspect-ratio: 16 / 10;
   overflow: hidden;
+  background-color: color-mix(in srgb, var(--card-bg) 95%, black); /* Placeholder rengi */
 }
 
 .location-card-image {
@@ -72,17 +71,14 @@
   height: 100%;
   object-fit: cover;
   display: block;
-
-  transform: scale(1);
-  filter: saturate(1);
-  transition: transform 0.5s ease, filter 0.3s ease;
+  /* Animasyon süresi Service Card ile eşitlendi */
+  transition: transform 0.6s ease, filter 0.3s ease;
 }
 
 /* Kart hover olunca resim efekti */
 .location-card:hover .location-card-image,
 .location-card:focus-within .location-card-image {
-  transform: scale(1.05);
-  filter: saturate(1.1);
+  transform: scale(1.08); /* Hafif zoom */
 }
 
 .location-card-overlay {
@@ -90,26 +86,32 @@
   inset: 0;
   z-index: 2;
   display: flex;
-  align-items: flex-end;
-  padding: 16px;
+  align-items: flex-end; /* Başlığı görselin altına yaslar */
+  padding: 1.5rem; /* Padding artırıldı */
 
-  /* Daha yumuşak gradient */
+  /* Gradient korundu */
   background: linear-gradient(
     to top,
-    rgba(0, 0, 0, 0.6) 0%,
-    rgba(0, 0, 0, 0.2) 50%,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0.3) 50%,
     transparent 100%
   );
 }
 
 .location-card-title {
   margin: 0;
-  font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+  font-size: 1.35rem; /* Biraz büyütüldü */
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.2;
   color: #ffffff;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Okunabilirlik artırıldı */
   letter-spacing: -0.01em;
+
+  /* Uzun şehir isimleri için önlem */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* =========================================
@@ -120,28 +122,37 @@
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-
-  gap: 1rem;
+  /* Service Card ile aynı geniş iç boşluk */
+  padding: 1.5rem;
+  gap: 1.25rem;
   color: var(--card-text);
 }
 
+@media (min-width: 640px) {
+  .location-card-content {
+    padding: 1.75rem;
+  }
+}
+
 .location-card-services {
-  margin-bottom: auto; /* İçeriği yukarı iter, footer'ı aşağı basar */
+  margin-bottom: auto; /* Footer'ı aşağı itmek için kritik */
 }
 
 .location-card-services-title {
   display: block;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase; /* Modern dokunuş */
+  letter-spacing: 0.05em;
+  font-weight: 700;
   color: var(--card-text);
-  margin-bottom: 0.75rem;
-  opacity: 0.9;
+  margin-bottom: 0.85rem;
+  opacity: 0.8;
 }
 
 .location-card-services-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.6rem; /* Liste elemanları arası boşluk açıldı */
   padding: 0;
   margin: 0;
   list-style: none;
@@ -150,9 +161,15 @@
 .location-card-service-item {
   display: flex;
   align-items: center;
-  font-size: 0.875rem;
+  font-size: 0.925rem; /* Okunabilirlik için font büyüdü */
   color: var(--card-text-muted);
-  line-height: 1.4;
+  line-height: 1.5;
+  transition: color 0.2s ease;
+}
+
+/* Hover durumunda metin biraz canlansın */
+.location-card:hover .location-card-service-item {
+    color: var(--card-text);
 }
 
 .location-card-service-item::before {
@@ -160,8 +177,9 @@
   display: inline-block;
   width: 6px;
   height: 6px;
-  margin-right: 8px;
+  margin-right: 10px;
   border-radius: 50%;
+  /* Renk değişkenleri korundu */
   background-color: var(--card-accent);
   flex-shrink: 0;
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--card-accent) 20%, transparent);
@@ -172,10 +190,12 @@
    ========================================= */
 
 .location-card-footer {
-  margin-top: 1.25rem;
+  margin-top: auto; /* Garanti olsun diye */
+  padding-top: 0.5rem;
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-end; /* Buton sağda */
   align-items: center;
+  border-top: 1px solid transparent; /* İlerde ayırıcı çizgi gerekirse diye */
 }
 
 .location-card-button {
@@ -185,39 +205,34 @@
   justify-content: center;
   gap: 0.5rem;
 
-  padding: 0.65rem 1.25rem;
+  padding: 0.75rem 1.5rem; /* Buton biraz büyüdü */
   border-radius: 9999px;
 
+  /* Renkler korundu */
   background-color: var(--btn-bg);
   color: var(--btn-text);
 
   font-weight: 600;
   font-size: 0.9rem;
   text-decoration: none;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 
   border: 1px solid transparent;
-  /* Hafif iç parıltı efekti */
-  box-shadow:
-    0 4px 12px color-mix(in srgb, var(--btn-bg) 30%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--btn-bg) 30%, transparent);
 
-  transition: var(--transition-base);
+  transition: all 0.3s ease;
   cursor: pointer;
   overflow: hidden;
 }
 
 .location-card-button:hover {
   transform: translateY(-2px);
-  box-shadow:
-    0 6px 16px color-mix(in srgb, var(--btn-bg) 40%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  filter: brightness(1.05);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--btn-bg) 40%, transparent);
+  gap: 0.75rem; /* Service Card'daki gibi ok uzaklaşır */
 }
 
 .location-card-button:active {
   transform: translateY(0);
-  box-shadow: none;
 }
 
 .location-card-button:focus-visible {
@@ -231,33 +246,30 @@
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* Butona hover olunca ikon hareket etsin ama gap zaten artıyor */
 .location-card-button:hover .location-card-arrow {
-  transform: translateX(4px);
+  transform: translateX(2px);
 }
 
 /* =========================================
-   Dark Mode Overrides
+   Dark Mode Overrides (SABİT KORUNDU & UYARLANDI)
    ========================================= */
 
 .dark .location-card {
-  /* Dark mode için yerel değişkenleri güncelliyoruz */
   --card-bg: var(--surface, #0f172a);
   --card-border: rgba(255, 255, 255, 0.08);
   --card-text: var(--text_color, var(--text-color, #f8fafc));
   --card-text-muted: color-mix(in srgb, var(--card-text) 65%, transparent);
+  --btn-text: #020617;
 
-  /* Buton Dark Mode */
-  --btn-text: #020617; /* Koyu modda buton metni koyu olsun (kontrast için) */
-
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  /* Service Card dark mode gölgeleri */
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.45);
 }
 
 .dark .location-card:hover,
 .dark .location-card.active {
   border-color: rgba(255, 255, 255, 0.15);
-  box-shadow:
-    0 20px 40px -10px rgba(0, 0, 0, 0.7),
-    0 0 0 1px color-mix(in srgb, var(--card-primary) 30%, transparent);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7);
 }
 
 .dark .location-card-media {
@@ -267,37 +279,27 @@
 .dark .location-card-overlay {
   background: linear-gradient(
     to top,
-    rgba(0, 0, 0, 0.8) 0%,
-    rgba(0, 0, 0, 0.4) 60%,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 0, 0, 0.5) 60%,
     transparent 100%
   );
 }
 
-.dark .location-card-button {
-  border-color: rgba(255,255,255,0.1);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-}
-
 /* =========================================
-   Utilities & Responsive
+   Responsive
    ========================================= */
 
-.blur {
-  filter: blur(12px);
-}
-
 @media (max-width: 480px) {
-  .location-card-title {
-    font-size: 1.1rem;
+  .location-card-overlay {
+      padding: 1.25rem;
   }
 
   .location-card-content {
-    padding: 1rem;
+    padding: 1.25rem;
   }
 
   .location-card-button {
-    width: 100%; /* Mobilde buton tam genişlik olsun */
+    width: 100%;
     justify-content: center;
-    padding: 0.75rem;
   }
 }

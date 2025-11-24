@@ -1,3 +1,5 @@
+// resources/js/Pages/Locations/Show.jsx
+
 import React, { useEffect, useState, useMemo } from "react";
 import { Head, usePage } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
@@ -39,9 +41,11 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
         page?.title ||
         `Gebäudereinigung in ${city}`;
 
+    // 🔴 ÖNEMLİ KISIM: Önce API’den gelen content’i kullanıyoruz
     const heroDesc =
+        matchedService?.raw?.content || // <--- backend JSON'daki content
         matchedService?.description ||
-        matchedService?.short_description ||
+        matchedService?.shortDescription ||
         page?.intro ||
         `Professionelle Gebäudereinigung in ${city}.`;
 
@@ -53,7 +57,7 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
         page?.hero?.image ||
         placeholderImage;
 
-    -useEffect(() => {
+    useEffect(() => {
         let isMounted = true;
 
         async function loadData() {
@@ -64,40 +68,36 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
                 const data = await fetchServices({
                     tenantId,
                     locale,
-                    locationSlug: currentUrlSlug,
-                    city,
+                    // burada istersen city filtresi de yolluyoruz
+                    city: cityFromUrl,
                     perPage: 100,
                 });
 
-                if (isMounted) {
-                    const servicesList = data.services || [];
-                    setRemoteServices(servicesList);
+                if (!isMounted) return;
 
-                    const found = servicesList.find(
-                        (s) => s.slug === currentUrlSlug
+                const servicesList = data.services || [];
+                setRemoteServices(servicesList);
+
+                // URL slug’ı ile bire bir eşleşen servisi bul
+                const found = servicesList.find(
+                    (s) => s.slug === currentUrlSlug
+                );
+
+                if (found) {
+                    setMatchedService(found);
+                } else {
+                    // slug tutmazsa city üzerinden fallback eşleşme
+                    const fuzzyMatch = servicesList.find(
+                        (s) =>
+                            s.city &&
+                            s.city.toLowerCase() === cityFromUrl.toLowerCase()
                     );
-
-                    if (found) {
-                        console.log("✅ EŞLEŞEN SERVİS BULUNDU:", found);
-                        setMatchedService(found);
-                    } else {
-                        const fuzzyMatch = servicesList.find(
-                            (s) =>
-                                s.city &&
-                                s.city.toLowerCase() ===
-                                    cityFromUrl.toLowerCase()
-                        );
-                        if (fuzzyMatch) {
-                            console.log(
-                                "⚠️ Slug tutmadı ama şehir tuttu, bunu kullanıyorum:",
-                                fuzzyMatch
-                            );
-                            setMatchedService(fuzzyMatch);
-                        }
+                    if (fuzzyMatch) {
+                        setMatchedService(fuzzyMatch);
                     }
-
-                    setError(null);
                 }
+
+                setError(null);
             } catch (err) {
                 console.error("Hata:", err);
                 if (isMounted) setError("Veriler yüklenemedi.");
@@ -116,15 +116,14 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
     const servicesToRender = useMemo(() => {
         const list = Array.isArray(remoteServices) ? remoteServices : [];
 
-        // city -> "Amberg" => "amberg"
         const citySlug =
             city
                 ?.toString()
                 .toLowerCase()
                 .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "") // aksanları temizle
-                .replace(/[^a-z0-9]+/g, "-") // boşlukları - yap
-                .replace(/^-+|-+$/g, "") || ""; // baş/son - temizle
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-+|-+$/g, "") || "";
 
         return list
             .filter((s) => s.parentId == null)
@@ -134,6 +133,15 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
                     ? `${baseServiceSlug}-${citySlug}` // "wohnungsrenovierung-amberg"
                     : baseServiceSlug;
 
+                // detect whether server provided translations for this service
+                const hasTranslations =
+                    Array.isArray(s.raw?.translations) &&
+                    s.raw.translations.length > 0;
+                const rawLang =
+                    s.raw?._meta?.languages?.current ||
+                    s.raw?._meta?.languages?.default ||
+                    null;
+
                 return {
                     id: s.id,
                     title: (s.title || s.name || "").includes(city)
@@ -141,11 +149,11 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
                         : `${s.title || s.name} in ${city}`,
                     description: s.description || "",
                     image: s.image || null,
-
                     slug: seoSlug,
-
                     link: `/${seoSlug}`,
                     icon: s.icon,
+                    hasTranslations,
+                    rawLang,
                 };
             });
     }, [remoteServices, city]);
@@ -154,7 +162,6 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
         <AppLayout>
             <Head>
                 <title>{`${heroTitle} – Standort`}</title>
-                {/* Meta description için HTML taglerini temizliyoruz */}
                 <meta
                     name="description"
                     content={heroDesc
@@ -180,13 +187,11 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
                 </div>
 
                 <div className="locx-hero__inner container">
-                    {/* Başlık */}
                     <h1 className="locx-title">{heroTitle}</h1>
 
-                    {/* Açıklama (HTML Render) */}
-                    {/* Backend'den gelen <h2> ve <p> taglerini burada işliyoruz */}
+                    {/* Burada artık API'den gelen content HTML’i gösteriliyor */}
                     <div
-                        className="locx-subtitle prose prose-invert max-w-3xl mx-auto" // prose class'ı HTML stilleri için (Tailwind Typography varsa)
+                        className="locx-subtitle prose prose-invert max-w-3xl mx-auto"
                         dangerouslySetInnerHTML={{ __html: heroDesc }}
                     />
                 </div>

@@ -12,6 +12,15 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/services', [ServicesController::class, 'index'])->name('services.index');
 
+// Service detail pages (use German path)
+Route::get('/dienstleistungen/{slug}', [ServicesController::class, 'show'])->name('services.show');
+
+// Support root-level service slugs like `/wohnungsrenovierung-bad-hersfeld`
+// Must be defined BEFORE the generic static page catch-all route.
+Route::get('/{slug}', [ServicesController::class, 'show'])
+    ->where('slug', '^(?:gebaudereinigung|wohnungsrenovierung|hotelreinigung)(?:[-a-z0-9]+)?$')
+    ->name('services.show.root');
+
 Route::get('/dienstleistungen', fn () => redirect()->route('services.index'), 301);
 
 Route::get('/standorte', [LocationsController::class, 'index'])->name('locations.index');

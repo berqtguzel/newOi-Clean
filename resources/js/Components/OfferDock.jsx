@@ -9,23 +9,21 @@ export default function OfferDock() {
     const TAB_W = 40;
     const HIDE_X = -(PANEL_W - TAB_W);
 
-    const [collapsed, setCollapsed] = useState(() => {
+    // 1. Başlangıç değeri her zaman false olsun (SSR uyumu için)
+    const [collapsed, setCollapsed] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
+
+    // 2. Tarayıcı yüklendikten sonra localStorage'dan durumu oku
+    useEffect(() => {
+        setIsMounted(true);
         try {
             const v = localStorage.getItem("offerDockCollapsed");
-            return v === "1";
-        } catch {
-            return false;
-        }
-    });
+            // Eğer daha önce kapatılmışsa (v === "1"), state'i güncelle
+            if (v === "1") {
+                setCollapsed(true);
+            }
 
-    useEffect(() => {
-        try {
-            localStorage.setItem("offerDockCollapsed", collapsed ? "1" : "0");
-        } catch {}
-    }, [collapsed]);
-
-    useEffect(() => {
-        try {
+            // İlk ziyaret kontrolü (Otomatik açılma)
             if (!sessionStorage.getItem("odockOpenedOnce")) {
                 setCollapsed(false);
                 localStorage.setItem("offerDockCollapsed", "0");
@@ -34,22 +32,30 @@ export default function OfferDock() {
         } catch {}
     }, []);
 
+    // 3. State değişince localStorage'ı güncelle (Sadece mounted olduktan sonra)
+    useEffect(() => {
+        if (!isMounted) return;
+        try {
+            localStorage.setItem("offerDockCollapsed", collapsed ? "1" : "0");
+        } catch {}
+    }, [collapsed, isMounted]);
+
     const openQuoteModal = () => {
         window.dispatchEvent(new Event("open-quote-modal"));
     };
 
     const cssVars = {
-        ["--panel-w"]: `${PANEL_W}px`,
-        ["--tab-w"]: `${TAB_W}px`,
-        ["--panel-x"]: collapsed ? `${HIDE_X}px` : "0px",
+        "--panel-w": `${PANEL_W}px`,
+        "--tab-w": `${TAB_W}px`,
+        "--panel-x": collapsed ? `${HIDE_X}px` : "0px",
     };
 
-    const title = t("offerDock.title", "Angebot");
-    const subtitle = t("offerDock.subtitle", "Kostenlos & unverbindlich");
-    const buttonLabel = t("offerDock.button", "Anfordern");
+    const title = t("offerDock.title", "Teklif");
+    const subtitle = t("offerDock.subtitle", "Ücretsiz & bağlayıcı değil");
+    const buttonLabel = t("offerDock.button", "Talep et");
 
-    const ariaOpen = t("offerDock.aria_open", "Angebotsleiste öffnen");
-    const ariaClose = t("offerDock.aria_close", "Angebotsleiste schließen");
+    const ariaOpen = t("offerDock.aria_open", "Teklif panelini aç");
+    const ariaClose = t("offerDock.aria_close", "Teklif panelini kapat");
 
     return (
         <div
@@ -85,6 +91,7 @@ export default function OfferDock() {
                     viewBox="0 0 24 24"
                     aria-hidden="true"
                 >
+                    {/* SVG yolu 'd' özelliğindeki mantık aynı kalıyor */}
                     <path
                         d={collapsed ? "M9 6l6 6-6 6" : "M15 6l-6 6 6 6"}
                         fill="none"

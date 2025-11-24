@@ -107,11 +107,6 @@
   border-radius: 16px;
   overflow: hidden;
 
-  background: color-mix(in srgb, var(--surface, #ffffff) 96%, #000 4%);
-  border: 1px solid color-mix(in srgb, var(--text-color, #111827) 14%, #ffffff 86%);
-  box-shadow:
-    0 10px 18px rgba(0,0,0,.08),
-    0 4px 8px rgba(0,0,0,.06);
 }
 @media (max-width: 1024px){ .map-box{ height: 460px; } }
 @media (max-width: 640px){  .map-box{ height: 360px; } }
@@ -138,4 +133,184 @@
   background: color-mix(in srgb, var(--surface, #0f172a) 92%, #fff 8%);
   border-color: color-mix(in srgb, var(--text-color, #f8fafc) 18%, #000 82%);
   box-shadow: 0 12px 26px rgba(0,0,0,.24);
+}
+/* resources/js/css/ContactLocations.css */
+
+/* --- Genel Bölüm Ayarları --- */
+.locations-section {
+  padding: 5rem 1.5rem;
+  min-height: 100vh;
+  background: var(--surface, #ffffff);
+  position: relative;
+  overflow: hidden;
+}
+
+.locations-container {
+  max-width: 1280px;
+  margin-inline: auto;
+  position: relative;
+  z-index: 2;
+}
+
+/* --- Başlık Alanı --- */
+.locations-header {
+  text-align: center;
+  margin-bottom: 4rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.locations-title {
+  font-size: 2.5rem;
+  line-height: 1.1;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  color: var(--text-color, #111827);
+  letter-spacing: -0.02em;
+}
+
+.locations-subtitle {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: #64748b; /* Slate-500 */
+}
+
+/* Dark Mode Başlıklar */
+.dark .locations-title { color: #ffffff; }
+.dark .locations-subtitle { color: #94a3b8; }
+
+@media (min-width: 768px) {
+  .locations-title { font-size: 3.5rem; }
+  .locations-subtitle { font-size: 1.25rem; }
+}
+
+/* --- Harita Alanı (DÜZELTİLDİ) --- */
+.map-container {
+  width: 100%;
+  max-width: 100%; /* Sınırlamayı kaldırdık, ferah olsun */
+  margin: 0 auto 3rem;
+  position: relative;
+}
+
+.map-box {
+  width: 100%;
+  /* Sabit yükseklik yerine esnek yapı */
+  height: auto;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Haritanın taşmasını veya kesilmesini önlemek için */
+  overflow: visible;
+  position: relative;
+}
+
+/* Mobilde Harita Yüksekliği */
+@media (max-width: 1024px) {
+  .map-box { min-height: 500px; }
+}
+@media (max-width: 640px) {
+  .map-box { min-height: 350px; }
+}
+
+/* SVG Ayarları (Kesilmeyi Önler) */
+.rsm-svg,
+.germany-map-svg svg {
+  width: 100%;
+  height: auto;
+  max-height: 85vh; /* Ekranın %85'ini geçmesin */
+  display: block;
+  /* Aspect ratio zorlamasını kaldırdık */
+  filter: drop-shadow(0 10px 30px rgba(0,0,0,0.08)); /* Haritaya derinlik katar */
+}
+
+.dark .rsm-svg,
+.dark .germany-map-svg svg {
+    filter: drop-shadow(0 10px 30px rgba(0,0,0,0.3));
+}
+
+/* --- Lokasyon Kartları (Grid) --- */
+.locations-grid {
+  display: grid;
+  /* Otomatik sığdırma: Kartlar en az 260px olacak, sığdığı kadar yan yana gelecek */
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+/* --- Kart Tasarımı (Location Card) --- */
+.location-card { /* Eğer ayrı class kullanıyorsan */
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.location-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* --- CTA Butonu (DÜZENLENDİ) --- */
+.locations-cta {
+  text-align: center;
+  margin-top: 2rem;
+  padding-bottom: 4rem;
+}
+
+.locations-contact-button {
+  --btn-bg: var(--button-color, #2563eb);
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2.5rem;
+  border-radius: 9999px;
+  background-color: var(--btn-bg);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+  /* Modern Gölge */
+  box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4);
+  /* Not: Gölge rengini dinamik yapmak zor, o yüzden hafif mavi/gri tonu */
+}
+
+.locations-contact-button:hover {
+  transform: translateY(-3px);
+  filter: brightness(110%);
+  box-shadow: 0 20px 30px -10px rgba(37, 99, 235, 0.5);
+  gap: 1rem; /* Hoverda ok işareti biraz uzaklaşsın */
+}
+
+.locations-arrow-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  transition: transform 0.3s ease;
+}
+
+/* --- Dark Mode Genel Ayarlar --- */
+.dark .locations-section {
+    background: var(--surface, #0f172a);
+}
+
+/* Harita Arka Planı (Opsiyonel: Haritanın arkasına hafif bir glow ekler) */
+.germany-map::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 80%;
+    background: var(--site-primary-color, #3b82f6);
+    opacity: 0.05;
+    filter: blur(100px);
+    border-radius: 50%;
+    z-index: -1;
+    pointer-events: none;
 }

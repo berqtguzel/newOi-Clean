@@ -1,27 +1,16 @@
 // resources/js/Components/Home/Services/ServicesGrid.jsx
+
 import React from "react";
 import { Head, usePage } from "@inertiajs/react";
 import { useTranslation } from "react-i18next";
 import ServiceCard from "./ServiceCard";
 import "./ServicesGrid.css";
 
-import {
-    FaHome,
-    FaBroom,
-    FaTemperatureHigh,
-    FaPaintRoller,
-    FaWindowMaximize,
-    FaTools,
-    FaBrush,
-    FaCouch,
-} from "react-icons/fa";
-
 import LiquidEther from "@/Components/ReactBits/Backgrounds/LiquidEther";
 import { useServices } from "@/hooks/useServices";
 import { useLocale } from "@/hooks/useLocale";
 import SafeHtml from "@/Components/Common/SafeHtml";
 
-// ⬇️ ARTIK /services İSTEMİYORUZ
 const BASE_DOMAIN = "https://oi-clean.de";
 
 function useIsDark() {
@@ -31,7 +20,6 @@ function useIsDark() {
         if (typeof document === "undefined") return;
 
         const get = () => document.documentElement.classList.contains("dark");
-
         setIsDark(get());
 
         const el = document.documentElement;
@@ -67,93 +55,22 @@ const useIntersectionObserver = (ref) => {
         const current = ref.current;
         if (current) observer.observe(current);
 
-        return () => {
-            if (current) observer.unobserve(current);
-        };
+        return () => current && observer.unobserve(current);
     }, [ref]);
 };
 
-const defaultServices = [
-    {
-        id: 1,
-        title: "Wohnungsrenovierung",
-        description: "Professionelle Renovierungsarbeiten …",
-        image: "/images/Wohnungsrenovierung.jpg",
-        slug: "wohnungsrenovierung",
-        icon: FaHome,
-    },
-    {
-        id: 2,
-        title: "Wohnungsreinigung",
-        description: "Gründliche und zuverlässige Reinigungsservices …",
-        image: "/images/Wohnungsrenovierung.jpg",
-        slug: "wohnungsreinigung",
-        icon: FaBroom,
-    },
-    {
-        id: 3,
-        title: "Wärmedämmung",
-        description: "Energieeffiziente Dämmungslösungen …",
-        image: "/images/Wohnungsrenovierung.jpg",
-        slug: "warmedammung",
-        icon: FaTemperatureHigh,
-    },
-    {
-        id: 4,
-        title: "Verputz – Verputzarbeiten",
-        description: "Hochwertige Verputzarbeiten …",
-        image: "/images/Wohnungsrenovierung.jpg",
-        slug: "verputzarbeiten",
-        icon: FaPaintRoller,
-    },
-    {
-        id: 5,
-        title: "Türen und Fensterbau",
-        description: "Maßgefertigte Türen und Fenster …",
-        image: "/images/Wohnungsrenovierung.jpg",
-        slug: "tueren-und-fensterbau",
-        icon: FaWindowMaximize,
-    },
-    {
-        id: 6,
-        title: "Trockenbau",
-        description: "Innovative Trockenbaulösungen …",
-        image: "/images/Wohnungsrenovierung.jpg",
-        slug: "trockenbau",
-        icon: FaTools,
-    },
-    {
-        id: 7,
-        title: "Teppichreinigung",
-        description: "Professionelle Teppichreinigung …",
-        image: "/images/Wohnungsrenovierung.jpg",
-        slug: "teppichreinigung",
-        icon: FaBrush,
-    },
-    {
-        id: 8,
-        title: "Teppich Verlegen",
-        description: "Fachgerechtes Verlegen von Teppichen …",
-        image: "/images/Wohnungsrenovierung.jpg",
-        slug: "teppich-verlegen",
-        icon: FaCouch,
-    },
-    {
-        id: 9,
-        title: "Tapezieren – Tapezierarbeiten",
-        description: "Kreative Wandgestaltung …",
-        image: "/images/Wohnungsrenovierung.jpg",
-        slug: "tapezieren",
-        icon: FaPaintRoller,
-    },
-];
-
-const ServicesGrid = ({ services = defaultServices, content = {} }) => {
+const ServicesGrid = ({ services = [], content = {} }) => {
     const { t } = useTranslation();
+    const [mounted, setMounted] = React.useState(false);
     const gridRef = React.useRef(null);
     useIntersectionObserver(gridRef);
 
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const { props } = usePage();
+    const liquidInnerRef = React.useRef(null);
     const tenantId =
         props?.global?.tenantId ||
         props?.global?.tenant_id ||
@@ -162,111 +79,62 @@ const ServicesGrid = ({ services = defaultServices, content = {} }) => {
 
     const locale = useLocale("de");
 
+    // ✔ API’den servisleri çek
     const { services: remoteServices, loading } = useServices({
-        perPage: 100,
+        perPage: 200,
         tenantId,
         locale,
     });
 
-    const safeRemoteServices = React.useMemo(() => {
-        if (Array.isArray(remoteServices)) return remoteServices;
-        return [];
-    }, [remoteServices]);
+    // ✔ güvenli listeyi al
+    const safeRemoteServices = Array.isArray(remoteServices)
+        ? remoteServices
+        : [];
 
-    // sadece üst seviye servisler
-    const topLevelServices = React.useMemo(
-        () => safeRemoteServices.filter((s) => s.parentId == null),
-        [safeRemoteServices]
+    // ------------------------------------------------------------
+    // 🔥 SEO KATEGORİLERİNİ GİZLE (categoryName = "seo")
+    // ------------------------------------------------------------
+    const filteredServices = safeRemoteServices.filter(
+        (s) =>
+            String(s.categoryName).toLowerCase() !== "seo" &&
+            s.categoryName !== "seo"
     );
 
-    const mappedRemote = React.useMemo(
-        () =>
-            topLevelServices.map((s) => ({
-                id: s.id,
-                title: s.title ?? s.name,
-                description: s.description ?? s.shortDescription ?? "",
-                image: s.image || null,
-                slug: s.slug || null,
-                link: s.url || null,
-                icon: s.icon || null,
-            })),
-        [topLevelServices]
-    );
+    // ✔ sadece üst servisler (parentId == null)
+    const topLevelServices = filteredServices.filter((s) => s.parentId == null);
 
-    const servicesToRender = mappedRemote?.length
-        ? mappedRemote
-        : services?.length
-        ? services
-        : defaultServices;
+    // ✔ fallback: eğer API gelmezse props.services kullan
+    const servicesToRender = topLevelServices.length
+        ? topLevelServices
+        : services;
+
+    // ------------------------------------------------------------
+    // END FILTERS
+    // ------------------------------------------------------------
 
     const isDark = useIsDark();
     const lightColors = ["#085883", "#0C9FE2", "#2EA7E0"];
     const darkColors = ["#47B3FF", "#7CCBFF", "#B5E3FF"];
 
-    // ⬇️ Artık schema URL’leri de /services/... değil, direkt /slug
-    const schemaData = React.useMemo(
-        () => ({
-            "@context": "https://schema.org",
-            "@type": "ItemList",
-            itemListElement: servicesToRender.map((s, i) => {
-                const path =
-                    s.link && s.link.startsWith("http")
-                        ? s.link
-                        : s.link
-                        ? `${BASE_DOMAIN}${s.link}`
-                        : s.slug
-                        ? `${BASE_DOMAIN}/${s.slug}`
-                        : BASE_DOMAIN;
-
-                return {
-                    "@type": "Service",
-                    position: i + 1,
-                    name: s.title,
-                    description: s.description,
-                    url: path,
-                    provider: {
-                        "@type": "Organization",
-                        name: "O&I CLEAN group GmbH",
-                        image: `${BASE_DOMAIN}/images/logo.svg`,
-                        address: {
-                            "@type": "PostalAddress",
-                            streetAddress: "Spaldingstr. 77–79",
-                            addressLocality: "Hamburg",
-                            postalCode: "20097",
-                            addressCountry: "DE",
-                        },
-                    },
-                };
-            }),
-        }),
-        [servicesToRender]
-    );
+    // JSON-LD
+    const schemaData = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        itemListElement: servicesToRender.map((s, i) => ({
+            "@type": "Service",
+            position: i + 1,
+            name: s.title,
+            description: s.description,
+            url: s.slug ? `${BASE_DOMAIN}/${s.slug}` : BASE_DOMAIN,
+        })),
+    };
 
     const headingHtml =
         content.services_title || t("servicesList.title", "Leistungen");
 
     const subtitleHtml =
         content.services_subtitle ||
-        t(
-            "servicesList.subtitle",
-            "Entdecken Sie unsere umfassenden Dienstleistungen für Ihr Zuhause"
-        );
-
-    const metaTitle = t(
-        "servicesList.meta_title",
-        "Unsere Leistungen - O&I CLEAN group GmbH"
-    );
-    const metaDescription = t(
-        "servicesList.meta_description",
-        "Professionelle Reinigung, Renovierung und Gebäudemanagement in Hamburg. ★ Expertise ★ Deutsche Qualität ★ Zuverlässiger Service"
-    );
-
-    const loadingText = t("servicesList.loading", "Lade Services…");
-    const contactCtaLabel = t("servicesList.contact_cta", "Kontaktiere Uns");
-    const contactCtaAria = t(
-        "servicesList.contact_cta_aria",
-        "Jetzt Kontakt aufnehmen"
-    );
+        t("servicesList.subtitle", "Unsere Services");
 
     return (
         <section
@@ -274,78 +142,84 @@ const ServicesGrid = ({ services = defaultServices, content = {} }) => {
             aria-labelledby="services-title"
         >
             <Head>
-                <title>{metaTitle}</title>
-                <meta name="description" content={metaDescription} />
+                <title>
+                    {t(
+                        "servicesList.meta_title",
+                        "Unsere Leistungen - O&I CLEAN group GmbH"
+                    )}
+                </title>
+                <meta
+                    name="description"
+                    content={t(
+                        "servicesList.meta_description",
+                        "Professionelle Reinigung und Gebäudemanagement"
+                    )}
+                />
                 <script type="application/ld+json">
                     {JSON.stringify(schemaData)}
                 </script>
             </Head>
 
-            {typeof window !== "undefined" && (
-                <div className="absolute inset-0 z-10 liquid-ether-bg">
-                    <LiquidEther
-                        className="w-full h-full"
-                        style={{ pointerEvents: "auto" }}
-                        colors={isDark ? darkColors : lightColors}
-                        mouseForce={35}
-                        cursorSize={140}
-                        isViscous={false}
-                        viscous={25}
-                        iterationsViscous={32}
-                        iterationsPoisson={32}
-                        resolution={0.6}
-                        isBounce={false}
-                        autoDemo
-                        autoSpeed={0.4}
-                        autoIntensity={1.6}
-                        takeoverDuration={0.45}
-                        autoResumeDelay={4000}
-                        autoRampDuration={0.8}
-                    />
+            <div className="absolute inset-0 z-10 liquid-ether-bg">
+                <div
+                    className="liquid-ether-inner"
+                    aria-hidden
+                    ref={liquidInnerRef}
+                >
+                    {mounted && (
+                        <LiquidEther
+                            containerRef={liquidInnerRef}
+                            className="w-full h-full"
+                            colors={isDark ? darkColors : lightColors}
+                            mouseForce={35}
+                            cursorSize={140}
+                            isViscous={false}
+                            viscous={25}
+                            iterationsViscous={32}
+                            iterationsPoisson={32}
+                            resolution={0.6}
+                            autoDemo
+                            autoSpeed={0.4}
+                            autoIntensity={1.6}
+                        />
+                    )}
                 </div>
-            )}
+            </div>
 
             <div className="services-container relative z-10">
                 <div className="services-header">
                     <h2 id="services-title" className="services-title">
                         <SafeHtml html={headingHtml} />
                     </h2>
-                    <p className="services-subtitle">
+                    <div className="services-subtitle">
                         <SafeHtml html={subtitleHtml} />
-                    </p>
+                    </div>
                 </div>
 
                 <div ref={gridRef} className="services-grid">
                     {loading && (
-                        <div className="services-loading">{loadingText}</div>
+                        <div className="services-loading">
+                            {t("servicesList.loading", "Loading…")}
+                        </div>
                     )}
 
                     {!loading &&
                         servicesToRender.map((s) => (
                             <ServiceCard
-                                key={s.slug || s.link || s.id || s.title}
+                                key={s.id}
                                 title={s.title}
                                 description={s.description}
                                 image={s.image}
                                 slug={s.slug}
-                                link={s.link}
-                                icon={s.icon}
+                                translations={s.translations}
                             />
                         ))}
                 </div>
 
                 <div className="services-cta">
-                    <a
-                        href="/kontakt"
-                        className="services-contact-button"
-                        aria-label={contactCtaAria}
-                    >
-                        {contactCtaLabel}
-                        <svg
-                            className="services-arrow-icon"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                        >
+                    <a href="/kontakt" className="services-contact-button">
+                        {t("servicesList.contact_cta", "Kontakt")}
+                        <svg viewBox="0 0 24 24" fill="none">
                             <path
                                 d="M5 12H19M19 12L12 5M19 12L12 19"
                                 stroke="currentColor"

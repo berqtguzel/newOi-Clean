@@ -3,10 +3,19 @@ import { Head, usePage } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import ContactSection from "@/Components/Home/Contact/ContactSection";
 import ContactMap from "@/Components/Contact/ContactMaps";
-import "../../../css/ContactLocations.css";
 import parse, { domToReact, Element } from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
+import { useTranslation } from "react-i18next"; // i18n Import
+import {
+    FaPhone,
+    FaEnvelope,
+    FaArrowRight,
+    FaMapMarkerAlt,
+} from "react-icons/fa";
 
+import "../../../css/ContactLocations.css";
+
+// --- HTML Parsing Helper ---
 function safeParse(html, options) {
     const clean = DOMPurify.sanitize(html || "", {
         ALLOWED_TAGS: [
@@ -65,20 +74,19 @@ function safeParse(html, options) {
                 );
             }
         }
-
         if (
             node instanceof Element &&
             (node.name === "script" || node.name === "style")
         ) {
             return <></>;
         }
-
         return undefined;
     };
 
     return parse(clean, { replace, ...(options || {}) });
 }
 
+// --- LOCATIONS DATA ---
 const LOCATIONS = [
     {
         id: "hamburg",
@@ -128,22 +136,23 @@ export default function ContactIndex({
     introHtml,
 }) {
     const { props, url: inertiaUrl } = usePage();
+    const { t } = useTranslation(); // i18n hook
 
-    // --------- SEO Temel Bilgiler ----------
-    const pageTitle = "Kontakt – O&I CLEAN group GmbH";
-    const pageDescription =
-        "Kontaktieren Sie O&I CLEAN group GmbH für professionelle Reinigungsdienstleistungen und Standorte in ganz Deutschland.";
+    // --------- SEO Basic Info ----------
+    const pageTitle = t("contact.seo_title", "Kontakt – O&I CLEAN group GmbH");
+    const pageDescription = t(
+        "contact.seo_desc",
+        "Kontaktieren Sie O&I CLEAN group GmbH für professionelle Reinigungsdienstleistungen und Standorte in ganz Deutschland."
+    );
 
-    // Ziggy'den base URL (SSR için güvenli)
+    // Ziggy base URL
     const baseLocation = props?.ziggy?.location || "https://oi-clean.de";
     const normalizedBase = String(baseLocation).replace(/\/+$/, "");
-
-    // Inertia url genelde "/kontakt" veya "/contact" oluyor
     const path = inertiaUrl || "/kontakt";
     const currentUrl = `${normalizedBase}${path}`;
     const originUrl = `${normalizedBase}/`;
 
-    // JSON-LD: WebPage
+    // JSON-LD Schemas
     const schemaWebPage = {
         "@context": "https://schema.org",
         "@type": "WebPage",
@@ -152,7 +161,6 @@ export default function ContactIndex({
         url: currentUrl,
     };
 
-    // JSON-LD: Organization + Standorte
     const schemaOrganization = {
         "@context": "https://schema.org",
         "@type": "Organization",
@@ -183,7 +191,6 @@ export default function ContactIndex({
         })),
     };
 
-    // JSON-LD: Breadcrumbs
     const schemaBreadcrumbs = {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
@@ -191,149 +198,224 @@ export default function ContactIndex({
             {
                 "@type": "ListItem",
                 position: 1,
-                name: "Startseite",
+                name: t("nav.home", "Startseite"),
                 item: originUrl,
             },
             {
                 "@type": "ListItem",
                 position: 2,
-                name: "Kontakt",
+                name: t("contact.page_title", "Kontakt"),
                 item: currentUrl,
             },
         ],
     };
 
+    // Intro Text
     const intro =
         introHtml ||
-        "Kostenlos &amp; unverbindlich – <strong>wir melden uns zeitnah</strong>.";
-
+        t(
+            "contact.intro_text",
+            "Kostenlos & unverbindlich – <strong>wir melden uns zeitnah</strong>."
+        );
     const introParsed = useMemo(() => safeParse(intro), [intro]);
 
     return (
         <AppLayout currentRoute={currentRoute}>
-            <div className="contact-page">
-                <section className="contact-intro max-w-4xl mx-auto px-4 pt-10 pb-4">
-                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                        Kontakt
+            <Head>
+                <title>{pageTitle}</title>
+                <meta name="description" content={pageDescription} />
+                <link rel="canonical" href={currentUrl} />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify(schemaWebPage),
+                    }}
+                />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify(schemaOrganization),
+                    }}
+                />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify(schemaBreadcrumbs),
+                    }}
+                />
+            </Head>
+
+            <div className="contactx-page">
+                {/* --- 1. Intro Section --- */}
+                <section className="contactx-intro">
+                    <h1 className="contactx-title">
+                        {t("contact.page_title", "Kontakt")}
                     </h1>
 
-                    <div className="mt-2 text-slate-600 dark:text-slate-300 prose prose-slate dark:prose-invert">
-                        {introParsed}
-                    </div>
+                    <div className="contactx-desc">{introParsed}</div>
 
+                    {/* Alerts */}
                     {flash?.success && (
-                        <div className="mt-4 rounded-lg border border-emerald-300/60 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 px-4 py-3">
-                            {flash.success}
+                        <div className="contactx-alert contactx-alert--success">
+                            <span>✅</span> {flash.success}
                         </div>
                     )}
                     {flash?.error && (
-                        <div className="mt-4 rounded-lg border border-rose-300/60 bg-rose-50 dark:bg-rose-900/20 text-rose-800 dark:text-rose-200 px-4 py-3">
-                            {flash.error}
+                        <div className="contactx-alert contactx-alert--error">
+                            <span>⚠️</span> {flash.error}
                         </div>
                     )}
                 </section>
 
+                {/* --- 2. Main Contact Form --- */}
                 <ContactSection />
 
-                <section className="contact-location">
-                    <section className="locations max-w-6xl mx-auto px-4 py-10">
-                        <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
-                            Standorte &amp; Kontakt
+                {/* --- 3. Locations Grid --- */}
+                <section className="contactx-locations-wrapper">
+                    <div className="max-w-7xl mx-auto px-4">
+                        <h2 className="contactx-section-title">
+                            {t(
+                                "contact.locations_title",
+                                "Standorte & Kontakt"
+                            )}
                         </h2>
 
-                        <div className="location-grid mt-6">
+                        <div className="contactx-location-grid">
                             {LOCATIONS.map((loc) => {
                                 const detailsParsed = loc.html
                                     ? safeParse(loc.html)
                                     : null;
 
                                 return (
-                                    <div key={loc.id} className="location-card">
-                                        <h3 className="location-card__title">
-                                            {loc.title}
-                                        </h3>
+                                    <article
+                                        key={loc.id}
+                                        className="contactx-card"
+                                    >
+                                        {/* Content Top */}
+                                        <div>
+                                            <h3 className="contactx-card__title">
+                                                {loc.title}
+                                            </h3>
 
-                                        <div className="location-card__lines">
-                                            {loc.lines.map((line, i) => (
-                                                <div key={i}>{line}</div>
-                                            ))}
+                                            <div className="contactx-card__address">
+                                                {loc.lines.map((line, i) => (
+                                                    <div key={i}>{line}</div>
+                                                ))}
+                                            </div>
 
                                             {detailsParsed && (
-                                                <div className="mt-2 text-sm text-slate-600 dark:text-slate-300 prose prose-sm">
+                                                <div className="contactx-card__extra">
                                                     {detailsParsed}
                                                 </div>
                                             )}
                                         </div>
 
-                                        {loc.phone && (
-                                            <div className="location-card__row">
-                                                Tel:{" "}
-                                                <a
-                                                    href={`tel:${loc.phone.replace(
-                                                        /\s/g,
-                                                        ""
-                                                    )}`}
-                                                >
-                                                    {loc.phone}
-                                                </a>
-                                            </div>
-                                        )}
-                                        {loc.email && (
-                                            <div className="location-card__row">
-                                                E-Mail:{" "}
-                                                <a href={`mailto:${loc.email}`}>
-                                                    {loc.email}
-                                                </a>
-                                            </div>
-                                        )}
+                                        {/* Content Bottom (Details) */}
+                                        <div className="contactx-card__details">
+                                            {loc.phone && (
+                                                <div className="contactx-card__row">
+                                                    <FaPhone size={14} />
+                                                    <span className="font-medium text-sm opacity-80">
+                                                        {t(
+                                                            "contact.phone_label",
+                                                            "Tel"
+                                                        )}
+                                                        :
+                                                    </span>
+                                                    <a
+                                                        href={`tel:${loc.phone.replace(
+                                                            /\s/g,
+                                                            ""
+                                                        )}`}
+                                                    >
+                                                        {loc.phone}
+                                                    </a>
+                                                </div>
+                                            )}
 
+                                            {loc.email && (
+                                                <div className="contactx-card__row">
+                                                    <FaEnvelope size={14} />
+                                                    <span className="font-medium text-sm opacity-80">
+                                                        {t(
+                                                            "contact.email_label",
+                                                            "E-Mail"
+                                                        )}
+                                                        :
+                                                    </span>
+                                                    <a
+                                                        href={`mailto:${loc.email}`}
+                                                    >
+                                                        {loc.email}
+                                                    </a>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Action Button */}
                                         <a
                                             href={`#map-${loc.id}`}
-                                            className="location-card__link"
+                                            className="contactx-card__action"
+                                            onClick={(e) => {
+                                                // Optional: Smooth scroll manually if native behavior fails
+                                                e.preventDefault();
+                                                const el =
+                                                    document.getElementById(
+                                                        `map-${loc.id}`
+                                                    );
+                                                if (el) {
+                                                    const offset = 100;
+                                                    const bodyRect =
+                                                        document.body.getBoundingClientRect()
+                                                            .top;
+                                                    const elementRect =
+                                                        el.getBoundingClientRect()
+                                                            .top;
+                                                    const elementPosition =
+                                                        elementRect - bodyRect;
+                                                    const offsetPosition =
+                                                        elementPosition -
+                                                        offset;
+                                                    window.scrollTo({
+                                                        top: offsetPosition,
+                                                        behavior: "smooth",
+                                                    });
+                                                }
+                                            }}
                                         >
-                                            Karte anzeigen
-                                            <svg
-                                                width="18"
-                                                height="18"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                aria-hidden
-                                            >
-                                                <path
-                                                    d="M5 12H19M19 12L12 5M19 12L12 19"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                />
-                                            </svg>
+                                            {t(
+                                                "contact.show_map",
+                                                "Karte anzeigen"
+                                            )}
+                                            <FaArrowRight size={12} />
                                         </a>
-                                    </div>
+                                    </article>
                                 );
                             })}
                         </div>
-                    </section>
+                    </div>
+                </section>
 
-                    <section className="max-w-7xl mx-auto px-4 py-8">
-                        <div className="cmap-grid">
-                            {LOCATIONS.map((loc) => (
-                                <section
-                                    key={loc.id}
-                                    id={`map-${loc.id}`}
-                                    className="cmap-item"
-                                >
-                                    <ContactMap
-                                        query={loc.query}
-                                        zoom={loc.zoom ?? 15}
-                                        title={loc.title}
-                                        description={`${
-                                            loc.title
-                                        } – ${loc.lines.join(", ")}`}
-                                    />
-                                </section>
-                            ))}
-                        </div>
-                    </section>
+                {/* --- 4. Maps Section --- */}
+                <section className="contactx-maps-wrapper">
+                    <div className="contactx-map-grid">
+                        {LOCATIONS.map((loc) => (
+                            <section
+                                key={loc.id}
+                                id={`map-${loc.id}`}
+                                className="contactx-map-item"
+                            >
+                                <ContactMap
+                                    query={loc.query}
+                                    zoom={loc.zoom ?? 15}
+                                    title={loc.title}
+                                    description={`${
+                                        loc.title
+                                    } – ${loc.lines.join(", ")}`}
+                                />
+                            </section>
+                        ))}
+                    </div>
                 </section>
             </div>
         </AppLayout>

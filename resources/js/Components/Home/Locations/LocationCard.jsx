@@ -63,25 +63,48 @@ export default function LocationCard({ location, onHover, isActive }) {
 
     const cityText = stripHtml(cityRaw) || "dieser Stadt";
 
-    const slug = location.slug;
+    // API'den gelen orijinal slug
+    const originalSlug = location.slug;
 
-    if (!slug) {
-        console.warn("Location without slug, skipping card:", location);
+    if (!originalSlug) {
+        return null;
+    }
+
+    // "gebaudereinigung-bad-homburg" -> "bad-homburg"
+    // "hotelreinigung-hamburg"       -> "hamburg"
+    // "gebaudereinigung"             -> "gebaudereinigung" (değişmez)
+    const cleanedSlug = originalSlug.replace(/^[^-]+-/, "");
+
+    if (!cleanedSlug) {
         return null;
     }
 
     const hasMaps = Array.isArray(location.maps) && location.maps.length > 0;
     const primaryMap = hasMaps ? location.maps[0] : null;
+    const slug = location.slug;
+    const href = `/${cleanedSlug}`;
 
-    const href = `/${slug}`;
+    // Provide simple per-locale defaults for the CTA (de / en / tr).
+    const CTA_TEXT = {
+        de: "Mehr erfahren",
+        en: "Learn more",
+        tr: "Daha fazla bilgi",
+    };
 
-    // i18n metinleri
-    const ctaLabel = t("locations.card.cta", "Mehr erfahren");
-    const ctaAria = t(
-        "locations.card.cta_aria",
-        "Mehr über unsere Reinigungsservices in {{city}} erfahren",
-        { city: cityText }
-    );
+    const CTA_ARIA = {
+        de: "Mehr über unsere Reinigungsservices in {{city}} erfahren",
+        en: "Learn more about our cleaning services in {{city}}",
+        tr: "{{city}}'deki temizlik hizmetlerimiz hakkında daha fazla bilgi alın",
+    };
+
+    const ctaLabel = t("locations.card.cta", {
+        defaultValue: CTA_TEXT[locale] || CTA_TEXT.de,
+    });
+
+    const ctaAria = t("locations.card.cta_aria", {
+        defaultValue: CTA_ARIA[locale] || CTA_ARIA.de,
+        city: cityText,
+    });
 
     return (
         <article

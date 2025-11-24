@@ -48,6 +48,7 @@ export default function HeroSection({ content = {} }) {
         content.hero_primary_cta_href ||
         "#services";
 
+    // Use fragment anchor without leading slash to match server-rendered HTML
     const secondaryCtaHref = content.hero_secondary_cta_href || "#contact";
 
     const hasSlideImage = !!primarySlide?.image && !useFallbackVideo;

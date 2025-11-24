@@ -58,7 +58,7 @@ export function useLocale(defaultLocale = "de") {
                 localStorage.setItem("i18nextLng", locale);
             } catch (e) {
 
-                console.warn("locale storage error", e);
+
             }
         }
     }, [locale]);

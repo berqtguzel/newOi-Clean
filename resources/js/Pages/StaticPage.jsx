@@ -12,6 +12,10 @@ import { useTranslation } from "react-i18next";
 
 import { fetchPageBySlug } from "@/services/pageService";
 
+/* -------------------------------------------------------------------------- */
+/* helpers                                                                    */
+/* -------------------------------------------------------------------------- */
+
 function safeParse(html = "") {
     const clean = DOMPurify.sanitize(html, {
         ALLOWED_TAGS: [
@@ -90,6 +94,10 @@ function normalizeLang(code) {
         .split("-")[0];
 }
 
+/* -------------------------------------------------------------------------- */
+/* component                                                                  */
+/* -------------------------------------------------------------------------- */
+
 export default function StaticPage({
     slug,
     page: initialPage = {},
@@ -104,7 +112,6 @@ export default function StaticPage({
         props?.global?.talentId ||
         "";
 
-    // Locale'i DOĞRUDAN Inertia'dan al:
     const inertiaLocale = props?.locale || props?.ziggy?.locale || "de";
     const locale = normalizeLang(inertiaLocale);
 
@@ -112,7 +119,8 @@ export default function StaticPage({
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState(null);
 
-    // ---------- API'den sayfa çek ----------
+    /* --------------------------- API'den sayfa çek -------------------------- */
+
     React.useEffect(() => {
         if (!slug) return;
         let cancelled = false;
@@ -124,16 +132,15 @@ export default function StaticPage({
             try {
                 const { page: apiPage } = await fetchPageBySlug(slug, {
                     tenantId,
-                    locale, // <-- buraya net olarak "de/en/tr" gidiyor
+                    locale,
                 });
 
                 if (cancelled) return;
 
-                console.log("[StaticPage] locale:", locale, "page:", apiPage);
                 setPage(apiPage || null);
             } catch (e) {
                 if (cancelled) return;
-                console.error("StaticPage fetchPageBySlug failed:", e);
+
                 setError(e?.message || "Page konnte nicht geladen werden.");
                 setPage(null);
             } finally {
@@ -146,14 +153,112 @@ export default function StaticPage({
         };
     }, [slug, tenantId, locale]);
 
-    // ---------- kullanılacak değerler ----------
-    const title = page?.title || meta?.title || "";
-    const content = page?.content || "";
+    /* ------------------------- lokalize title/content ----------------------- */
 
-    const heroImage = page?.image || null;
+    const { title, content } = React.useMemo(() => {
+        if (!page) {
+            return { title: meta?.title || "", content: "" };
+        }
+
+        const translations = Array.isArray(page.translations)
+            ? page.translations
+            : [];
+
+        const activeTr =
+            translations.find(
+                (tr) => normalizeLang(tr.language_code) === locale
+            ) ||
+            translations.find(
+                (tr) =>
+                    normalizeLang(tr.language_code) ===
+                    normalizeLang(page?._meta?.default_language)
+            ) ||
+            translations[0] ||
+            null;
+
+        return {
+            title:
+                activeTr?.name ||
+                page.title ||
+                page.raw?.name ||
+                meta?.title ||
+                "",
+            content:
+                activeTr?.content || page.content || page.raw?.content || "",
+        };
+    }, [page, locale, meta]);
+
+    const heroImage = page?.image || page?.raw?.image || null;
     const heroAlt = title || "O&I CLEAN group GmbH";
 
-    // SEO
+    /* ------------------------------- FAQ verisi ----------------------------- */
+
+    // FAQ API'de page.raw.faq altında geliyor
+    const faq = page?.faq || page?.raw?.faq || null;
+
+    const faqTitle = React.useMemo(() => {
+        if (!faq) return null;
+
+        const trList = Array.isArray(faq.translations) ? faq.translations : [];
+        const active =
+            trList.find((tr) => normalizeLang(tr.language_code) === locale) ||
+            trList.find(
+                (tr) =>
+                    normalizeLang(tr.language_code) ===
+                    normalizeLang(page?._meta?.default_language)
+            ) ||
+            trList[0] ||
+            null;
+
+        return (
+            active?.name ||
+            faq.name ||
+            t("staticPage.faq_title", {
+                defaultValue: "Häufig gestellte Fragen",
+            })
+        );
+    }, [faq, locale, page]);
+
+    const faqItems = React.useMemo(() => {
+        if (!faq || !Array.isArray(faq.items)) return [];
+
+        return faq.items
+            .slice()
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .map((item) => {
+                const baseQuestion = item.question || "";
+                const baseAnswer = item.answer || "";
+                const translations = Array.isArray(item.translations)
+                    ? item.translations
+                    : [];
+
+                const byLocale =
+                    translations.find(
+                        (tr) =>
+                            normalizeLang(tr.language_code) === locale &&
+                            (tr.question || tr.answer)
+                    ) ||
+                    translations.find(
+                        (tr) =>
+                            normalizeLang(tr.language_code) === "de" &&
+                            (tr.question || tr.answer)
+                    ) ||
+                    translations[0] ||
+                    {};
+
+                return {
+                    id: item.id,
+                    question: byLocale.question || baseQuestion,
+                    answer: byLocale.answer || baseAnswer,
+                };
+            })
+            .filter((it) => it.question || it.answer);
+    }, [faq, locale]);
+
+    const hasFaq = faqItems.length > 0;
+
+    /* ---------------------------------- SEO --------------------------------- */
+
     const fallbackTitle = t("staticPage.default_title", {
         defaultValue: "Seite - O&I CLEAN group GmbH",
     });
@@ -165,15 +270,16 @@ export default function StaticPage({
 
     const seoTitle = title || fallbackTitle;
     const seoDescription =
-        page?.metaDescription || meta?.description || fallbackDescription;
+        page?.metaDescription ||
+        page?.meta_description ||
+        page?.raw?.meta_description ||
+        meta?.description ||
+        fallbackDescription;
 
-    // URL / Canonical
     const baseLocation = props?.ziggy?.location || "https://oi-clean.de";
     const normalizedBase = String(baseLocation).replace(/\/+$/, "");
     const path = inertiaUrl || (slug ? `/${slug}` : "/");
-
     const currentUrl = meta?.canonical || `${normalizedBase}${path}`;
-    const originUrl = normalizedBase + "/";
 
     const schemaWebPage = {
         "@context": "https://schema.org",
@@ -197,8 +303,22 @@ export default function StaticPage({
 
     const hasContent = !!content;
 
+    /* -------------------------------- RENDER -------------------------------- */
+
     return (
         <AppLayout>
+            <Head>
+                <title>{seoTitle}</title>
+                <meta name="description" content={seoDescription} />
+                <link rel="canonical" href={currentUrl} />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify(schemaWebPage),
+                    }}
+                />
+            </Head>
+
             {/* HERO */}
             <section
                 className={`sp-hero ${heroImage ? "sp-hero--has-img" : ""}`}
@@ -235,7 +355,7 @@ export default function StaticPage({
                 </div>
             </section>
 
-            {/* CONTENT */}
+            {/* SADECE YAZI İÇERİĞİ */}
             <section className="sp-content">
                 <div className="container">
                     <article className="sp-card sp-fadeup">
@@ -248,7 +368,7 @@ export default function StaticPage({
                                 <p className="sp-error">{error}</p>
                             )}
 
-                            {!loading && !error && !hasContent && (
+                            {!loading && !error && !hasContent && !hasFaq && (
                                 <p className="sp-muted">{contentComingSoon}</p>
                             )}
 
@@ -261,6 +381,34 @@ export default function StaticPage({
                     </article>
                 </div>
             </section>
+
+            {/* FAQ – TAMAMEN AYRI BİR SECTION */}
+            {hasFaq && (
+                <section className="sp-faq-section">
+                    <div className="container">
+                        <div className="sp-faq sp-fadeup">
+                            <h2 className="sp-faq__title">{faqTitle}</h2>
+
+                            <div className="sp-faq__list">
+                                {faqItems.map((item, idx) => (
+                                    <details
+                                        key={item.id || idx}
+                                        className="sp-faq__item"
+                                        open={idx === 0}
+                                    >
+                                        <summary className="sp-faq__question">
+                                            {item.question}
+                                        </summary>
+                                        <div className="sp-faq__answer">
+                                            {safeParse(item.answer)}
+                                        </div>
+                                    </details>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            )}
 
             <ContactSection />
         </AppLayout>
