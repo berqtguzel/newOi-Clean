@@ -20,7 +20,7 @@ export default function ServicesIndex({ services = [] }) {
                             "";
 
                         const href = service.slug
-                            ? route("static.show", service.slug) // → /{slug}
+                            ? route("static.show", service.slug)
                             : "#";
 
                         return (
@@ -41,9 +41,9 @@ export default function ServicesIndex({ services = [] }) {
                                 </h2>
 
                                 {excerpt && (
-                                    <p className="text-slate-600 text-sm mb-3">
+                                    <div className="text-slate-600 text-sm mb-3">
                                         {excerpt}
-                                    </p>
+                                    </div>
                                 )}
 
                                 {service.slug && (

@@ -18,7 +18,13 @@ let FallbackImg = (props) => <img {...props} />;
 export default function LocationCard({ location, onHover, isActive }) {
     const [Img, setImg] = useState(() => FallbackImg);
     const locale = useLocale("de");
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    
+    // HYDRATION FIX: Server ve client'ta aynı değerleri kullan
+    const [isMounted, setIsMounted] = useState(false);
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -82,6 +88,7 @@ export default function LocationCard({ location, onHover, isActive }) {
     const hasMaps = Array.isArray(location.maps) && location.maps.length > 0;
     const primaryMap = hasMaps ? location.maps[0] : null;
     const slug = location.slug;
+    // Location show sayfasına yönlendir: direkt /{slug} formatında
     const href = `/${cleanedSlug}`;
 
     // Provide simple per-locale defaults for the CTA (de / en / tr).
@@ -97,17 +104,23 @@ export default function LocationCard({ location, onHover, isActive }) {
         tr: "{{city}}'deki temizlik hizmetlerimiz hakkında daha fazla bilgi alın",
     };
 
-    const ctaLabel = t("locations.card.cta", {
-        defaultValue: CTA_TEXT[locale] || CTA_TEXT.de,
-    });
+    // HYDRATION FIX: useMemo ile sarmala ve i18n.language dependency ekle
+    const ctaLabel = useMemo(() => {
+        return t("locations.card.cta", {
+            defaultValue: CTA_TEXT[locale] || CTA_TEXT.de,
+        });
+    }, [t, i18n.language, locale]);
 
-    const ctaAria = t("locations.card.cta_aria", {
-        defaultValue: CTA_ARIA[locale] || CTA_ARIA.de,
-        city: cityText,
-    });
+    const ctaAria = useMemo(() => {
+        return t("locations.card.cta_aria", {
+            defaultValue: CTA_ARIA[locale] || CTA_ARIA.de,
+            city: cityText,
+        });
+    }, [t, i18n.language, locale, cityText]);
 
     return (
-        <article
+        <Link
+            href={href}
             className={`location-card ${isActive ? "active" : ""}`}
             onMouseEnter={onHover}
             onFocus={onHover}
@@ -140,17 +153,17 @@ export default function LocationCard({ location, onHover, isActive }) {
 
             <div className="location-card-content">
                 <div className="location-card-footer">
-                    <a
-                        href={href}
+                    <span
                         className="location-card-button"
                         aria-label={ctaAria}
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e) => e.preventDefault()}
                     >
-                        {ctaLabel}
+                        <span>{ctaLabel}</span>
                         <svg
                             className="location-card-arrow"
                             viewBox="0 0 24 24"
                             fill="none"
+                            aria-hidden="true"
                         >
                             <path
                                 d="M5 12H19M19 12L12 5M19 12L12 19"
@@ -160,9 +173,9 @@ export default function LocationCard({ location, onHover, isActive }) {
                                 strokeLinejoin="round"
                             />
                         </svg>
-                    </a>
+                    </span>
                 </div>
             </div>
-        </article>
+        </Link>
     );
 }

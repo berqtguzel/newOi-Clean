@@ -6,6 +6,7 @@ import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 import route from "../../vendor/tightenco/ziggy/dist/index.m";
 
 import { ThemeProvider as SSRThemeProvider } from "./Context/ThemeContext.ssr";
+import i18n from "./i18n";
 
 const appName = "O&I CLEAN group GmbH";
 
@@ -25,6 +26,13 @@ createServer((page) =>
                     ...page.props.ziggy,
                     location: new URL(page.props.ziggy.location),
                 });
+
+            // HYDRATION FIX: Server-side'da i18n'i backend locale ile senkron başlat
+            const backendLocale = props?.locale || "de";
+            // Senkron olarak language'i ayarla (changeLanguage asenkron, bu yüzden direkt set ediyoruz)
+            if (backendLocale && i18n.language !== backendLocale) {
+                i18n.language = backendLocale;
+            }
 
             return (
                 <SSRThemeProvider initial="light">

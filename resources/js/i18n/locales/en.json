@@ -26,23 +26,26 @@
     "card": {
       "aria": "Learn more about {{service}}",
       "button": "Details"
+    },
+    "location": {
+      "in_city": "in {{city}}"
     }
   },
-  "servicesList": {
-    "title": "Services",
-    "subtitle": "Discover our comprehensive services for your home and business",
-    "meta_title": "Our Services - O&I CLEAN group GmbH",
-    "meta_description": "Professional cleaning, renovation and facility management in Hamburg. ★ Expertise ★ German quality ★ Reliable service",
-    "loading": "",
-    "contact_cta": "Contact us",
-    "contact_cta_aria": "Get in touch now"
-  },
+"servicesList": {
+  "title": "Services",
+  "subtitle": "Discover our comprehensive services for your property",
+  "meta_title": "Our Services - O&I CLEAN group GmbH",
+  "meta_description": "Professional cleaning, renovation and facility management in Hamburg.",
+  "loading": "Loading…",
+  "contact_cta": "Contact us",
+  "contact_cta_aria": "Get in touch now"
+},
   "locations": {
     "page_title": "Locations - O&I CLEAN group GmbH",
     "page_description": "Professional cleaning services at various locations in Germany. Local expertise, nationwide quality.",
     "title": "Locations",
     "subtitle": "Discover our locations in Germany",
-    "loading": "",
+    "loading": "Loading locations…",
     "empty": "No locations are currently available.",
     "cta_label": "Request location",
     "cta_aria": "Get in touch now",

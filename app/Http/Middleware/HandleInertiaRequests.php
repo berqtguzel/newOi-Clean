@@ -8,23 +8,49 @@ use Tightenco\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
 {
+    /**
+     * The root template that is loaded on the first page visit.
+     *
+     * @var string
+     */
     protected $rootView = 'app';
 
+    /**
+     * Determine the current asset version.
+     */
     public function version(Request $request): string|null
     {
         return parent::version($request);
     }
 
+    /**
+     * Define the props that are shared by default.
+     */
     public function share(Request $request): array
     {
-        // kullanılacak locale
+        // 🔥 Laravel'in aktif locale'i (session / config / middleware ne ayarlıyorsa)
         $currentLocale = app()->getLocale();
 
-        // projede desteklediğin diller
+        // Frontend'de dil switcher için kullanılacak diller
+        // Header.jsx içinde:
+        //   l.code || l.language_code || l.locale
+        //   l.name || l.label
         $availableLocales = [
-            ['code' => 'de', 'label' => 'DE'],
-            ['code' => 'en', 'label' => 'EN'],
-            ['code' => 'tr', 'label' => 'TR'],
+            [
+                'code' => 'de',
+                'name' => 'Deutsch',
+                'label' => 'DE',
+            ],
+            [
+                'code' => 'en',
+                'name' => 'English',
+                'label' => 'EN',
+            ],
+            [
+                'code' => 'tr',
+                'name' => 'Türkçe',
+                'label' => 'TR',
+            ],
         ];
 
         return array_merge(parent::share($request), [
@@ -48,9 +74,9 @@ class HandleInertiaRequests extends Middleware
                 'error'   => fn () => session('error'),
             ],
 
-            // 🔥 FRONTEND’E GÖNDERİLEN DİL BİLGİLERİ
-            'locale'    => $currentLocale,
-            'languages' => $availableLocales,
+            // 🌍 FRONTEND’E GÖNDERİLEN DİL BİLGİLERİ
+            'locale'    => $currentLocale,       // örn: "de", "tr", "en"
+            'languages' => $availableLocales,    // Header language switcher için
         ]);
     }
 }

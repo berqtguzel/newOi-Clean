@@ -146,7 +146,209 @@ body {
 
 /* --- HİZMETLER GRID ALANI (Cards) --- */
 .locx-services {
-    padding-bottom: 4rem;
+    padding: 6rem 0;
+    background: linear-gradient(
+        to bottom,
+        var(--bg-light) 0%,
+        #f8fafc 50%,
+        var(--bg-light) 100%
+    );
+    position: relative;
+    overflow: hidden;
+}
+
+.locx-services::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(148, 163, 184, 0.2),
+        transparent
+    );
+}
+
+.locx-services__header {
+    text-align: center;
+    margin-bottom: 4rem;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 1rem;
+}
+
+.locx-services__title {
+    font-size: clamp(2.25rem, 5vw, 3.5rem);
+    font-weight: 800;
+    color: var(--text-dark);
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.25rem;
+    position: relative;
+    display: inline-block;
+}
+
+.locx-services__city {
+    color: var(--primary-color);
+    position: relative;
+    display: inline-block;
+    padding: 0 0.5rem;
+}
+
+.locx-services__city::before {
+    content: "";
+    position: absolute;
+    bottom: 0.15rem;
+    left: 0;
+    right: 0;
+    height: 0.35rem;
+    background: linear-gradient(
+        90deg,
+        var(--primary-color),
+        rgba(14, 165, 233, 0.4)
+    );
+    border-radius: 4px;
+    opacity: 0.3;
+    z-index: -1;
+}
+
+.locx-services__city::after {
+    content: "";
+    position: absolute;
+    bottom: 0.15rem;
+    left: 0;
+    right: 0;
+    height: 0.2rem;
+    background: linear-gradient(
+        90deg,
+        var(--primary-color),
+        rgba(14, 165, 233, 0.6)
+    );
+    border-radius: 4px;
+    opacity: 0.5;
+}
+
+.locx-services__subtitle {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    color: var(--text-medium);
+    line-height: 1.7;
+    margin-top: 0.75rem;
+    font-weight: 400;
+}
+
+/* Grid Yapısı - Modern ve Responsive */
+.locx-services__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2.5rem;
+    margin-top: 3rem;
+    padding: 0 0.5rem;
+}
+
+@media (min-width: 1400px) {
+    .locx-services__grid {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 3rem;
+    }
+}
+
+.locx-services__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 2rem;
+    gap: 1.5rem;
+    color: var(--text-medium);
+}
+
+.locx-services__loading p {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--text-medium);
+}
+
+.locx-services__spinner {
+    width: 56px;
+    height: 56px;
+    border: 5px solid rgba(14, 165, 233, 0.1);
+    border-top-color: var(--primary-color);
+    border-right-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.2);
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.locx-services__error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    gap: 1.25rem;
+    color: #ef4444;
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border-radius: var(--radius-lg);
+    border: 2px solid #fecaca;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+    max-width: 600px;
+    margin: 2rem auto;
+}
+
+.locx-services__error-icon {
+    width: 56px;
+    height: 56px;
+    opacity: 0.9;
+}
+
+.locx-services__error p {
+    font-size: 1.125rem;
+    font-weight: 500;
+    text-align: center;
+}
+
+.locx-services__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 2rem;
+    gap: 1.5rem;
+    color: var(--text-light);
+    background: linear-gradient(
+        135deg,
+        rgba(148, 163, 184, 0.05) 0%,
+        rgba(148, 163, 184, 0.02) 100%
+    );
+    border-radius: var(--radius-lg);
+    border: 2px dashed rgba(148, 163, 184, 0.3);
+    max-width: 500px;
+    margin: 2rem auto;
+}
+
+.locx-services__empty-icon {
+    width: 72px;
+    height: 72px;
+    opacity: 0.4;
+}
+
+.locx-services__empty p {
+    font-size: 1.125rem;
+    font-weight: 500;
+    text-align: center;
 }
 
 .locx-h2 {
@@ -160,7 +362,7 @@ body {
 /* Grid Yapısı */
 .services-grid-5 {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* Varsayılan: 4 sütun */
+    grid-template-columns: repeat(5, 1fr); /* Varsayılan: 4 sütun */
     gap: 1.5rem;
     margin-top: 1.5rem;
 }
@@ -241,6 +443,13 @@ body {
     .services-grid-5 {
         grid-template-columns: repeat(2, 1fr);
     }
+    .locx-services__grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.5rem;
+    }
+    .locx-services {
+        padding: 3rem 0;
+    }
 }
 
 /* Mobil (640px altı) */
@@ -272,6 +481,19 @@ body {
 
     .locx-hero__inner {
         text-align: left;
+    }
+
+    .locx-services {
+        padding: 2.5rem 0;
+    }
+
+    .locx-services__header {
+        margin-bottom: 2rem;
+    }
+
+    .locx-services__grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
     }
 }
 

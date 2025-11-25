@@ -5,10 +5,40 @@ import "../../../css/404.css";
 
 export default function NotFound() {
     const { t } = useTranslation();
+
+    // 🔥 Hydration fix: İlk render'da server ile birebir aynı metni göster
+    const [hydrated, setHydrated] = React.useState(false);
+
+    React.useEffect(() => {
+        setHydrated(true);
+    }, []);
+
+    // 👇 Server tarafında basılan (ve konsolda gördüğün) Almanca metinler
+    const serverTitle = "404 — Seite nicht gefunden";
+    const serverDesc = "Die angeforderte Seite wurde nicht gefunden.";
+    const serverCtaHome = "Zur Startseite";
+    const serverCtaContact = "Kontakt aufnehmen";
+    const serverHint =
+        "Bitte überprüfen Sie die URL oder kehren Sie zur Startseite zurück.";
+
+    // 👇 İstemci tarafında i18n'den gelen çeviriler (TR / EN vs.)
+    const clientTitle = t("errors.notFound.title", serverTitle);
+    const clientDesc = t("errors.notFound.desc", serverDesc);
+    const clientCtaHome = t("errors.notFound.cta_home", serverCtaHome);
+    const clientCtaContact = t("errors.notFound.cta_contact", serverCtaContact);
+    const clientHint = t("errors.notFound.hint", serverHint);
+
+    // 👇 Hydration bitene kadar server metnini kullan, sonra i18n'e geç
+    const titleToRender = hydrated ? clientTitle : serverTitle;
+    const descToRender = hydrated ? clientDesc : serverDesc;
+    const ctaHomeToRender = hydrated ? clientCtaHome : serverCtaHome;
+    const ctaContactToRender = hydrated ? clientCtaContact : serverCtaContact;
+    const hintToRender = hydrated ? clientHint : serverHint;
+
     return (
         <div className="oi-404-page min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
             <Head>
-                <title>{t("errors.notFound.title")}</title>
+                <title>{titleToRender}</title>
             </Head>
 
             <main className="oi-404__card">
@@ -58,23 +88,20 @@ export default function NotFound() {
                 </div>
 
                 <div className="oi-404__content">
-                    <h1 className="oi-404__title">
-                        {t("errors.notFound.title")}
-                    </h1>
-                    <p className="oi-404__desc">{t("errors.notFound.desc")}</p>
+                    <h1 className="oi-404__title">{titleToRender}</h1>
+
+                    <p className="oi-404__desc">{descToRender}</p>
 
                     <div className="oi-404__actions">
                         <Link href="/" className="oi-btn oi-btn--primary">
-                            {t("errors.notFound.cta_home")}
+                            {ctaHomeToRender}
                         </Link>
                         <Link href="/kontakt" className="oi-btn oi-btn--ghost">
-                            {t("errors.notFound.cta_contact")}
+                            {ctaContactToRender}
                         </Link>
                     </div>
 
-                    <small className="oi-404__hint">
-                        {t("errors.notFound.hint")}
-                    </small>
+                    <small className="oi-404__hint">{hintToRender}</small>
                 </div>
             </main>
         </div>

@@ -170,30 +170,12 @@ export async function fetchServices({
 /* ------------------------------------------------------
  * BUILD SLUG FOR API REQUEST
  * ------------------------------------------------------ */
-const SERVICE_PREFIXES = [
-    "gebaudereinigung",
-    "wohnungsrenovierung",
-    "hotelreinigung",
-];
-
-function buildApiSlug(identifier) {
-    const slugOriginal = String(identifier || "").trim();
-    if (!slugOriginal) return slugOriginal;
-
-    const slug = slugOriginal.toLowerCase();
-
-    if (SERVICE_PREFIXES.includes(slug)) return slugOriginal;
-
-    if (/^(gebaudereinigung|hotelreinigung|wohnungsrenovierung)-/.test(slug))
-        return slugOriginal;
-
-    return `gebaudereinigung-${slug}`;
-}
+// Prefix ekleme mantığı kaldırıldı - API slug'ları olduğu gibi bekliyor
 
 /* ------------------------------------------------------
- * FETCH SINGLE SERVICE
+ * FETCH SINGLE SERVICE BY ID OR SLUG
  * ------------------------------------------------------ */
-export async function fetchServiceBySlug(identifier, opts = {}) {
+export async function fetchServiceByIdOrSlug(identifier, opts = {}) {
     const { tenantId, locale } = opts;
 
     const headers = {};
@@ -202,11 +184,16 @@ export async function fetchServiceBySlug(identifier, opts = {}) {
     const params = {};
     if (locale) params.locale = String(locale);
 
-    const apiSlug = buildApiSlug(identifier);
+    const idStr = String(identifier || "").trim();
+    
+    // Sayısal id ise direkt kullan, değilse slug'ı olduğu gibi kullan
+    // Prefix ekleme mantığı kaldırıldı - API slug'ları olduğu gibi bekliyor
+    const isNumericId = /^\d+$/.test(idStr);
+    const apiIdentifier = idStr; // Slug'ı olduğu gibi kullan, prefix ekleme
 
     try {
         const res = await httpRequest(
-            `/v1/services/${encodeURIComponent(apiSlug)}`,
+            `/v1/services/${encodeURIComponent(apiIdentifier)}`,
             {
                 method: "GET",
                 headers,
@@ -231,10 +218,11 @@ export async function fetchServiceBySlug(identifier, opts = {}) {
             raw,
         };
     } catch (err) {
-        if (err?.response?.status !== 404) throw err;
+        // Sayısal id ise fallback yapma, direkt hata fırlat
+        if (isNumericId || err?.response?.status !== 404) throw err;
 
-        const idStr = String(identifier || "").trim();
-        const trySlugs = [apiSlug];
+        // Slug için fallback denemeleri
+        const trySlugs = [apiIdentifier];
 
         if (idStr.includes("-")) {
             trySlugs.push(idStr);
@@ -270,3 +258,8 @@ export async function fetchServiceBySlug(identifier, opts = {}) {
         throw err;
     }
 }
+
+/* ------------------------------------------------------
+ * FETCH SERVICE BY ID OR SLUG (alias for backward compatibility)
+ * ------------------------------------------------------ */
+export const fetchServiceBySlug = fetchServiceByIdOrSlug;

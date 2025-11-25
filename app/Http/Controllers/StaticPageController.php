@@ -58,30 +58,47 @@ class StaticPageController extends Controller
         });
 
         // API'den gelen slug'ların listesi
-        $serviceSlugs = array_column($services, 'slug');
-        $serviceSlugsLower = array_map('strtolower', $serviceSlugs);
+        $serviceSlugs       = array_column($services, 'slug');
+        $serviceSlugsLower  = array_map('strtolower', $serviceSlugs);
 
         // -------------------------------------------------------
-        // 🔥 YENİ: GEÇERLİ ŞEHİRLERİ TOPLA (Doğrulama İçin)
+        // 2.1. ŞEHİR MAP'İ OLUŞTUR (örn: "gebaudereinigung-bad-vilbel" -> "bad-vilbel")
+        //      /berlin gibi URL'lerde & service-city pattern'inde kullanacağız
         // -------------------------------------------------------
-        // API'deki tüm "gebaudereinigung-berlin" gibi verilerden "berlin"i çıkarıp listeye atıyoruz.
-        $validCities = [];
-        foreach ($serviceSlugsLower as $s) {
-            if (str_contains($s, '-')) {
-                // "gebaudereinigung-berlin" -> "berlin"
-                $cityPart = $this->normalizeSlug($s);
-                $validCities[$cityPart] = true; // Key olarak ekle (Hızlı arama için)
+        $normalizedMap = []; // citySlug => originalSlug
+        foreach ($services as $svc) {
+            if (empty($svc['slug'])) {
+                continue;
             }
+
+            $original   = strtolower($svc['slug']);
+            $normalized = $this->normalizeSlug($original); // "bad-vilbel"
+
+            // normalizeSlug sadece prefix'i atıyor, şehir kısmını bırakıyor
+            // "gebaudereinigung" gibi tek kelime ise aynı kalır, sorun yok
+            $normalizedMap[$normalized] = $original;
         }
 
         // -------------------------------------------------------
         // 3. TAM SLUG EŞLEŞMESİ (Örn: gebaudereinigung-berlin)
         // -------------------------------------------------------
-        // Eğer URL birebir API'de varsa direkt aç.
         if (in_array($slugLower, $serviceSlugsLower, true)) {
             $originalIndex = array_search($slugLower, $serviceSlugsLower, true);
             $originalSlug  = $serviceSlugs[$originalIndex] ?? $slugLower;
 
+            // İlgili service kaydını bul
+            $serviceData = $services[$originalIndex] ?? null;
+            $categoryId  = isset($serviceData['category_id']) ? (int) $serviceData['category_id'] : null;
+
+            // Eğer bu kayıt "lokasyon" ise (ör: category_id = 2 → Gebäudereinigung lokasyonu)
+            if ($categoryId === 2) {
+                return Inertia::render('Locations/Show', [
+                    'slug'     => $originalSlug, // örn: "gebaudereinigung-berlin"
+                    'citySlug' => strtolower($serviceData['city'] ?? $originalSlug),
+                ]);
+            }
+
+            // Diğer tüm hizmetler normal Services/Show
             return Inertia::render('Services/Show', [
                 'slug' => $originalSlug,
             ]);
@@ -104,53 +121,43 @@ class StaticPageController extends Controller
         }
 
         // -------------------------------------------------------
-        // 5. HİZMET + EK + ŞEHİR PATTERNİ (Kritik Kontrol)
+        // 5. HİZMET + ŞEHİR PATTERNİ
+        //    Örn: "baucontainer-reinigung-berlin"
+        //    API'de sadece "baucontainer-reinigung" olsa bile:
+        //    - baseSlug: "baucontainer-reinigung" (service slug)
+        //    - citySlug: "berlin" (valid city ise)
+        //    → Services/Show'a baseSlug + citySlug ile gönder
         // -------------------------------------------------------
-        $servicePrefixes = [
-            'gebaudereinigung',
-            'wohnungsrenovierung',
-            'hotelreinigung',
-        ];
+        if (str_contains($slugLower, '-')) {
+            $parts    = explode('-', $slugLower);
+            $citySlug = array_pop($parts);                // son parça: "berlin"
+            $baseSlug = implode('-', $parts);             // geri kalan: "baucontainer-reinigung"
 
-        foreach ($servicePrefixes as $prefix) {
-            // Eğer URL "gebaudereinigung-" ile başlıyorsa...
-            if (str_starts_with($slugLower, $prefix . '-') && $slugLower !== $prefix) {
+            // 1) baseSlug gerçekten bir service mi? (API'de var mı?)
+            $baseIndex = array_search($baseSlug, $serviceSlugsLower, true);
 
-                // URL'den şehir kısmını ayıkla: "gebaudereinigung-sadas" -> "sadas"
-                $potentialCity = substr($slugLower, strlen($prefix) + 1);
+            // 2) citySlug gerçekten bilinen bir şehir mi? (/berlin vs /xxyyzz)
+            $isValidCity = array_key_exists($citySlug, $normalizedMap);
 
-                // 🔥 KONTROL: Bu şehir API'de var mı?
-                if (isset($validCities[$potentialCity])) {
-                    // VARSA sayfayı aç
-                    return Inertia::render('Services/Show', [
-                        'slug'     => $slugLower,
-                        'baseSlug' => $prefix,
-                    ]);
-                }
+            if ($baseIndex !== false && $isValidCity) {
+                $baseOriginalSlug = $serviceSlugs[$baseIndex]; // orijinal case'li slug
 
-                // YOKSA (Örn: sadas) hiçbir şey yapma, aşağıya devam et (404'e düşecek)
+                return Inertia::render('Services/Show', [
+                    // İçerik bu service'den gelir
+                    'slug'     => $baseOriginalSlug,
+                    // Ama URL'de citySlug'i korumak için client tarafta kullanabiliriz
+                    'citySlug' => $citySlug,
+                ]);
             }
         }
 
         // -------------------------------------------------------
         // 6. SADECE ŞEHİR İSMİ GELİRSE (/berlin)
         // -------------------------------------------------------
-        // Sadece şehir ismi yazılırsa Locations sayfasına yönlendir.
-
-        $normalizedMap = [];
-        foreach ($services as $svc) {
-            if (empty($svc['slug'])) continue;
-
-            $original   = strtolower($svc['slug']);
-            $normalized = $this->normalizeSlug($original); // "bad-vilbel"
-
-            $normalizedMap[$normalized] = $original;
-        }
-
         if (array_key_exists($slugLower, $normalizedMap)) {
             return Inertia::render('Locations/Show', [
-                'slug'     => $normalizedMap[$slugLower],
-                'citySlug' => $slugLower,
+                'slug'     => $normalizedMap[$slugLower], // örn: "gebaudereinigung-berlin"
+                'citySlug' => $slugLower,                 // "berlin"
             ]);
         }
 
@@ -162,12 +169,13 @@ class StaticPageController extends Controller
 
     /**
      * "gebaudereinigung-bad-vilbel" -> "bad-vilbel"
+     * "berlin" -> "berlin"
      */
     protected function normalizeSlug(string $slug)
     {
         if (str_contains($slug, '-')) {
             $parts = explode('-', $slug);
-            array_shift($parts); // hizmet adını at
+            array_shift($parts); // hizmet adını at (ilk kısmı)
             return implode('-', $parts);
         }
 

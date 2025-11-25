@@ -6,7 +6,7 @@ import GermanyMap from "./GermanyMap";
 import LocationCard from "./LocationCard";
 import SafeHtml from "@/Components/Common/SafeHtml";
 import { useLocale } from "@/hooks/useLocale";
-import { fetchServices } from "@/services/servicesService";
+import { fetchServices, normalizeService } from "@/services/servicesService";
 
 const stripHtml = (s = "") => s.replace(/<[^>]*>/g, "").trim();
 
@@ -42,8 +42,9 @@ const mapServiceToLocation = (svc) => {
     };
 };
 
-const CATEGORY_SLUG = "gebaedereinugung";
+const CATEGORY_ID = 2; // Gebäudereinigung
 const CATEGORY_NAME = "Gebäudereinigung";
+
 const LocationsGrid = () => {
     const { t } = useTranslation();
     const { props } = usePage();
@@ -67,6 +68,7 @@ const LocationsGrid = () => {
         const load = async () => {
             setLoading(true);
             try {
+                // Tüm servisleri çek
                 const { services } = await fetchServices({
                     page: 1,
                     perPage: 100,
@@ -78,27 +80,42 @@ const LocationsGrid = () => {
 
                 const list = Array.isArray(services) ? services : [];
 
+                // category_id=2 (Gebäudereinigung) olanları filtrele
                 const filtered = list.filter((svc) => {
-                    const catSlug = svc.categorySlug;
-                    const catName = svc.categoryName;
+                    const categoryId = svc.categoryId;
+                    const categoryName = svc.categoryName;
 
                     const matchesCategory =
-                        (catSlug && catSlug === CATEGORY_SLUG) ||
-                        (catName && catName === CATEGORY_NAME);
+                        categoryId === CATEGORY_ID ||
+                        (categoryName &&
+                            categoryName.toLowerCase() ===
+                                CATEGORY_NAME.toLowerCase());
 
-                    const parentId = svc.parentId;
-
-                    return (
-                        matchesCategory &&
-                        parentId !== null &&
-                        parentId !== undefined
-                    );
+                    return matchesCategory;
                 });
 
-                const mapped = filtered.map(mapServiceToLocation);
+                const mapped = filtered
+                    .map((svc) => {
+                        return mapServiceToLocation(svc);
+                    })
+                    .filter((loc) => {
+                        // city alanı dolu olmalı (coordinates opsiyonel)
+                        const hasCity =
+                            loc && loc.city && String(loc.city).trim() !== "";
+
+                        if (!hasCity) {
+                            console.log(
+                                "[LocationsGrid] filtered out (no city):",
+                                loc
+                            );
+                        }
+
+                        return hasCity;
+                    });
+
                 setItems(mapped);
             } catch (err) {
-                console.error("Services fetch failed:", {
+                console.error("[LocationsGrid] Service fetch failed:", {
                     message: err?.message,
                     status: err?.response?.status,
                     data: err?.response?.data,
@@ -119,6 +136,7 @@ const LocationsGrid = () => {
 
     const usedItems = items || [];
 
+    // Çeviri değişkenleri
     const pageTitle = t(
         "locations.page_title",
         "Standorte - O&I CLEAN group GmbH"
@@ -141,6 +159,7 @@ const LocationsGrid = () => {
     const ctaAria = t("locations.cta_aria", "Jetzt Kontakt aufnehmen");
     const contactHref = t("locations.contact_href", "/kontakt");
 
+    // Schema Data (Aynen korundu)
     const schemaData = {
         "@context": "https://schema.org",
         "@type": "Organization",
@@ -219,11 +238,23 @@ const LocationsGrid = () => {
 
                 <div className="locations-grid">
                     {loading && !usedItems.length && (
-                        <p className="locations-loading">{loadingText}</p>
+                        // 🚨 Düzeltme 2: Yükleme metni uyuşmazlığını gider
+                        <p
+                            className="locations-loading"
+                            suppressHydrationWarning={true}
+                        >
+                            {loadingText}
+                        </p>
                     )}
 
                     {!loading && !usedItems.length && (
-                        <p className="locations-empty">{emptyText}</p>
+                        // 🚨 Düzeltme 1: Boş metin uyuşmazlığını gider
+                        <p
+                            className="locations-empty"
+                            suppressHydrationWarning={true}
+                        >
+                            {emptyText}
+                        </p>
                     )}
 
                     {usedItems.map((location) => (
@@ -241,6 +272,8 @@ const LocationsGrid = () => {
                         href={contactHref}
                         className="locations-contact-button"
                         aria-label={ctaAria}
+                        // 🚨 Düzeltme 3: Buton metin uyuşmazlığını gider
+                        suppressHydrationWarning={true}
                     >
                         <SafeHtml html={ctaLabel} as="span" />
                         <svg

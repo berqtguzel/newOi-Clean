@@ -1,325 +1,206 @@
-// resources/js/Pages/Services/ServiceShow.jsx
+// resources/js/Pages/Services/Show.jsx
 
-import React, { useEffect, useMemo, useState } from "react";
-import { Head, Link, usePage } from "@inertiajs/react";
+import React, { useEffect, useState, useMemo } from "react";
+import { Head, usePage } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
-import "../../../css/service-show.css";
-import ContactSection from "@/Components/Home/Contact/ContactSection";
-
-import parse, { domToReact, Element } from "html-react-parser";
-import DOMPurify from "isomorphic-dompurify";
-
+import { fetchServiceByIdOrSlug } from "@/services/servicesService";
 import { useLocale } from "@/hooks/useLocale";
-import { fetchServiceBySlug } from "@/services/servicesService";
 import { useTranslation } from "react-i18next";
+import SafeHtml from "@/Components/Common/SafeHtml";
+import "../../../css/service-show.css";
 
-/**
- * Slug içinden denenecek aday service-slug listesini üretir.
- *
- * wohnungsrenovierung-bad-vilbel ->
- *   ["wohnungsrenovierung-bad-vilbel",
- *    "wohnungsrenovierung-bad",
- *    "wohnungsrenovierung"]
- *
- * wohnungsrenovierung -> ["wohnungsrenovierung"]
- */
-function buildServiceSlugCandidates(rawSlug) {
-    if (!rawSlug) return [];
-
-    const parts = String(rawSlug).split("-");
-    const cands = [];
-
-    for (let cut = parts.length; cut >= 1; cut--) {
-        cands.push(parts.slice(0, cut).join("-"));
-    }
-
-    // olası tekrarları temizle
-    return Array.from(new Set(cands));
+/** "baucontainer-reinigung" -> "Baucontainer Reinigung" */
+function humanizeSlug(slug = "") {
+    return String(slug)
+        .split("-")
+        .filter(Boolean)
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+        .join(" ");
 }
 
-/** Güvenli HTML parser */
-function safeParse(html, options) {
-    const clean = DOMPurify.sanitize(html || "", {
-        ALLOWED_TAGS: [
-            "p",
-            "strong",
-            "em",
-            "a",
-            "ul",
-            "ol",
-            "li",
-            "br",
-            "h1",
-            "h2",
-            "h3",
-            "h4",
-            "h5",
-            "h6",
-            "blockquote",
-            "img",
-            "iframe",
-            "div",
-            "span",
-            "small",
-            "code",
-            "figure",
-            "figcaption",
-        ],
-        ALLOWED_ATTR: [
-            "href",
-            "title",
-            "target",
-            "rel",
-            "src",
-            "alt",
-            "width",
-            "height",
-            "loading",
-            "allow",
-            "allowfullscreen",
-            "class",
-            "id",
-            "style",
-        ],
-    });
+/** "baucontainer-reinigung-berlin" -> "berlin" */
+function extractCityFromSlug(slug = "") {
+    const parts = String(slug).split("-").filter(Boolean);
+    if (parts.length <= 1) return null;
 
-    const replace = (node) => {
-        if (node instanceof Element && node.name === "a") {
-            const props = node.attribs || {};
-            const href = props.href || "";
-            const isExternal = /^https?:\/\//i.test(href);
+    const last = parts[parts.length - 1].toLowerCase();
 
-            if (isExternal) {
-                return (
-                    <a {...props} target="_blank" rel="noopener noreferrer">
-                        {domToReact(node.children)}
-                    </a>
-                );
-            }
-        }
+    // city kısmı service prefix'i olmasın
+    const isServicePrefix =
+        /^(gebaudereinigung|wohnungsrenovierung|hotelreinigung)$/i.test(last);
+    if (isServicePrefix) return null;
 
-        if (
-            node instanceof Element &&
-            (node.name === "script" || node.name === "style")
-        ) {
-            return <></>;
-        }
-
-        return undefined;
-    };
-
-    return parse(clean, { replace, ...(options || {}) });
+    return last;
 }
 
-const SERVICE_LABELS = {
-    gebaudereinigung: "Gebäudereinigung",
-    wohnungsrenovierung: "Wohnungsrenovierung",
-    hotelreinigung: "Hotelreinigung",
-};
+/** "berlin" -> "Berlin", "bad-vilbel" -> "Bad Vilbel" */
+function prettifyCity(citySlug = "") {
+    return String(citySlug)
+        .split("-")
+        .filter(Boolean)
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+        .join(" ");
+}
 
-export default function ServiceShow({ slug, page = {} }) {
-    const { t } = useTranslation();
+export default function ServiceShow() {
     const { props } = usePage();
+    const { t, i18n } = useTranslation();
+    const locale = useLocale("de");
+
+    // Inertia'dan gelen props
+    const {
+        slug: propSlug,
+        originalSlug,
+        citySlug: propCitySlug,
+        global,
+    } = props;
 
     const tenantId =
-        props?.global?.tenantId ||
-        props?.global?.tenant_id ||
-        props?.global?.talentId ||
-        "";
-
-    // varsayılan locale 'de' ama hook zaten Inertia props'tan da bakıyordur
-    const locale = useLocale("de");
+        global?.tenantId || global?.tenant_id || global?.talentId || "";
 
     const [service, setService] = useState(null);
     const [rawService, setRawService] = useState(null);
-    const [baseSlug, setBaseSlug] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const loadingText = t("service.loading", "Service wird geladen…");
-    const defaultErrorText = t(
-        "service.error",
-        "Service konnte nicht geladen werden."
-    );
-    const emptyText = t("service.empty", "Inhalt wird bald hinzugefügt.");
+    // ---- ŞEHİR BİLGİSİ ----
+    // 1) Backend'ten gelen citySlug varsa onu kullan
+    // 2) Yoksa originalSlug veya slug üzerinden city çıkar
+    const citySlug = useMemo(() => {
+        if (propCitySlug) return String(propCitySlug).toLowerCase();
+        if (originalSlug && originalSlug.includes("-")) {
+            const extracted = extractCityFromSlug(originalSlug);
+            if (extracted) return extracted;
+        }
+        if (propSlug && propSlug.includes("-")) {
+            const extracted = extractCityFromSlug(propSlug);
+            if (extracted) return extracted;
+        }
+        return null;
+    }, [propCitySlug, originalSlug, propSlug]);
 
-    // --- API: birden fazla slug adayı ile dene ---
+    const cityName = citySlug ? prettifyCity(citySlug) : null;
+
+    // ---- SERVİSİ YÜKLE ----
     useEffect(() => {
+        const slug = propSlug || originalSlug;
         if (!slug) return;
 
-        let cancelled = false;
-        setLoading(true);
-        setError(null);
-        setBaseSlug(null);
+        let isMounted = true;
 
-        (async () => {
+        const loadService = async () => {
+            setLoading(true);
+            setError(null);
+
             try {
-                const candidates = buildServiceSlugCandidates(slug);
-                let res = null;
-                let successSlug = null;
-                let lastError = null;
+                const fullSlug = slug;
+                let fetchedService = null;
+                let raw = null;
 
-                for (const candidate of candidates) {
-                    try {
-                        res = await fetchServiceBySlug(candidate, {
-                            tenantId,
-                            locale,
-                        });
-                        successSlug = candidate;
-                        break; // ilk başarılı istekte dur
-                    } catch (e) {
-                        lastError = e;
-                        const status = e?.response?.status;
-                        // 404 ise sıradaki adaya geç; başka hata ise direkt fırlat
-                        if (status && status !== 404) {
-                            throw e;
+                // Önce tam slug'ı dene (örn: baucontainer-reinigung-berlin)
+                try {
+                    const result = await fetchServiceByIdOrSlug(fullSlug, {
+                        tenantId,
+                        locale,
+                    });
+                    fetchedService = result.service;
+                    raw = result.raw;
+                } catch (firstError) {
+                    // Tam slug yoksa ve slug tire içeriyorsa base slug'ı dene
+                    if (fullSlug.includes("-")) {
+                        const baseSlug = fullSlug.split("-")[0];
+                        try {
+                            const result = await fetchServiceByIdOrSlug(
+                                baseSlug,
+                                {
+                                    tenantId,
+                                    locale,
+                                }
+                            );
+                            fetchedService = result.service;
+                            raw = result.raw;
+                        } catch (secondError) {
+                            throw firstError;
                         }
+                    } else {
+                        throw firstError;
                     }
                 }
 
-                // Hiçbir aday bulunamadıysa ve son hata 404 ise
-                if (!res && lastError && lastError?.response?.status === 404) {
-                    if (cancelled) return;
+                if (!isMounted) return;
 
-                    // Fallback: local pseudo-service oluştur (404 bile olsa sayfa çıksın)
-                    const parts = String(slug).split("-");
-                    const prefix = parts[0] || "service";
-                    const baseName =
-                        SERVICE_LABELS[prefix] ||
-                        prefix.charAt(0).toUpperCase() + prefix.slice(1);
-
-                    const fallbackService = {
-                        id: null,
-                        slug,
-                        title: baseName,
-                        name: baseName,
-                        description: "",
-                    };
-
-                    setService(fallbackService);
-                    setRawService(null);
-                    setBaseSlug(slug);
-                    setError(null);
-                    return;
-                }
-
-                // başka tip hata varsa yukarıda throw edilmiş olur; buraya gelirse success demektir
-                if (cancelled) return;
-
-                const { service, raw } = res || {};
-                setService(service || null);
-                setRawService(raw || null);
-                setBaseSlug(successSlug || null);
-            } catch (e) {
-                if (cancelled) return;
-                console.error("Service fetch failed:", {
-                    slug,
-                    message: e?.message,
-                    status: e?.response?.status,
-                    data: e?.response?.data,
-                });
-                setError(e?.message || defaultErrorText);
-                setService(null);
-                setRawService(null);
+                setService(fetchedService);
+                setRawService(raw);
+            } catch (err) {
+                if (!isMounted) return;
+                console.error("Service fetch failed:", err);
+                setError(err?.message || "Service yüklenemedi");
             } finally {
-                if (!cancelled) setLoading(false);
+                if (isMounted) setLoading(false);
             }
-        })();
+        };
+
+        loadService();
 
         return () => {
-            cancelled = true;
+            isMounted = false;
         };
-    }, [slug, tenantId, locale, defaultErrorText]);
+    }, [propSlug, originalSlug, tenantId, locale]);
 
-    // --- Şehir adını slug'dan çıkar (örn. "wohnungsrenovierung-aalen" -> "aalen") ---
-    const citySlug = useMemo(() => {
-        if (!slug) return null;
-        const parts = String(slug).split("-");
-        if (parts.length < 2) return null;
-        return parts.slice(1).join("-"); // "bad-vilbel" veya "almanca-bad-oeynhausen"
-    }, [slug]);
-
-    const cityFromSlug = useMemo(() => {
-        if (!citySlug) return null;
-        return citySlug
-            .split("-")
-            .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-            .join(" ");
-    }, [citySlug]);
-
-    // --- translations / içerik seçimi ---
+    // ---- AKTİF ÇEVİRİ ----
     const activeTranslation = useMemo(() => {
-        const list = rawService?.translations;
-        if (!Array.isArray(list) || list.length === 0) return null;
+        const translations = rawService?.translations || [];
+        if (!Array.isArray(translations) || translations.length === 0)
+            return null;
 
-        let found = list.find((tr) => tr.language_code === locale);
+        let found = translations.find((tr) => tr.language_code === locale);
         if (!found) {
-            found = list.find((tr) => tr.language_code === "de");
+            found = translations.find((tr) => tr.language_code === "de");
         }
         if (!found) {
-            found = list[0];
+            found = translations[0];
         }
-
         return found || null;
     }, [rawService, locale]);
 
-    // --- Başlık ve açıklama (cityFromSlug ile birlikte) ---
+    // ---- BAŞLIK & METİN ----
     const baseTitle =
-        activeTranslation?.name ||
         activeTranslation?.title ||
-        service?.name ||
+        activeTranslation?.name ||
         service?.title ||
-        page?.title ||
-        "Service";
+        service?.name ||
+        (propSlug ? humanizeSlug(propSlug) : "Service");
 
-    const title =
-        cityFromSlug &&
-        !baseTitle.toLowerCase().includes(cityFromSlug.toLowerCase())
-            ? `${baseTitle} in ${cityFromSlug}`
-            : baseTitle;
+    const title = useMemo(() => {
+        if (!cityName) return baseTitle;
 
-    const descriptionText =
+        const cityLocationText = t("services.location.in_city", {
+            city: cityName,
+            defaultValue: `in ${cityName}`,
+        });
+
+        if (!baseTitle.toLowerCase().includes(cityName.toLowerCase())) {
+            return `${baseTitle} ${cityLocationText}`;
+        }
+        return baseTitle;
+    }, [baseTitle, cityName, t, i18n.language]);
+
+    let content =
+        activeTranslation?.content ||
         activeTranslation?.description ||
+        rawService?.content ||
         service?.description ||
-        service?.shortDescription ||
-        page?.subtitle ||
-        `Leistung: ${title}`;
+        "";
 
-    const heroImage = service?.image || page?.hero?.image || null;
-    const heroAlt = page?.hero?.alt || title;
-    const sectionsFromPage = Array.isArray(page?.sections) ? page.sections : [];
+    const heroImage =
+        service?.image ||
+        rawService?.image ||
+        rawService?.image_url ||
+        rawService?.thumbnail ||
+        "https://images.unsplash.com/photo-1581578731117-e0a820bd4928?q=80&w=1920&auto=format&fit=crop";
 
-    const introHtml = descriptionText || null;
-
-    const introParsed = useMemo(
-        () => (introHtml ? safeParse(introHtml) : null),
-        [introHtml]
-    );
-
-    const currentUrl =
-        typeof window !== "undefined"
-            ? window.location.href
-            : page?.canonical || `https://oi-clean.de/${slug || ""}`;
-
-    const schema = {
-        "@context": "https://schema.org",
-        "@type": "Service",
-        name: title,
-        description:
-            typeof descriptionText === "string"
-                ? descriptionText.substring(0, 160)
-                : "",
-        provider: {
-            "@type": "Organization",
-            name: "O&I CLEAN group GmbH",
-        },
-        areaServed: {
-            "@type": "Country",
-            name: service?.country || "Deutschland",
-        },
-        image: heroImage,
-        url: currentUrl,
-    };
+    const placeholderImage =
+        "https://images.unsplash.com/photo-1581578731117-e0a820bd4928?q=80&w=1920&auto=format&fit=crop";
 
     return (
         <AppLayout>
@@ -327,155 +208,78 @@ export default function ServiceShow({ slug, page = {} }) {
                 <title>{title}</title>
                 <meta
                     name="description"
-                    content={
-                        typeof descriptionText === "string"
-                            ? descriptionText
-                                  .replace(/<[^>]*>?/gm, "")
-                                  .substring(0, 160)
-                            : ""
-                    }
+                    content={content.replace(/<[^>]*>/g, "").substring(0, 160)}
                 />
-                <script type="application/ld+json">
-                    {JSON.stringify(schema)}
-                </script>
             </Head>
 
-            {/* LOADING */}
             {loading && (
-                <section className="svx-loading container">
-                    <p>{loadingText}</p>
+                <section className="service-show__loading">
+                    <div className="service-show__spinner"></div>
+                    <p>{t("common.loading", "Yükleniyor...")}</p>
                 </section>
             )}
 
-            {/* HATA */}
-            {error && !loading && !service && (
-                <section className="svx-error container">
+            {error && !loading && (
+                <section className="service-show__error">
+                    <svg
+                        className="service-show__error-icon"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                    </svg>
                     <p>{error}</p>
                 </section>
             )}
 
-            {/* HERO */}
-            {!loading && (
-                <section
-                    className={`svx-hero ${
-                        heroImage ? "svx-hero--hasimg" : ""
-                    }`}
-                >
-                    <div aria-hidden className="svx-hero__decor" />
+            {!loading && !error && (
+                <>
+                    {/* HERO SECTION */}
+                    <section className="service-show__hero">
+                        <div className="service-show__hero-media">
+                            <img
+                                src={heroImage}
+                                alt={title}
+                                className="service-show__hero-img"
+                                onError={(e) => {
+                                    if (
+                                        e.currentTarget.src !== placeholderImage
+                                    ) {
+                                        e.currentTarget.src = placeholderImage;
+                                    }
+                                }}
+                            />
+                            <div className="service-show__hero-overlay" />
+                            <div className="service-show__hero-content">
+                                <div className="service-show__hero-inner container">
+                                    <h1 className="service-show__title">
+                                        {title}
+                                    </h1>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
 
-                    <div className="svx-hero__media">
-                        {heroImage ? (
-                            <>
-                                <img
-                                    src={heroImage}
-                                    alt={heroAlt}
-                                    className="svx-hero__img"
-                                    loading="eager"
-                                />
-                                <div className="svx-hero__overlay" />
-                            </>
-                        ) : (
-                            <div className="svx-hero__fallback" />
-                        )}
-                    </div>
-
-                    <div className="svx-hero__inner container">
-                        <nav className="svx-crumbs" aria-label="breadcrumb">
-                            <Link href="/" className="svx-crumbs__link">
-                                {t("service.breadcrumb.home", "Start")}
-                            </Link>
-                            <span className="svx-crumbs__sep">/</span>
-                            <Link href="/services" className="svx-crumbs__link">
-                                {t("service.breadcrumb.index", "Leistungen")}
-                            </Link>
-                            <span className="svx-crumbs__sep">/</span>
-                            <span className="svx-crumbs__current">{title}</span>
-                        </nav>
-
-                        <h1 className="svx-title">{title}</h1>
-                    </div>
-                </section>
-            )}
-
-            {/* İÇERİK */}
-            {!loading && (
-                <section className="svx-content">
-                    <div className="container">
-                        {introParsed && (
-                            <article className="svx-card svx-fadeup svx-intro">
-                                <div className="svx-prose">{introParsed}</div>
-                            </article>
-                        )}
-
-                        {!introParsed && (
-                            <article className="svx-card svx-fadeup">
-                                <p className="svx-muted">{emptyText}</p>
-                            </article>
-                        )}
-
-                        {sectionsFromPage.map((s, i) => {
-                            const reversed = i % 2 === 1;
-                            const items = Array.isArray(s.items) ? s.items : [];
-                            const bodyHtml = s.body || s.html || null;
-                            const bodyParsed = bodyHtml
-                                ? safeParse(bodyHtml)
-                                : null;
-
-                            return (
-                                <article
-                                    key={i}
-                                    className={`svx-section svx-fadeup ${
-                                        reversed ? "svx-section--rev" : ""
-                                    }`}
-                                >
-                                    {s.image && (
-                                        <div className="svx-section__media">
-                                            <img
-                                                src={s.image}
-                                                alt={
-                                                    s.alt || s.heading || title
-                                                }
-                                                className="svx-section__img"
-                                                loading="lazy"
-                                            />
-                                        </div>
-                                    )}
-
-                                    <div className="svx-section__body">
-                                        {s.heading && (
-                                            <h2 className="svx-h2">
-                                                {s.heading}
-                                            </h2>
-                                        )}
-
-                                        {bodyParsed && (
-                                            <div className="svx-prose">
-                                                {bodyParsed}
-                                            </div>
-                                        )}
-
-                                        {items.length > 0 && (
-                                            <ul className="svx-list">
-                                                {items.map((li, k) => (
-                                                    <li
-                                                        key={k}
-                                                        className="svx-list__item"
-                                                    >
-                                                        <span className="svx-bullet" />
-                                                        <span>{li}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
+                    {/* CONTENT SECTION */}
+                    {content && (
+                        <section className="service-show__content">
+                            <div className="container">
+                                <div className="service-show__content-inner">
+                                    <div className="service-show__prose">
+                                        <SafeHtml html={content} />
                                     </div>
-                                </article>
-                            );
-                        })}
-                    </div>
-                </section>
+                                </div>
+                            </div>
+                        </section>
+                    )}
+                </>
             )}
-
-            <ContactSection />
         </AppLayout>
     );
 }

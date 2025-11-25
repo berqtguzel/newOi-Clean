@@ -1,5 +1,3 @@
-// resources/js/Components/Home/Services/ServicesGrid.jsx
-
 import React from "react";
 import { Head, usePage } from "@inertiajs/react";
 import { useTranslation } from "react-i18next";
@@ -59,6 +57,33 @@ const useIntersectionObserver = (ref) => {
     }, [ref]);
 };
 
+// 🔹 Tüm dillerdeki description'ları birleştiren helper (Aynen korundu)
+const getAllDescriptions = (service) => {
+    if (!service) return "";
+
+    const descriptions = [];
+
+    // 1) Ana description (current language)
+    if (service.description) {
+        const base = String(service.description).trim();
+        if (base) descriptions.push(base);
+    }
+
+    // 2) translations dizisindeki description'lar (de, en, tr ...)
+    if (Array.isArray(service.translations)) {
+        service.translations.forEach((tr) => {
+            if (tr?.description) {
+                const desc = String(tr.description).trim();
+                if (desc && !descriptions.includes(desc)) {
+                    descriptions.push(desc);
+                }
+            }
+        });
+    }
+
+    return descriptions.join(" ");
+};
+
 const ServicesGrid = ({ services = [], content = {} }) => {
     const { t } = useTranslation();
     const [mounted, setMounted] = React.useState(false);
@@ -86,31 +111,37 @@ const ServicesGrid = ({ services = [], content = {} }) => {
         locale,
     });
 
-    // ✔ güvenli listeyi al
     const safeRemoteServices = Array.isArray(remoteServices)
         ? remoteServices
         : [];
 
     // ------------------------------------------------------------
-    // 🔥 SEO KATEGORİLERİNİ GİZLE (categoryName = "seo")
+    // 🔥 SEO ve GEBÄUDEREINIGUNG KATEGORİLERİNİ GİZLE
     // ------------------------------------------------------------
-    const filteredServices = safeRemoteServices.filter(
-        (s) =>
-            String(s.categoryName).toLowerCase() !== "seo" &&
-            s.categoryName !== "seo"
-    );
+    const filteredServices = safeRemoteServices.filter((s) => {
+        const catName = String(s.categoryName || "").toLowerCase();
+        const catId = s.categoryId;
 
-    // ✔ sadece üst servisler (parentId == null)
+        // SEO kategorisini filtrele
+        if (catName === "seo") return false;
+
+        // Gebäudereinigung kategorisini filtrele (category_id=2 veya name="Gebäudereinigung")
+        if (
+            catId === 2 ||
+            catName === "gebäudereinigung" ||
+            catName === "gebaudereinigung"
+        ) {
+            return false;
+        }
+
+        return true;
+    });
+
     const topLevelServices = filteredServices.filter((s) => s.parentId == null);
 
-    // ✔ fallback: eğer API gelmezse props.services kullan
     const servicesToRender = topLevelServices.length
         ? topLevelServices
         : services;
-
-    // ------------------------------------------------------------
-    // END FILTERS
-    // ------------------------------------------------------------
 
     const isDark = useIsDark();
     const lightColors = ["#085883", "#0C9FE2", "#2EA7E0"];
@@ -120,21 +151,26 @@ const ServicesGrid = ({ services = [], content = {} }) => {
     const schemaData = {
         "@context": "https://schema.org",
         "@type": "ItemList",
-        itemListElement: servicesToRender.map((s, i) => ({
-            "@type": "Service",
-            position: i + 1,
-            name: s.title,
-            description: s.description,
-            url: s.slug ? `${BASE_DOMAIN}/${s.slug}` : BASE_DOMAIN,
-        })),
+        itemListElement: servicesToRender.map((s, i) => {
+            const title = s.title || s.name || "";
+            return {
+                "@type": "Service",
+                position: i + 1,
+                name: title,
+                description: getAllDescriptions(s),
+                url: s.slug ? `${BASE_DOMAIN}/${s.slug}` : BASE_DOMAIN,
+            };
+        }),
     };
 
+    // ❗ Burada fallback parametresini kaldırdık.
     const headingHtml =
-        content.services_title || t("servicesList.title", "Leistungen");
+        content.services_title || t("servicesList.title") || "Leistungen";
 
     const subtitleHtml =
         content.services_subtitle ||
-        t("servicesList.subtitle", "Unsere Services");
+        t("servicesList.subtitle") ||
+        "Unsere Services";
 
     return (
         <section
@@ -160,6 +196,7 @@ const ServicesGrid = ({ services = [], content = {} }) => {
                 </script>
             </Head>
 
+            {/* Arka Plan Bitleri (Mounted olduktan sonra render edilir) */}
             <div className="absolute inset-0 z-10 liquid-ether-bg">
                 <div
                     className="liquid-ether-inner"
@@ -189,6 +226,7 @@ const ServicesGrid = ({ services = [], content = {} }) => {
             <div className="services-container relative z-10">
                 <div className="services-header">
                     <h2 id="services-title" className="services-title">
+                        {/* SafeHtml zaten korumalı */}
                         <SafeHtml html={headingHtml} />
                     </h2>
                     <div className="services-subtitle">
@@ -199,7 +237,8 @@ const ServicesGrid = ({ services = [], content = {} }) => {
                 <div ref={gridRef} className="services-grid">
                     {loading && (
                         <div className="services-loading">
-                            {t("servicesList.loading", "Loading…")}
+                            {/* 🔥 BOŞLUK DÜZELTME: Fazladan boşluk karakteri silindi */}
+                            {mounted ? t("servicesList.loading") : ""}
                         </div>
                     )}
 
@@ -207,8 +246,8 @@ const ServicesGrid = ({ services = [], content = {} }) => {
                         servicesToRender.map((s) => (
                             <ServiceCard
                                 key={s.id}
-                                title={s.title}
-                                description={s.description}
+                                title={s.title || s.name}
+                                description={getAllDescriptions(s)}
                                 image={s.image}
                                 slug={s.slug}
                                 translations={s.translations}
@@ -217,8 +256,13 @@ const ServicesGrid = ({ services = [], content = {} }) => {
                 </div>
 
                 <div className="services-cta">
-                    <a href="/kontakt" className="services-contact-button">
-                        {t("servicesList.contact_cta", "Kontakt")}
+                    <a
+                        href="/kontakt"
+                        className="services-contact-button"
+                        // Buton metin uyuşmazlığını gidermek için
+                        suppressHydrationWarning={true}
+                    >
+                        {t("servicesList.contact_cta") || "Kontaktiere Uns"}
                         <svg viewBox="0 0 24 24" fill="none">
                             <path
                                 d="M5 12H19M19 12L12 5M19 12L12 19"

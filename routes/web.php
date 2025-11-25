@@ -12,14 +12,8 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/services', [ServicesController::class, 'index'])->name('services.index');
 
-// Service detail pages (use German path)
+// Alman yolu: /dienstleistungen/slug → doğrudan ServicesController
 Route::get('/dienstleistungen/{slug}', [ServicesController::class, 'show'])->name('services.show');
-
-// Support root-level service slugs like `/wohnungsrenovierung-bad-hersfeld`
-// Must be defined BEFORE the generic static page catch-all route.
-Route::get('/{slug}', [ServicesController::class, 'show'])
-    ->where('slug', '^(?:gebaudereinigung|wohnungsrenovierung|hotelreinigung)(?:[-a-z0-9]+)?$')
-    ->name('services.show.root');
 
 Route::get('/dienstleistungen', fn () => redirect()->route('services.index'), 301);
 
@@ -33,7 +27,7 @@ Route::get('/kontakt', function () {
 
 Route::post('/kontakt', [ContactController::class, 'submit'])->name('kontakt.submit');
 
-// 🔥 DİL DEĞİŞTİRME – SADECE GET
+// Dil değiştirme
 Route::get('/lang/{locale}', function ($locale) {
     $available = ['de', 'en', 'tr'];
 
@@ -43,9 +37,10 @@ Route::get('/lang/{locale}', function ($locale) {
 
     session(['locale' => $locale]);
 
-    return back(); // aynı sayfaya geri
+    return back();
 })->name('lang.switch');
 
+// 🔥 TÜM DİĞER SLUG'LAR BURAYA GELECEK
 Route::get('/{slug}', [StaticPageController::class, 'show'])
-    ->where('slug', '^(?!services$)(?!standorte$)(?!kontakt$)(?!dienstleistungen$)[-a-z0-9]+$')
+    ->where('slug', '^(?!services$)(?!standorte$)(?!kontakt$)(?!dienstleistungen$)(?!lang$).+$')
     ->name('static.show');

@@ -11,11 +11,11 @@ class LocationsController extends Controller
     {
 
 
-        return Inertia::render('Locations/LocationShow', [
+        return Inertia::render('Locations/Show', [
             'slug'           => $slug,
             'page'           => [],          // şimdilik boş, React dolduracak
             'structuredData' => null,        // istersen sonra frontend'de de üretebilirsin
-            'currentRoute'   => 'locations.LocationShow',
+            'currentRoute'   => 'locations.show',
         ]);
     }
 }

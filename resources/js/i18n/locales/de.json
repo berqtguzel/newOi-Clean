@@ -26,23 +26,26 @@
     "card": {
       "aria": "Mehr über {{service}} erfahren",
       "button": "Details"
+    },
+    "location": {
+      "in_city": "in {{city}}"
     }
   },
-  "servicesList": {
-    "title": "Leistungen",
-    "subtitle": "Entdecken Sie unsere umfassenden Dienstleistungen für Ihr Zuhause",
-    "meta_title": "Unsere Leistungen - O&I CLEAN group GmbH",
-    "meta_description": "Professionelle Reinigung, Renovierung und Gebäudemanagement in Hamburg. ★ Expertise ★ Deutsche Qualität ★ Zuverlässiger Service",
-    "loading": "",
-    "contact_cta": "Kontaktiere Uns",
-    "contact_cta_aria": "Jetzt Kontakt aufnehmen"
-  },
+"servicesList": {
+  "title": "Leistungen",
+  "subtitle": "Entdecken Sie unsere umfassenden Dienstleistungen für Ihr Zuhause",
+  "meta_title": "Unsere Leistungen - O&I CLEAN group GmbH",
+  "meta_description": "Professionelle Reinigung, Renovierung und Gebäudemanagement in Hamburg. ★ Expertise ★ Deutsche Qualität ★ Zuverlässiger Service",
+  "loading": "Lade Dienstleistungen…",
+  "contact_cta": "Kontaktiere Uns",
+  "contact_cta_aria": "Jetzt Kontakt aufnehmen"
+},
   "locations": {
     "page_title": "Standorte - O&I CLEAN group GmbH",
     "page_description": "Professionelle Reinigungsservices an verschiedenen Standorten in Deutschland. Lokale Expertise, bundesweite Qualität.",
     "title": "Standorte",
     "subtitle": "Entdecken Sie unsere Standorte in Deutschland",
-    "loading": "",
+    "loading": "Laden",
     "empty": "Derzeit sind keine Standorte verfügbar.",
     "cta_label": "Standort anfragen",
     "cta_aria": "Jetzt Kontakt aufnehmen",

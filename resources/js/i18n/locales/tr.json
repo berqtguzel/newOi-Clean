@@ -26,23 +26,27 @@
     "card": {
       "aria": "{{service}} hakkında daha fazla bilgi al",
       "button": "Detaylar"
+    },
+    "location": {
+      "in_city": "{{city}}'de"
     }
   },
-  "servicesList": {
-    "title": "Hizmetler",
-    "subtitle": "Eviniz ve işiniz için sunduğumuz kapsamlı hizmetleri keşfedin",
-    "meta_title": "Hizmetlerimiz - O&I CLEAN group GmbH",
-    "meta_description": "Hamburg’da profesyonel temizlik, tadilat ve bina yönetimi. ★ Uzmanlık ★ Alman kalitesi ★ Güvenilir hizmet",
-    "loading": "",
-    "contact_cta": "Bizimle iletişime geçin",
-    "contact_cta_aria": "Şimdi iletişime geçin"
-  },
+"servicesList": {
+  "title": "Hizmetler",
+  "subtitle": "Eviniz ve işiniz için sunduğumuz kapsamlı hizmetleri keşfedin",
+  "meta_title": "Hizmetlerimiz - O&I CLEAN group GmbH",
+  "meta_description": "Profesyonel temizlik, tadilat ve bina yönetimi.",
+  "loading": "Yükleniyor…",
+  "contact_cta": "Bizimle iletişime geçin",
+  "contact_cta_aria": "Hemen iletişime geçin"
+}
+,
   "locations": {
     "page_title": "Lokasyonlar - O&I CLEAN group GmbH",
     "page_description": "Almanya’nın farklı şehirlerinde profesyonel temizlik hizmetleri. Yerel uzmanlık, ülke çapında kalite.",
     "title": "Lokasyonlar",
     "subtitle": "Almanya’daki hizmet verdiğimiz bölgeleri keşfedin",
-    "loading": "",
+    "loading": "Lokasyonlar Yükleniyor…",
     "empty": "Şu anda görüntülenecek lokasyon bulunmamaktadır.",
     "cta_label": "Lokasyon talep et",
     "cta_aria": "Şimdi iletişime geçin",

@@ -3,7 +3,7 @@ import { Link } from "@inertiajs/react";
 import "./ServiceCard.css";
 import SafeHtml from "@/Components/Common/SafeHtml";
 import { useTranslation } from "react-i18next";
-
+import { useMemo } from "react";
 /* ------------------------------ helpers ------------------------------ */
 
 function buildHref({ link, slug }) {
@@ -73,6 +73,52 @@ const ServiceCard = ({
      * SLUG – ŞEHİR EKLEME ALGORİTMASI
      * ====================================================== */
 
+    // Location show sayfasında mıyız? (ör: /aalen, /berlin)
+    // Location show sayfası: sadece bir segment var ve service prefix'leri ile başlamıyor
+    const isLocationShowPage = () => {
+        if (typeof window === "undefined") return false;
+        const path = window.location.pathname;
+        const parts = path.split("/").filter(Boolean);
+
+        // Sadece bir segment varsa ve service prefix'leri ile başlamıyorsa location show sayfası
+        if (parts.length === 1) {
+            const slug = parts[0] || "";
+            const isServicePrefix =
+                /^(gebaudereinigung|wohnungsrenovierung|hotelreinigung)-/.test(
+                    slug.toLowerCase()
+                );
+            const isSpecialRoute =
+                /^(services|standorte|kontakt|dienstleistungen|lang|home)$/i.test(
+                    slug
+                );
+            return !isServicePrefix && !isSpecialRoute;
+        }
+
+        return false;
+    };
+
+    // Mevcut URL'den city slug'ını al (location show sayfası için)
+    const getCurrentCitySlug = () => {
+        if (typeof window === "undefined") return null;
+        const path = window.location.pathname;
+        const parts = path.split("/").filter(Boolean);
+        if (parts.length === 1) {
+            const slug = parts[0] || "";
+            const isServicePrefix =
+                /^(gebaudereinigung|wohnungsrenovierung|hotelreinigung)-/.test(
+                    slug.toLowerCase()
+                );
+            const isSpecialRoute =
+                /^(services|standorte|kontakt|dienstleistungen|lang|home)$/i.test(
+                    slug
+                );
+            if (!isServicePrefix && !isSpecialRoute) {
+                return slug;
+            }
+        }
+        return null;
+    };
+
     const getCitySlugFromPath = () => {
         if (typeof window === "undefined") return null;
         const parts = window.location.pathname.split("/").filter(Boolean);
@@ -97,41 +143,84 @@ const ServiceCard = ({
             .replace(/[^a-z0-9-]+/g, "-")
             .replace(/^-+|-+$/g, "");
 
-    const currentCitySlug = getCitySlugFromPath();
+    // Service slug kontrolü: slug zaten service prefix'leri ile başlıyorsa
+    const isServiceSlug =
+        /^(gebaudereinigung|wohnungsrenovierung|hotelreinigung)-/.test(
+            String(slug || "").toLowerCase()
+        );
+
+    // Location show sayfasındaysak city ekleme mantığını UYGULA - location'a göre URL oluştur
+    const isOnLocationPage = isLocationShowPage();
+
     let effectiveSlug = slug || "";
 
-    const slugValue = effectiveSlug.startsWith("/")
-        ? effectiveSlug.slice(1)
-        : effectiveSlug;
+    if (isOnLocationPage) {
+        // Location show sayfasındaysak city slug'ını al ve ekle
+        // Örnek: /berlin sayfasındayken /baufeinreinigung-berlin'e yönlendir
+        const currentCitySlug = getCurrentCitySlug();
+        const slugValue = effectiveSlug.startsWith("/")
+            ? effectiveSlug.slice(1)
+            : effectiveSlug;
 
-    if (
-        currentCitySlug &&
-        slugValue &&
-        !normalize(slugValue).includes(normalize(currentCitySlug))
-    ) {
-        effectiveSlug = `${slugValue}-${currentCitySlug}`;
+        if (
+            currentCitySlug &&
+            slugValue &&
+            !normalize(slugValue).includes(normalize(currentCitySlug))
+        ) {
+            effectiveSlug = `${slugValue}-${currentCitySlug}`;
+        } else {
+            effectiveSlug = slugValue;
+        }
+    } else if (isServiceSlug) {
+        // Service slug ise olduğu gibi kullan
+        effectiveSlug = effectiveSlug.startsWith("/")
+            ? effectiveSlug.slice(1)
+            : effectiveSlug;
+    } else {
+        // Normal sayfalarda city ekleme mantığı
+        const currentCitySlug = getCitySlugFromPath();
+        const slugValue = effectiveSlug.startsWith("/")
+            ? effectiveSlug.slice(1)
+            : effectiveSlug;
+
+        if (
+            currentCitySlug &&
+            slugValue &&
+            !normalize(slugValue).includes(normalize(currentCitySlug))
+        ) {
+            effectiveSlug = `${slugValue}-${currentCitySlug}`;
+        }
     }
 
     const href = buildHref({ link, slug: effectiveSlug });
 
-    const plainTitle =
-        stripHtml(displayTitle) ||
-        t("services.card.default_service_name", "Service");
+    // HYDRATION FIX: useMemo ile sarmala ve i18n.language dependency ekle
+    const plainTitle = useMemo(() => {
+        return (
+            stripHtml(displayTitle) ||
+            t("services.card.default_service_name", "Service")
+        );
+    }, [displayTitle, t, i18n.language]);
 
-    const buttonLabel = t("services.card.button", "Details");
+    const buttonLabel = useMemo(() => {
+        return t("services.card.button", "Details");
+    }, [t, i18n.language]);
 
-    const ariaLabel = t("services.card.aria", {
-        service: plainTitle,
-        defaultValue: `Learn more about ${plainTitle}`,
-    });
+    const ariaLabel = useMemo(() => {
+        return t("services.card.aria", {
+            service: plainTitle,
+            defaultValue: `Learn more about ${plainTitle}`,
+        });
+    }, [t, i18n.language, plainTitle]);
 
     return (
         <Link href={href} className="service-card group" aria-label={ariaLabel}>
             <div className="service-card__image-wrapper">
-                {!isLoaded && (
-                    <div className="service-card__skeleton" aria-hidden="true">
-                        <div className="service-card__skeleton-wave" />
-                    </div>
+                {!isLoaded && image && (
+                    <div
+                        className="service-card__skeleton"
+                        aria-hidden="true"
+                    />
                 )}
 
                 {image ? (
@@ -144,33 +233,29 @@ const ServiceCard = ({
                         }`}
                         loading="lazy"
                         onLoad={() => setIsLoaded(true)}
+                        onError={() => setIsLoaded(true)}
                         width="800"
                         height="600"
                     />
                 ) : (
                     <div className="service-card__image-placeholder">
-                        {Icon && <Icon className="w-12 h-12 text-gray-300" />}
+                        {Icon && <Icon className="w-12 h-12" />}
                     </div>
                 )}
 
-                <div className="service-card__overlay">
-                    {Icon && <Icon className="service-card__icon" />}
-                </div>
+                {Icon && (
+                    <div className="service-card__overlay" aria-hidden="true">
+                        <Icon className="service-card__icon" />
+                    </div>
+                )}
             </div>
 
             <div className="service-card__content">
-                {/* SafeHtml <p> içinde kullanıldığı için div'e çevrilmiştir */}
                 <div className="service-card__title-wrapper">
                     <h3 className="service-card__title">
                         <SafeHtml html={displayTitle} />
                     </h3>
                 </div>
-
-                {displayDesc && (
-                    <div className="service-card__description">
-                        <SafeHtml html={displayDesc} />
-                    </div>
-                )}
 
                 <span className="service-card__button">
                     <span>{buttonLabel}</span>
@@ -178,6 +263,7 @@ const ServiceCard = ({
                         className="service-card__arrow"
                         viewBox="0 0 24 24"
                         fill="none"
+                        aria-hidden="true"
                     >
                         <path
                             d="M5 12H19M19 12L12 5M19 12L12 19"

@@ -160,7 +160,11 @@ export default function Footer({ settings }) {
 
                     {/* FOOTER MENÜ */}
                     <nav className="md:col-span-3">
-                        <h4 className="text-lg font-semibold mb-3">
+                        {/* 🚨 HİDRASYON DÜZELTME: Metin uyuşmazlığını engellemek için eklendi */}
+                        <h4
+                            className="text-lg font-semibold mb-3"
+                            suppressHydrationWarning={true}
+                        >
                             {t("footer.links_title", "Links")}
                         </h4>
 
@@ -186,7 +190,11 @@ export default function Footer({ settings }) {
 
                     {/* İLETİŞİM (GÜNCELLENDİ) */}
                     <div className="md:col-span-4">
-                        <h4 className="text-lg font-semibold mb-3">
+                        {/* 🚨 HİDRASYON DÜZELTME: Metin uyuşmazlığını engellemek için eklendi */}
+                        <h4
+                            className="text-lg font-semibold mb-3"
+                            suppressHydrationWarning={true}
+                        >
                             {t("footer.contact_title", "Kontakt")}
                         </h4>
 
@@ -229,7 +237,11 @@ export default function Footer({ settings }) {
                 </div>
 
                 {/* ALT */}
-                <div className="mt-12 border-t pt-8 text-sm text-center md:text-left">
+                {/* 🚨 HİDRASYON DÜZELTME: Copyright metnini korumak için */}
+                <div
+                    className="mt-12 border-t pt-8 text-sm text-center md:text-left"
+                    suppressHydrationWarning={true}
+                >
                     © {year} {siteName} {footer.footer_copyright}
                 </div>
             </div>

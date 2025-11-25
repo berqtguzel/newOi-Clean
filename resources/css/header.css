@@ -48,17 +48,7 @@
 
 
 .rbits-bg{
-  position:absolute; inset:-40% -10% 0 -10%; z-index:-1;
-  filter: blur(40px) saturate(1.05);
-  background:
-    radial-gradient(40% 60% at 10% 20%, color-mix(in srgb, var(--hd-primary) 45%, transparent), transparent),
-    radial-gradient(45% 55% at 80% 20%, color-mix(in srgb, var(--hd-accent) 45%, transparent), transparent),
-    radial-gradient(40% 60% at 50% 80%, color-mix(in srgb, var(--hd-primary) 30%, transparent), transparent);
-  animation: rbitsMove 18s ease-in-out infinite alternate;
-}
-@keyframes rbitsMove{
-  0%{ transform: translateY(-8%) translateX(-2%) scale(1); }
-  100%{ transform: translateY(4%) translateX(2%) scale(1.05); }
+display: none;
 }
 
 

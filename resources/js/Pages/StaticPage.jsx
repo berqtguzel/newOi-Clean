@@ -1,6 +1,6 @@
 // resources/js/Pages/Static/StaticPage.jsx
 
-import React from "react";
+import React, { useMemo } from "react";
 import { Head, Link, usePage } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import ContactSection from "@/Components/Home/Contact/ContactSection";
@@ -103,7 +103,7 @@ export default function StaticPage({
     page: initialPage = {},
     meta = {},
 }) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { props, url: inertiaUrl } = usePage();
 
     const tenantId =
@@ -217,7 +217,7 @@ export default function StaticPage({
                 defaultValue: "Häufig gestellte Fragen",
             })
         );
-    }, [faq, locale, page]);
+    }, [faq, locale, page, t, i18n.language]);
 
     const faqItems = React.useMemo(() => {
         if (!faq || !Array.isArray(faq.items)) return [];
@@ -259,14 +259,19 @@ export default function StaticPage({
 
     /* ---------------------------------- SEO --------------------------------- */
 
-    const fallbackTitle = t("staticPage.default_title", {
-        defaultValue: "Seite - O&I CLEAN group GmbH",
-    });
+    // HYDRATION FIX: useMemo ile sarmala ve i18n.language dependency ekle
+    const fallbackTitle = useMemo(() => {
+        return t("staticPage.default_title", {
+            defaultValue: "Seite - O&I CLEAN group GmbH",
+        });
+    }, [t, i18n.language]);
 
-    const fallbackDescription = t("staticPage.default_description", {
-        defaultValue:
-            "Informationen zu unseren Leistungen und unserem Unternehmen.",
-    });
+    const fallbackDescription = useMemo(() => {
+        return t("staticPage.default_description", {
+            defaultValue:
+                "Informationen zu unseren Leistungen und unserem Unternehmen.",
+        });
+    }, [t, i18n.language]);
 
     const seoTitle = title || fallbackTitle;
     const seoDescription =
@@ -289,17 +294,23 @@ export default function StaticPage({
         url: currentUrl,
     };
 
-    const homeLabel = t("staticPage.breadcrumbs_home", {
-        defaultValue: "Startseite",
-    });
+    const homeLabel = useMemo(() => {
+        return t("staticPage.breadcrumbs_home", {
+            defaultValue: "Startseite",
+        });
+    }, [t, i18n.language]);
 
-    const pageLabel = t("staticPage.breadcrumbs_page", {
-        defaultValue: "Seite",
-    });
+    const pageLabel = useMemo(() => {
+        return t("staticPage.breadcrumbs_page", {
+            defaultValue: "Seite",
+        });
+    }, [t, i18n.language]);
 
-    const contentComingSoon = t("staticPage.empty_content", {
-        defaultValue: "Inhalt wird bald hinzugefügt.",
-    });
+    const contentComingSoon = useMemo(() => {
+        return t("staticPage.empty_content", {
+            defaultValue: "Inhalt wird bald hinzugefügt.",
+        });
+    }, [t, i18n.language]);
 
     const hasContent = !!content;
 

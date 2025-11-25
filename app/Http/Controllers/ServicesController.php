@@ -20,26 +20,25 @@ class ServicesController extends Controller
 
     public function show(string $slug)
     {
-
-        // Validate the slug exists in the dashboard API before rendering
-        try {
-            $tenantId = config('services.omr.talent_id');
-            $base = rtrim(config('services.omr.base') ?? 'https://omerdogan.de/api', '/');
-            $resp = Http::withHeaders([
-                'X-Tenant-ID' => $tenantId,
-                'Accept' => 'application/json',
-            ])->get($base . '/v1/services/' . urlencode(strtolower($slug)));
-
-            if (!($resp->successful() && (data_get($resp->json(), 'data') || data_get($resp->json(), 'success') === true))) {
-                abort(404);
-            }
-        } catch (\Throwable $e) {
-            Log::warning('Service validation failed: ' . $e->getMessage());
-            abort(404);
+        // Slug'ı parse et: eğer tire içeriyorsa, sadece ilk kısmı al (base service slug)
+        // Örnek: baucontainer-reinigung-berlin -> baucontainer
+        // Örnek: gebaudereinigung-berlin -> gebaudereinigung
+        // Örnek: baufeinreinigung-berlin -> baufeinreinigung
+        
+        $processedSlug = $slug;
+        
+        // Eğer slug tire içeriyorsa, sadece ilk kısmı al
+        if (str_contains($slug, '-')) {
+            $parts = explode('-', $slug);
+            // İlk kısmı al (base service slug)
+            $processedSlug = $parts[0];
         }
-
+        
+        // Her durumda sayfayı render et - frontend'de API çağrısı yapılacak
+        // Eğer service bulunamazsa frontend'de hata gösterilecek
         return Inertia::render('Services/Show', [
-            'slug'         => $slug,
+            'slug'         => $processedSlug, // Base service slug'ını kullan
+            'originalSlug' => $slug, // Orijinal slug'ı da gönder (frontend'de kullanılabilir)
             'currentRoute' => 'services',
         ]);
     }

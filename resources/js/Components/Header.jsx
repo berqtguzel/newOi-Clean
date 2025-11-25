@@ -337,22 +337,51 @@ const Header = ({ currentRoute, settings: propSettings }) => {
             "Termin vereinbaren",
     };
 
-    // Logolar
+    // Logolar - HYDRATION FIX: Server ve client'ta aynı değerleri kullan
+    // isMounted kontrolü ile client-side'da güncelleme yapılır
     const siteLogos = useMemo(() => {
         const getUrl = (src) =>
             src?.url || (typeof src === "string" ? src : null);
+
+        // Her zaman aynı fallback değerlerini kullan (server ve client'ta aynı)
+        const defaultLight = "/images/logo/Logo.png";
+        const defaultDark = "/images/logo/darkLogo.png";
+
+        // Server-side render için: Her zaman fallback kullan
+        // Client-side'da isMounted olduktan sonra settings kullanılır
+        if (!isMounted || !settings || settingsLoading) {
+            return {
+                light: defaultLight,
+                dark: defaultDark,
+            };
+        }
+
         const lightUrl =
             getUrl(settings?.logo) ||
             getUrl(settings?.data?.logo) ||
             getUrl(settings?.branding?.logo) ||
             getUrl(settings?.general?.logo) ||
-            "/images/logo/Logo.png";
+            defaultLight;
+
         const darkUrl =
+            // API'den gelen dark_logo (top-level)
+            getUrl(settings?.dark_logo) ||
+            // Bazı yerlerde logo_dark adıyla gelebilir
             getUrl(settings?.logo_dark) ||
+            // API response data içinde olabilir
+            getUrl(settings?.data?.dark_logo) ||
+            getUrl(settings?.data?.logo_dark) ||
+            // Eski / farklı config yapıları
+            getUrl(settings?.branding?.dark_logo) ||
             getUrl(settings?.branding?.logo_dark) ||
-            "/images/logo/darkLogo.png";
+            getUrl(settings?.general?.dark_logo) ||
+            getUrl(settings?.general?.logo_dark) ||
+            // Hiçbiri yoksa light logoyu kullan
+            lightUrl ||
+            defaultDark;
+
         return { light: lightUrl, dark: darkUrl };
-    }, [settings]);
+    }, [settings, isMounted, settingsLoading]);
 
     const [currentLang, setCurrentLang] = useState(initialLocale || "de");
 
@@ -531,7 +560,10 @@ const Header = ({ currentRoute, settings: propSettings }) => {
     const navItems = useMemo(() => {
         if (remoteNavItems && remoteNavItems.length) return remoteNavItems;
         if (menuLoading) return [];
-        const homeLabel = t("nav.home", "Startseite");
+        // HYDRATION FIX: Server-side'da sabit değer kullan
+        const homeLabel = isMounted
+            ? t("nav.home", "Startseite")
+            : "Startseite";
         return [
             {
                 name: homeLabel,
@@ -543,7 +575,7 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                         : false,
             },
         ];
-    }, [remoteNavItems, menuLoading, t]);
+    }, [remoteNavItems, menuLoading, t, isMounted]);
 
     const currentPath =
         typeof window !== "undefined"
@@ -774,7 +806,11 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                             href="/"
                             onClick={navigate("/")}
                             className="brand"
-                            aria-label={t("header.home_aria", "Startseite")}
+                            aria-label={
+                                isMounted
+                                    ? t("header.home_aria", "Startseite")
+                                    : "Startseite"
+                            }
                         >
                             {settingsLoading && !siteLogos.light ? (
                                 <div className="w-32 h-10 bg-gray-200 animate-pulse rounded" />
@@ -796,7 +832,11 @@ const Header = ({ currentRoute, settings: propSettings }) => {
 
                         <nav
                             className="nav nav--desktop"
-                            aria-label={t("header.main_nav", "Hauptnavigation")}
+                            aria-label={
+                                isMounted
+                                    ? t("header.main_nav", "Hauptnavigation")
+                                    : "Hauptnavigation"
+                            }
                         >
                             {menuLoading && (
                                 <div className="nav__item">
@@ -1034,14 +1074,20 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                 onClick={navigate("/impressum")}
                                 className="btn bg-button btn--primary ml-4"
                             >
-                                {t("header.impressum", "Impressum")}
+                                {isMounted
+                                    ? t("header.impressum", "Impressum")
+                                    : "Impressum"}
                             </a>
                         </div>
 
                         <button
                             className="hamburger"
                             onClick={() => setOpenMenu(true)}
-                            aria-label={t("header.menu_open", "Menü öffnen")}
+                            aria-label={
+                                isMounted
+                                    ? t("header.menu_open", "Menü öffnen")
+                                    : "Menü öffnen"
+                            }
                         >
                             <FaBars size={22} />
                         </button>
@@ -1078,10 +1124,11 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                         <button
                             className="btn btn--icon"
                             onClick={() => setOpenMenu(false)}
-                            aria-label={t(
-                                "header.menu_close",
-                                "Menü schließen"
-                            )}
+                            aria-label={
+                                isMounted
+                                    ? t("header.menu_close", "Menü schließen")
+                                    : "Menü schließen"
+                            }
                         >
                             <FaTimes size={20} />
                         </button>
@@ -1220,7 +1267,9 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                         </div>
                         <div className="drawer__lang">
                             <span className="drawer__lang-label">
-                                {t("header.language", "Sprache")}
+                                {isMounted
+                                    ? t("header.language", "Sprache")
+                                    : "Sprache"}
                             </span>
                             <div className="drawer__lang-buttons">
                                 {allLanguages.map((l) => (

@@ -32,6 +32,8 @@ export default function DecryptedText({
     animateOn = "hover",
     ...props
 }) {
+    // HYDRATION FIX: Server ve client'ta aynı başlangıç değerini kullan
+    const [isMounted, setIsMounted] = useState(false);
     const [displayText, setDisplayText] = useState(text);
     const [isHovering, setIsHovering] = useState(false);
     const [isScrambling, setIsScrambling] = useState(false);
@@ -39,7 +41,23 @@ export default function DecryptedText({
     const [hasAnimated, setHasAnimated] = useState(false);
     const containerRef = useRef(null);
 
+    // Client-side'da mount olduğunda animasyonu aktif et
     useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    // Text değiştiğinde displayText'i güncelle (HYDRATION FIX)
+    useEffect(() => {
+        setDisplayText(text);
+    }, [text]);
+
+    useEffect(() => {
+        // HYDRATION FIX: Server-side'da animasyonu başlatma
+        if (!isMounted) {
+            setDisplayText(text);
+            return;
+        }
+
         let interval;
         let currentIteration = 0;
 
@@ -161,6 +179,7 @@ export default function DecryptedText({
             if (interval) clearInterval(interval);
         };
     }, [
+        isMounted,
         isHovering,
         text,
         speed,
@@ -172,6 +191,8 @@ export default function DecryptedText({
     ]);
 
     useEffect(() => {
+        // HYDRATION FIX: Server-side'da observer'ı başlatma
+        if (!isMounted) return;
         if (animateOn !== "view" && animateOn !== "both") return;
 
         const observerCallback = (entries) => {
@@ -203,7 +224,7 @@ export default function DecryptedText({
                 observer.unobserve(currentRef);
             }
         };
-    }, [animateOn, hasAnimated]);
+    }, [isMounted, animateOn, hasAnimated]);
 
     const hoverProps =
         animateOn === "hover" || animateOn === "both"
@@ -213,6 +234,10 @@ export default function DecryptedText({
               }
             : {};
 
+    // HYDRATION FIX: Server ve client'ta aynı render
+    // Server-side'da animasyon olmadan orijinal text göster
+    const renderText = isMounted ? displayText : text;
+
     return (
         <motion.span
             className={parentClassName}
@@ -221,11 +246,13 @@ export default function DecryptedText({
             {...hoverProps}
             {...props}
         >
-            <span style={styles.srOnly}>{displayText}</span>
+            <span style={styles.srOnly}>{text}</span>
 
             <span aria-hidden="true">
-                {displayText.split("").map((char, index) => {
+                {renderText.split("").map((char, index) => {
+                    // Server-side'da veya animasyon yoksa normal göster
                     const isRevealedOrDone =
+                        !isMounted ||
                         revealedIndices.has(index) ||
                         !isScrambling ||
                         !isHovering;
