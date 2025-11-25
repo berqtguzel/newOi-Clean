@@ -86,7 +86,6 @@ function safeParse(html, options) {
     return parse(clean, { replace, ...(options || {}) });
 }
 
-// --- LOCATIONS DATA ---
 const LOCATIONS = [
     {
         id: "hamburg",
@@ -136,23 +135,20 @@ export default function ContactIndex({
     introHtml,
 }) {
     const { props, url: inertiaUrl } = usePage();
-    const { t } = useTranslation(); // i18n hook
+    const { t } = useTranslation();
 
-    // --------- SEO Basic Info ----------
     const pageTitle = t("contact.seo_title", "Kontakt – O&I CLEAN group GmbH");
     const pageDescription = t(
         "contact.seo_desc",
         "Kontaktieren Sie O&I CLEAN group GmbH für professionelle Reinigungsdienstleistungen und Standorte in ganz Deutschland."
     );
 
-    // Ziggy base URL
     const baseLocation = props?.ziggy?.location || "https://oi-clean.de";
     const normalizedBase = String(baseLocation).replace(/\/+$/, "");
     const path = inertiaUrl || "/kontakt";
     const currentUrl = `${normalizedBase}${path}`;
     const originUrl = `${normalizedBase}/`;
 
-    // JSON-LD Schemas
     const schemaWebPage = {
         "@context": "https://schema.org",
         "@type": "WebPage",
@@ -210,14 +206,21 @@ export default function ContactIndex({
         ],
     };
 
-    // Intro Text
-    const intro =
-        introHtml ||
-        t(
-            "contact.intro_text",
-            "Kostenlos & unverbindlich – <strong>wir melden uns zeitnah</strong>."
-        );
-    const introParsed = useMemo(() => safeParse(intro), [intro]);
+    // 🚨 DÜZELTME: HTML'i ve metni ayırıyoruz
+    const introStaticText = t(
+        "contact.intro_static_text",
+        "Kostenlos & unverbindlich – "
+    );
+    const introDynamicText = t(
+        "contact.intro_dynamic_text",
+        "wir melden uns zeitnah"
+    );
+
+    // HTML structure'ı manuel olarak oluştur
+    const introParsed = useMemo(() => {
+        const text = `${introStaticText} <strong>${introDynamicText}</strong>.`;
+        return introHtml ? safeParse(introHtml) : safeParse(text);
+    }, [introHtml, introStaticText, introDynamicText]);
 
     return (
         <AppLayout currentRoute={currentRoute}>
@@ -246,15 +249,23 @@ export default function ContactIndex({
             </Head>
 
             <div className="contactx-page">
-                {/* --- 1. Intro Section --- */}
                 <section className="contactx-intro">
-                    <h1 className="contactx-title">
-                        {t("contact.page_title", "Kontakt")}
+                    {/* 🚨 DÜZELTME 1: Ana başlık metin uyuşmazlığını giderir (Kontakt vs Contact) */}
+                    <h1
+                        className="contactx-title"
+                        suppressHydrationWarning={true}
+                    >
+                        {t("contact.page_title")}
                     </h1>
 
-                    <div className="contactx-desc">{introParsed}</div>
+                    {/* 🚨 DÜZELTME 2: Giriş metni uyuşmazlığını giderir (Kostenlos & unverbindlich...) */}
+                    <div
+                        className="contactx-desc"
+                        suppressHydrationWarning={true}
+                    >
+                        {introParsed}
+                    </div>
 
-                    {/* Alerts */}
                     {flash?.success && (
                         <div className="contactx-alert contactx-alert--success">
                             <span>✅</span> {flash.success}
@@ -267,13 +278,16 @@ export default function ContactIndex({
                     )}
                 </section>
 
-                {/* --- 2. Main Contact Form --- */}
+                {/* ContactSection (Form) */}
                 <ContactSection />
 
-                {/* --- 3. Locations Grid --- */}
+                {/* Lokasyon Detayları */}
                 <section className="contactx-locations-wrapper">
                     <div className="max-w-7xl mx-auto px-4">
-                        <h2 className="contactx-section-title">
+                        <h2
+                            className="contactx-section-title"
+                            suppressHydrationWarning={true}
+                        >
                             {t(
                                 "contact.locations_title",
                                 "Standorte & Kontakt"
@@ -282,16 +296,19 @@ export default function ContactIndex({
 
                         <div className="contactx-location-grid">
                             {LOCATIONS.map((loc) => {
+                                // loc.html içinde parse işlemi yapıldığı için SafeHtml'e gerek yok
                                 const detailsParsed = loc.html
                                     ? safeParse(loc.html)
                                     : null;
+
+                                // Telefon numarasını temizle
+                                const cleanPhone = loc.phone.replace(/\s/g, "");
 
                                 return (
                                     <article
                                         key={loc.id}
                                         className="contactx-card"
                                     >
-                                        {/* Content Top */}
                                         <div>
                                             <h3 className="contactx-card__title">
                                                 {loc.title}
@@ -310,12 +327,22 @@ export default function ContactIndex({
                                             )}
                                         </div>
 
-                                        {/* Content Bottom (Details) */}
                                         <div className="contactx-card__details">
                                             {loc.phone && (
-                                                <div className="contactx-card__row">
+                                                <div
+                                                    className="contactx-card__row"
+                                                    // Telefon numarası uyuşmazlığını gidermek için
+                                                    suppressHydrationWarning={
+                                                        true
+                                                    }
+                                                >
                                                     <FaPhone size={14} />
-                                                    <span className="font-medium text-sm opacity-80">
+                                                    <span
+                                                        className="font-medium text-sm opacity-80"
+                                                        suppressHydrationWarning={
+                                                            true
+                                                        }
+                                                    >
                                                         {t(
                                                             "contact.phone_label",
                                                             "Tel"
@@ -323,10 +350,11 @@ export default function ContactIndex({
                                                         :
                                                     </span>
                                                     <a
-                                                        href={`tel:${loc.phone.replace(
-                                                            /\s/g,
-                                                            ""
-                                                        )}`}
+                                                        href={`tel:${cleanPhone}`}
+                                                        // 🚨 ÇİFT YAZILAN METİN SORUNU İÇİN (SSR/Client mismatch)
+                                                        suppressHydrationWarning={
+                                                            true
+                                                        }
                                                     >
                                                         {loc.phone}
                                                     </a>
@@ -336,7 +364,12 @@ export default function ContactIndex({
                                             {loc.email && (
                                                 <div className="contactx-card__row">
                                                     <FaEnvelope size={14} />
-                                                    <span className="font-medium text-sm opacity-80">
+                                                    <span
+                                                        className="font-medium text-sm opacity-80"
+                                                        suppressHydrationWarning={
+                                                            true
+                                                        }
+                                                    >
                                                         {t(
                                                             "contact.email_label",
                                                             "E-Mail"
@@ -352,12 +385,10 @@ export default function ContactIndex({
                                             )}
                                         </div>
 
-                                        {/* Action Button */}
                                         <a
                                             href={`#map-${loc.id}`}
                                             className="contactx-card__action"
                                             onClick={(e) => {
-                                                // Optional: Smooth scroll manually if native behavior fails
                                                 e.preventDefault();
                                                 const el =
                                                     document.getElementById(
@@ -382,6 +413,7 @@ export default function ContactIndex({
                                                     });
                                                 }
                                             }}
+                                            suppressHydrationWarning={true} // Harita butonu metni için
                                         >
                                             {t(
                                                 "contact.show_map",
@@ -396,7 +428,6 @@ export default function ContactIndex({
                     </div>
                 </section>
 
-                {/* --- 4. Maps Section --- */}
                 <section className="contactx-maps-wrapper">
                     <div className="contactx-map-grid">
                         {LOCATIONS.map((loc) => (

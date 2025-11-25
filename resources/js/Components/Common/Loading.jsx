@@ -12,7 +12,6 @@ export default function Loading() {
         let timeout = null;
 
         function onStart() {
-            // small debounce so very quick navigations don't flash the loader
             timeout = setTimeout(() => setActive(true), 120);
             setMessage(t("ui.loading.message") || "");
         }
@@ -26,8 +25,6 @@ export default function Loading() {
         Inertia.on("finish", onFinish);
         Inertia.on("error", onFinish);
 
-        // also show briefly on first render while SSR/rehydration happens
-        // but only if the document is still loading
         if (document.readyState !== "complete") {
             setActive(true);
             const t = setTimeout(() => setActive(false), 700);
@@ -49,10 +46,7 @@ export default function Loading() {
                     Inertia.events.off("finish", onFinish);
                     Inertia.events.off("error", onFinish);
                 }
-                // If no off() available, we silently skip cleanup to avoid errors.
-            } catch (e) {
-                // ignore cleanup errors
-            }
+            } catch (e) {}
         };
     }, []);
 

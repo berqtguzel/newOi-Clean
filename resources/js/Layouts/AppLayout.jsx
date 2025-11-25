@@ -20,10 +20,8 @@ export default function AppLayout({ content, children, currentRoute }) {
 
     const locale = useLocale("de");
 
-    // Ayarları API'den çekiyoruz
     const { data: settings } = useSettings({ tenantId, locale });
 
-    // --- SEO VE META VERİLERİ ---
     const general = settings?.general || {};
     const branding = settings?.branding || {};
 
@@ -34,7 +32,6 @@ export default function AppLayout({ content, children, currentRoute }) {
         general?.site_keywords ||
         "reinigung, putzfrau, hamburg, gebäudereinigung";
 
-    // --- FAVICON GÜNCELLEME ---
     useEffect(() => {
         if (!settings) return;
 
@@ -42,12 +39,11 @@ export default function AppLayout({ content, children, currentRoute }) {
             src?.url || (typeof src === "string" ? src : null);
 
         const faviconUrl =
-            getUrl(settings?.branding?.favicon) || // En yüksek öncelik
+            getUrl(settings?.branding?.favicon) ||
             getUrl(settings?.favicon) ||
             getUrl(settings?.general?.favicon) ||
             "/favicon.ico";
 
-        // Mevcut ikonu bul veya oluştur
         let link = document.querySelector("link[rel~='icon']");
         if (!link) {
             link = document.createElement("link");
@@ -81,7 +77,6 @@ export default function AppLayout({ content, children, currentRoute }) {
             <OfferDock />
             <QuoteModal />
 
-            {/* 🔥 ÇEREZ BİLDİRİMİ HER SAYFADA GÖRÜNSÜN */}
             <CookieBanner />
         </div>
     );

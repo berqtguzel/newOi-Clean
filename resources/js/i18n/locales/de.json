@@ -62,6 +62,7 @@
     "description": "Professionelle Reinigungsdienstleistungen für Ihr Unternehmen. Wir beraten Sie gerne persönlich.",
     "submit_label": "Nachricht senden",
     "submit_failed": "Nachricht konnte nicht gesendet werden.",
+    "locations_title": "Unsere Standorte",
     "select_placeholder": "Bitte wählen",
     "success_title": "Erfolgreich!",
     "success_message": "Ihre Nachricht wurde erfolgreich versendet. Wir werden uns so schnell wie möglich bei Ihnen melden.",

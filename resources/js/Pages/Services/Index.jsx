@@ -1,5 +1,3 @@
-// resources/js/Pages/Services/Index.jsx
-
 import React from "react";
 import { Head, Link } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";

@@ -6,14 +6,12 @@ import "../../../css/404.css";
 export default function NotFound() {
     const { t } = useTranslation();
 
-    // 🔥 Hydration fix: İlk render'da server ile birebir aynı metni göster
     const [hydrated, setHydrated] = React.useState(false);
 
     React.useEffect(() => {
         setHydrated(true);
     }, []);
 
-    // 👇 Server tarafında basılan (ve konsolda gördüğün) Almanca metinler
     const serverTitle = "404 — Seite nicht gefunden";
     const serverDesc = "Die angeforderte Seite wurde nicht gefunden.";
     const serverCtaHome = "Zur Startseite";
@@ -21,14 +19,12 @@ export default function NotFound() {
     const serverHint =
         "Bitte überprüfen Sie die URL oder kehren Sie zur Startseite zurück.";
 
-    // 👇 İstemci tarafında i18n'den gelen çeviriler (TR / EN vs.)
     const clientTitle = t("errors.notFound.title", serverTitle);
     const clientDesc = t("errors.notFound.desc", serverDesc);
     const clientCtaHome = t("errors.notFound.cta_home", serverCtaHome);
     const clientCtaContact = t("errors.notFound.cta_contact", serverCtaContact);
     const clientHint = t("errors.notFound.hint", serverHint);
 
-    // 👇 Hydration bitene kadar server metnini kullan, sonra i18n'e geç
     const titleToRender = hydrated ? clientTitle : serverTitle;
     const descToRender = hydrated ? clientDesc : serverDesc;
     const ctaHomeToRender = hydrated ? clientCtaHome : serverCtaHome;
@@ -43,7 +39,6 @@ export default function NotFound() {
 
             <main className="oi-404__card">
                 <div className="oi-404__illustration" aria-hidden>
-                    {/* simple SVG illustration */}
                     <svg
                         width="220"
                         height="160"

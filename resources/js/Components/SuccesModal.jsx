@@ -1,4 +1,3 @@
-// resources/js/Components/Modals/SuccessModal.jsx
 import React from "react";
 import { createPortal } from "react-dom";
 import { FaCheckCircle, FaTimes } from "react-icons/fa";
@@ -16,20 +15,17 @@ const SuccessModal = ({
 
     return createPortal(
         <div className="qdock" style={{ zIndex: 9999 }}>
-            {/* Arka Plan Karartma (Kapatmak için tıklanabilir) */}
             <button
                 className="qdock__scrim"
                 onClick={onClose}
                 aria-label="Kapat"
             />
 
-            {/* Modal İçeriği */}
             <div
                 className="qdock__dialog qdock-anim-in"
                 role="dialog"
                 aria-modal="true"
             >
-                {/* Başlık Kısmı */}
                 <div className="qdock__head">
                     <h2 className="qdock__title">{title}</h2>
                     <button
@@ -41,7 +37,6 @@ const SuccessModal = ({
                     </button>
                 </div>
 
-                {/* Gövde (Başarı Mesajı) */}
                 <div className="qdock__ok">
                     <div className="qdock__ok-badge" aria-hidden>
                         <FaCheckCircle />

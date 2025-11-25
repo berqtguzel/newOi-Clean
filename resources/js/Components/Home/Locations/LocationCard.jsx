@@ -1,4 +1,3 @@
-// resources/js/Components/Home/Locations/LocationCard.jsx
 import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "@inertiajs/react";
 import "react-lazy-load-image-component/src/effects/blur.css";
@@ -19,8 +18,7 @@ export default function LocationCard({ location, onHover, isActive }) {
     const [Img, setImg] = useState(() => FallbackImg);
     const locale = useLocale("de");
     const { t, i18n } = useTranslation();
-    
-    // HYDRATION FIX: Server ve client'ta aynı değerleri kullan
+
     const [isMounted, setIsMounted] = useState(false);
     useEffect(() => {
         setIsMounted(true);
@@ -69,29 +67,27 @@ export default function LocationCard({ location, onHover, isActive }) {
 
     const cityText = stripHtml(cityRaw) || "dieser Stadt";
 
-    // API'den gelen orijinal slug
     const originalSlug = location.slug;
 
     if (!originalSlug) {
         return null;
     }
 
-    // "gebaudereinigung-bad-homburg" -> "bad-homburg"
-    // "hotelreinigung-hamburg"       -> "hamburg"
-    // "gebaudereinigung"             -> "gebaudereinigung" (değişmez)
     const cleanedSlug = originalSlug.replace(/^[^-]+-/, "");
 
     if (!cleanedSlug) {
+        // Bu, slug'ın sadece 'gebaudereinigung-' gibi bir ön ekten oluştuğu anlamına gelir.
+        // Bu durumda da yönlendirme yapamayız.
         return null;
     }
 
     const hasMaps = Array.isArray(location.maps) && location.maps.length > 0;
     const primaryMap = hasMaps ? location.maps[0] : null;
     const slug = location.slug;
-    // Location show sayfasına yönlendir: direkt /{slug} formatında
+
+    // Yönlendirme yolu (Örnek: /berlin veya /hamburg)
     const href = `/${cleanedSlug}`;
 
-    // Provide simple per-locale defaults for the CTA (de / en / tr).
     const CTA_TEXT = {
         de: "Mehr erfahren",
         en: "Learn more",
@@ -104,19 +100,19 @@ export default function LocationCard({ location, onHover, isActive }) {
         tr: "{{city}}'deki temizlik hizmetlerimiz hakkında daha fazla bilgi alın",
     };
 
-    // HYDRATION FIX: useMemo ile sarmala ve i18n.language dependency ekle
+    // Hidrasyon hatalarını azaltmak için i18n.language bağımlılığı kaldırılmıştır.
     const ctaLabel = useMemo(() => {
         return t("locations.card.cta", {
             defaultValue: CTA_TEXT[locale] || CTA_TEXT.de,
         });
-    }, [t, i18n.language, locale]);
+    }, [t, locale]);
 
     const ctaAria = useMemo(() => {
         return t("locations.card.cta_aria", {
             defaultValue: CTA_ARIA[locale] || CTA_ARIA.de,
             city: cityText,
         });
-    }, [t, i18n.language, locale, cityText]);
+    }, [t, locale, cityText]);
 
     return (
         <Link
@@ -153,12 +149,8 @@ export default function LocationCard({ location, onHover, isActive }) {
 
             <div className="location-card-content">
                 <div className="location-card-footer">
-                    <span
-                        className="location-card-button"
-                        aria-label={ctaAria}
-                        onClick={(e) => e.preventDefault()}
-                    >
-                        <span>{ctaLabel}</span>
+                    <span className="location-card-button" aria-label={ctaAria}>
+                        <span suppressHydrationWarning={true}>{ctaLabel}</span>
                         <svg
                             className="location-card-arrow"
                             viewBox="0 0 24 24"

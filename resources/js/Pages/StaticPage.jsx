@@ -1,5 +1,3 @@
-// resources/js/Pages/Static/StaticPage.jsx
-
 import React, { useMemo } from "react";
 import { Head, Link, usePage } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
@@ -13,7 +11,7 @@ import { useTranslation } from "react-i18next";
 import { fetchPageBySlug } from "@/services/pageService";
 
 /* -------------------------------------------------------------------------- */
-/* helpers                                                                    */
+/* helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
 function safeParse(html = "") {
@@ -94,10 +92,6 @@ function normalizeLang(code) {
         .split("-")[0];
 }
 
-/* -------------------------------------------------------------------------- */
-/* component                                                                  */
-/* -------------------------------------------------------------------------- */
-
 export default function StaticPage({
     slug,
     page: initialPage = {},
@@ -118,8 +112,6 @@ export default function StaticPage({
     const [page, setPage] = React.useState(initialPage || null);
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState(null);
-
-    /* --------------------------- API'den sayfa çek -------------------------- */
 
     React.useEffect(() => {
         if (!slug) return;
@@ -152,8 +144,6 @@ export default function StaticPage({
             cancelled = true;
         };
     }, [slug, tenantId, locale]);
-
-    /* ------------------------- lokalize title/content ----------------------- */
 
     const { title, content } = React.useMemo(() => {
         if (!page) {
@@ -191,9 +181,6 @@ export default function StaticPage({
     const heroImage = page?.image || page?.raw?.image || null;
     const heroAlt = title || "O&I CLEAN group GmbH";
 
-    /* ------------------------------- FAQ verisi ----------------------------- */
-
-    // FAQ API'de page.raw.faq altında geliyor
     const faq = page?.faq || page?.raw?.faq || null;
 
     const faqTitle = React.useMemo(() => {
@@ -257,9 +244,6 @@ export default function StaticPage({
 
     const hasFaq = faqItems.length > 0;
 
-    /* ---------------------------------- SEO --------------------------------- */
-
-    // HYDRATION FIX: useMemo ile sarmala ve i18n.language dependency ekle
     const fallbackTitle = useMemo(() => {
         return t("staticPage.default_title", {
             defaultValue: "Seite - O&I CLEAN group GmbH",
@@ -295,26 +279,27 @@ export default function StaticPage({
     };
 
     const homeLabel = useMemo(() => {
+        // HYDRATION FIX: i18n.language'i kaldırdık
         return t("staticPage.breadcrumbs_home", {
             defaultValue: "Startseite",
         });
-    }, [t, i18n.language]);
+    }, [t]);
 
     const pageLabel = useMemo(() => {
+        // HYDRATION FIX: i18n.language'i kaldırdık
         return t("staticPage.breadcrumbs_page", {
             defaultValue: "Seite",
         });
-    }, [t, i18n.language]);
+    }, [t]);
 
     const contentComingSoon = useMemo(() => {
+        // HYDRATION FIX: i18n.language'i kaldırdık
         return t("staticPage.empty_content", {
             defaultValue: "Inhalt wird bald hinzugefügt.",
         });
-    }, [t, i18n.language]);
+    }, [t]);
 
     const hasContent = !!content;
-
-    /* -------------------------------- RENDER -------------------------------- */
 
     return (
         <AppLayout>
@@ -330,7 +315,6 @@ export default function StaticPage({
                 />
             </Head>
 
-            {/* HERO */}
             <section
                 className={`sp-hero ${heroImage ? "sp-hero--has-img" : ""}`}
             >
@@ -354,33 +338,59 @@ export default function StaticPage({
                     <nav className="sp-crumbs" aria-label="Breadcrumb">
                         <ol>
                             <li>
-                                <Link className="sp-crumbs__link" href="/">
+                                {/* 🚨 DÜZELTME: Anasayfa Linki Metin Uyuşmazlığını Gider */}
+                                <Link
+                                    className="sp-crumbs__link"
+                                    href="/"
+                                    suppressHydrationWarning={true}
+                                >
                                     {homeLabel}
                                 </Link>
                             </li>
-                            <li aria-current="page">{title || pageLabel}</li>
+                            <li
+                                aria-current="page"
+                                suppressHydrationWarning={true}
+                            >
+                                {title || pageLabel}
+                            </li>
                         </ol>
                     </nav>
 
-                    <h1 className="sp-title">{title || pageLabel}</h1>
+                    <h1 className="sp-title" suppressHydrationWarning={true}>
+                        {title || pageLabel}
+                    </h1>
                 </div>
             </section>
 
-            {/* SADECE YAZI İÇERİĞİ */}
             <section className="sp-content">
                 <div className="container">
                     <article className="sp-card sp-fadeup">
                         <div className="sp-card__body">
                             {loading && (
-                                <p className="sp-muted">Seite wird geladen…</p>
+                                <p
+                                    className="sp-muted"
+                                    suppressHydrationWarning={true}
+                                >
+                                    Seite wird geladen…
+                                </p>
                             )}
 
                             {error && !loading && (
-                                <p className="sp-error">{error}</p>
+                                <p
+                                    className="sp-error"
+                                    suppressHydrationWarning={true}
+                                >
+                                    {error}
+                                </p>
                             )}
 
                             {!loading && !error && !hasContent && !hasFaq && (
-                                <p className="sp-muted">{contentComingSoon}</p>
+                                <p
+                                    className="sp-muted"
+                                    suppressHydrationWarning={true}
+                                >
+                                    {contentComingSoon}
+                                </p>
                             )}
 
                             {!loading && !error && hasContent && (
@@ -393,12 +403,16 @@ export default function StaticPage({
                 </div>
             </section>
 
-            {/* FAQ – TAMAMEN AYRI BİR SECTION */}
             {hasFaq && (
                 <section className="sp-faq-section">
                     <div className="container">
                         <div className="sp-faq sp-fadeup">
-                            <h2 className="sp-faq__title">{faqTitle}</h2>
+                            <h2
+                                className="sp-faq__title"
+                                suppressHydrationWarning={true}
+                            >
+                                {faqTitle}
+                            </h2>
 
                             <div className="sp-faq__list">
                                 {faqItems.map((item, idx) => (
@@ -406,8 +420,13 @@ export default function StaticPage({
                                         key={item.id || idx}
                                         className="sp-faq__item"
                                         open={idx === 0}
+                                        // Detay etiketini korumak için, içindeki metin düğümlerini koru
+                                        suppressHydrationWarning={true}
                                     >
-                                        <summary className="sp-faq__question">
+                                        <summary
+                                            className="sp-faq__question"
+                                            suppressHydrationWarning={true}
+                                        >
                                             {item.question}
                                         </summary>
                                         <div className="sp-faq__answer">

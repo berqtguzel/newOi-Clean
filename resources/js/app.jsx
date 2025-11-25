@@ -11,24 +11,13 @@ import { createRoot, hydrateRoot } from "react-dom/client";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 import route from "../../vendor/tightenco/ziggy/dist/index.m.js";
 import { ThemeProvider } from "./Context/ThemeContext";
-import i18n from "i18next"; // i18next kütüphanesini içeri aktarın
+import i18n from "i18next";
 
-/*
-|--------------------------------------------------------------------------
-| 0. FOUC ENGELLEMEK İÇİN GİZLEME (Hydration için GÜVENLİ Yöntem)
-|--------------------------------------------------------------------------
-*/
 if (document.documentElement.style.visibility === "hidden") {
-    // Görünürlüğü kaldırma işi artık RootComponent'te yönetilecek.
 } else {
     document.documentElement.style.visibility = "visible";
 }
 
-/*
-|--------------------------------------------------------------------------
-| 1. Renkleri Uygula (Aynen Korundu)
-|--------------------------------------------------------------------------
-*/
 function applyCssVarsFromColors(colors = {}) {
     Object.entries(colors).forEach(([key, val]) => {
         if (!val) return;
@@ -61,11 +50,6 @@ if (window.__SITE_COLORS__) {
 
 const APP_NAME = "O&I CLEAN group GmbH";
 
-/*
-|--------------------------------------------------------------------------
-| 2. Dark Mode başlangıç modu (Aynen Korundu)
-|--------------------------------------------------------------------------
-*/
 function getInitialTheme() {
     if (typeof window === "undefined") return "light";
     try {
@@ -80,11 +64,6 @@ function getInitialTheme() {
     }
 }
 
-/*
-|--------------------------------------------------------------------------
-| 3. Kök Bileşen (Aynen Korundu)
-|--------------------------------------------------------------------------
-*/
 const RootComponent = ({ App, props, initialTheme }) => {
     useEffect(() => {
         requestAnimationFrame(() => {
@@ -99,11 +78,6 @@ const RootComponent = ({ App, props, initialTheme }) => {
     );
 };
 
-/*
-|--------------------------------------------------------------------------
-| 4. INERTIA APP BAŞLATMA VE KRİTİK DİL BEKLEMESİ
-|--------------------------------------------------------------------------
-*/
 createInertiaApp({
     title: (title) => (title ? `${title} - ${APP_NAME}` : APP_NAME),
 
@@ -120,19 +94,14 @@ createInertiaApp({
 
         let appStarted = false;
 
-        // 🚨 HİDRASYON ÇÖZÜMÜ: i18n'in YÜKLENMESİNİ BEKLE ve DİLİ ZORLA
-
-        // 1. Dili senkron olarak zorla.
         if (i18n.isInitialized) {
             i18n.language = initialLocale;
         }
 
-        // 2. Hydrate/Render işlemini i18n'in kaynakları yükleyip "hazır" olana kadar geciktir.
         const startApp = () => {
             if (appStarted) return;
             appStarted = true;
 
-            // DİL KESİNLEŞTİKTEN SONRA TEKRAR KONTROL
             if (i18n.language !== initialLocale) {
                 i18n.language = initialLocale;
             }
@@ -145,14 +114,10 @@ createInertiaApp({
                 />
             );
 
-            // 🚨 KRİTİK DEĞİŞİKLİK: Hidrasyonu Kontrollü Dene
             if (el.hasChildNodes()) {
                 try {
-                    // Hidrasyonu dene. Başarılı olursa hız kazanılır.
                     hydrateRoot(el, Root);
                 } catch (e) {
-                    // Eğer hidrasyon başarısız olursa (DOM uyuşmazlığı),
-                    // hatayı yut ve tamamen client-side render'a geç (yavaş ama hatasız).
                     console.error(
                         "Hydration Failed. Falling back to client-side render.",
                         e
@@ -164,16 +129,12 @@ createInertiaApp({
             }
         };
 
-        // 3. Başlatma mantığı: İki ana yolu kontrol et.
         if (i18n.isInitialized) {
-            // Eğer i18n hazırsa, hafif bir gecikmeyle (DOM'un tamamen stabilize olması için) başlat.
             setTimeout(startApp, 10);
         } else {
-            // Eğer i18n asenkron yükleme yapıyorsa, 'initialized' event'ini bekle.
             i18n.on("initialized", startApp);
         }
 
-        // Ziggy ve diğer ayarlar
         const ziggy = initialPageProps?.ziggy;
         if (ziggy) {
             window.route = (name, params, absolute) =>
@@ -184,11 +145,6 @@ createInertiaApp({
         }
     },
 
-    /*
-    |--------------------------------------------------------------------------
-    | 5. Inertia Progress Bar (Aynen Korundu)
-    |--------------------------------------------------------------------------
-    */
     progress: {
         color: "var(--site-primary-color)",
         delay: 80,

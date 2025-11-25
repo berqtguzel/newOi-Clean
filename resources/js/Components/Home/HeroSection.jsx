@@ -23,7 +23,6 @@ export default function HeroSection({ content = {} }) {
     const { t, i18n } = useTranslation();
     const { props } = usePage();
 
-    // HYDRATION FIX: Server ve client'ta aynı değerleri kullanmak için mount kontrolü
     const [isMounted, setIsMounted] = useState(false);
     useEffect(() => {
         setIsMounted(true);
@@ -37,26 +36,20 @@ export default function HeroSection({ content = {} }) {
 
     const locale = useLocale("de");
 
-    // HYDRATION FIX: Backend'den gelen locale'i kullan
     const backendLocale = props?.locale || locale || "de";
 
-    // Server-side'da i18n'i backend locale ile senkronize et
-    // Bu, istemci tarafında i18n'in client diline otomatik geçişini engeller.
     useEffect(() => {
         if (isMounted && backendLocale && i18n.language !== backendLocale) {
-            // NOT: Hidrasyon hatalarını azaltmak için app.jsx'teki senkron atamaya güveniyoruz.
             i18n.changeLanguage(backendLocale);
         }
     }, [isMounted, backendLocale, i18n]);
 
     const { sliders } = useSliders({ tenantId, locale });
-    // Video kaynağı buradan çekiliyor
+
     const primarySlide = sliders && sliders.length ? sliders[0] : null;
 
     const [useFallbackVideo, setUseFallbackVideo] = useState(false);
 
-    // HYDRATION FIX: useMemo'dan i18n.language bağımlılığını kaldırmak,
-    // render sırasında anlık değişimden kaçınır. (Çeviri zaten i18n.language değiştiğinde güncellenir)
     const heroTitleHtml = useMemo(() => {
         return t("hero.title", "");
     }, [t]);
@@ -79,10 +72,8 @@ export default function HeroSection({ content = {} }) {
         content.hero_primary_cta_href ||
         "#services";
 
-    // Use fragment anchor without leading slash to match server-rendered HTML
     const secondaryCtaHref = content.hero_secondary_cta_href || "#contact";
 
-    // Kontrol: API'den video URL'si gelmiş mi?
     const hasSlideImage = !!primarySlide?.image && !useFallbackVideo;
     const hasSlideVideo = !!primarySlide?.video_url && !useFallbackVideo;
 
@@ -104,7 +95,6 @@ export default function HeroSection({ content = {} }) {
                     onError={() => setUseFallbackVideo(true)}
                 />
             ) : hasSlideVideo ? (
-                // 🚨 API'DEN GELEN VIDEO URL'SI KULLANIMI (primarySlide.video_url)
                 <motion.iframe
                     src={primarySlide.video_url}
                     title="Hero Video"
@@ -118,7 +108,6 @@ export default function HeroSection({ content = {} }) {
                     onError={() => setUseFallbackVideo(true)}
                 />
             ) : (
-                // YEDEK STATİK VIDEO KULLANIMI
                 <motion.video
                     autoPlay
                     loop
@@ -131,7 +120,6 @@ export default function HeroSection({ content = {} }) {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 1.1, ease: "easeOut" }}
                 >
-                    {/* Statik yedek kaynak */}
                     <source src="/videos/headerVideo.mp4" type="video/mp4" />
                     Ihr Browser unterstützt das Video-Tag nicht.
                 </motion.video>
@@ -155,7 +143,6 @@ export default function HeroSection({ content = {} }) {
                     className="text-3xl text-white sm:text-4xl md:text-6xl font-extrabold leading-tight"
                     variants={item}
                 >
-                    {/* SafeHtml bileşeni zaten korumalı. */}
                     <SafeHtml html={heroTitleHtml} />
                 </motion.h1>
 
@@ -170,7 +157,6 @@ export default function HeroSection({ content = {} }) {
                     className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4"
                     variants={item}
                 >
-                    {/* HYDRATION FIX: Metin uyuşmazlığını engellemek için eklendi */}
                     <a
                         href={primaryCtaHref}
                         className="w-full sm:w-auto bg-button text-gray-900 font-bold py-3 px-6 sm:px-8 rounded-full hover:bg-button transition duration-300"
@@ -178,7 +164,7 @@ export default function HeroSection({ content = {} }) {
                     >
                         {primaryCtaLabel}
                     </a>
-                    {/* HYDRATION FIX: Metin uyuşmazlığını engellemek için eklendi */}
+
                     <a
                         href={secondaryCtaHref}
                         className="w-full sm:w-auto bg-transparent border-2 border-white text-white font-bold py-3 px-6 sm:px-8 rounded-full hover:bg-white hover:text-gray-900 transition duration-300"

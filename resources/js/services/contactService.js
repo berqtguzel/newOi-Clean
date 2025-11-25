@@ -46,13 +46,13 @@ export async function getContactForms({ tenantId, locale } = {}) {
   return list.map(normalizeForm);
 }
 
-// --- Form Gönderme (POST) - Form ID 1 İçin Hazır ---
+
 export async function submitContactForm({ formId, payload, tenantId, locale }) {
-  // Form ID gelmezse hata verelim (veya varsayılan 1 yapabiliriz ama componentten gelmesi daha sağlıklı)
+
   if (!formId) throw new Error("formId required");
 
   const headers = {
-      "Content-Type": "application/json", // <--- 422 Hatası Çözümü
+      "Content-Type": "application/json",
       "Accept": "application/json",
   };
 
@@ -61,14 +61,14 @@ export async function submitContactForm({ formId, payload, tenantId, locale }) {
   const params = {};
   if (locale) params.locale = String(locale);
 
-  // URL Yapısı: /api/v1/contact/forms/1/submit
+
   const path = `/v1/contact/forms/${formId}/submit`;
 
   return httpRequest(path, {
     method: "POST",
     headers,
     params,
-    data: payload, // Payload JSON olarak gider
+    data: payload,
     timeoutMs: remoteConfig.timeout,
     retries: 0,
   });

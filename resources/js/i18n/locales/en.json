@@ -64,6 +64,7 @@
     "submit_failed": "Message could not be sent.",
     "select_placeholder": "Please choose",
     "success_title": "Success!",
+     "locations_title": "Our locations",
     "success_message": "Your message has been sent successfully. We will get back to you as soon as possible.",
     "redirecting": "Page reloading...",
     "phone_label": "Phone",

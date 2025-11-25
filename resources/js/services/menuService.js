@@ -1,19 +1,19 @@
 import { httpRequest } from "../lib/http";
 import { remoteConfig } from "./remoteConfig";
 
-// Basit bellek içi cache ve aynı anda birden fazla isteği engellemek için inflight haritası
-const menuCache = new Map(); // key -> { menus, meta }
-const inflight = new Map();  // key -> Promise
+
+const menuCache = new Map();
+const inflight = new Map();
 
 function buildKey({ page, perPage, search, tenantId, locale }) {
   return JSON.stringify({ page, perPage, search, tenantId, locale });
 }
 
-// --- normalize yardımcıları ---
+
 function buildTreeFromFlat(items = []) {
   const byId = new Map();
   const roots = [];
-  // İlk geçiş: düğümleri oluştur
+
   items.forEach((it, i) => {
     const id = it?.id ?? i;
     const idStr = String(id);
@@ -124,7 +124,7 @@ function normalizeMenus(res) {
     raw: m,
   }));
 
-  // burada _meta'yı da dikkate al
+
   return { menus, meta: res?._meta || res?.meta || {} };
 }
 

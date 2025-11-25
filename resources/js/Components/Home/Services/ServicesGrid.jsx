@@ -57,19 +57,16 @@ const useIntersectionObserver = (ref) => {
     }, [ref]);
 };
 
-// 🔹 Tüm dillerdeki description'ları birleştiren helper (Aynen korundu)
 const getAllDescriptions = (service) => {
     if (!service) return "";
 
     const descriptions = [];
 
-    // 1) Ana description (current language)
     if (service.description) {
         const base = String(service.description).trim();
         if (base) descriptions.push(base);
     }
 
-    // 2) translations dizisindeki description'lar (de, en, tr ...)
     if (Array.isArray(service.translations)) {
         service.translations.forEach((tr) => {
             if (tr?.description) {
@@ -104,7 +101,6 @@ const ServicesGrid = ({ services = [], content = {} }) => {
 
     const locale = useLocale("de");
 
-    // ✔ API’den servisleri çek
     const { services: remoteServices, loading } = useServices({
         perPage: 200,
         tenantId,
@@ -115,17 +111,12 @@ const ServicesGrid = ({ services = [], content = {} }) => {
         ? remoteServices
         : [];
 
-    // ------------------------------------------------------------
-    // 🔥 SEO ve GEBÄUDEREINIGUNG KATEGORİLERİNİ GİZLE
-    // ------------------------------------------------------------
     const filteredServices = safeRemoteServices.filter((s) => {
         const catName = String(s.categoryName || "").toLowerCase();
         const catId = s.categoryId;
 
-        // SEO kategorisini filtrele
         if (catName === "seo") return false;
 
-        // Gebäudereinigung kategorisini filtrele (category_id=2 veya name="Gebäudereinigung")
         if (
             catId === 2 ||
             catName === "gebäudereinigung" ||
@@ -147,7 +138,6 @@ const ServicesGrid = ({ services = [], content = {} }) => {
     const lightColors = ["#085883", "#0C9FE2", "#2EA7E0"];
     const darkColors = ["#47B3FF", "#7CCBFF", "#B5E3FF"];
 
-    // JSON-LD
     const schemaData = {
         "@context": "https://schema.org",
         "@type": "ItemList",
@@ -163,7 +153,6 @@ const ServicesGrid = ({ services = [], content = {} }) => {
         }),
     };
 
-    // ❗ Burada fallback parametresini kaldırdık.
     const headingHtml =
         content.services_title || t("servicesList.title") || "Leistungen";
 
@@ -196,7 +185,6 @@ const ServicesGrid = ({ services = [], content = {} }) => {
                 </script>
             </Head>
 
-            {/* Arka Plan Bitleri (Mounted olduktan sonra render edilir) */}
             <div className="absolute inset-0 z-10 liquid-ether-bg">
                 <div
                     className="liquid-ether-inner"
@@ -226,7 +214,6 @@ const ServicesGrid = ({ services = [], content = {} }) => {
             <div className="services-container relative z-10">
                 <div className="services-header">
                     <h2 id="services-title" className="services-title">
-                        {/* SafeHtml zaten korumalı */}
                         <SafeHtml html={headingHtml} />
                     </h2>
                     <div className="services-subtitle">
@@ -237,7 +224,6 @@ const ServicesGrid = ({ services = [], content = {} }) => {
                 <div ref={gridRef} className="services-grid">
                     {loading && (
                         <div className="services-loading">
-                            {/* 🔥 BOŞLUK DÜZELTME: Fazladan boşluk karakteri silindi */}
                             {mounted ? t("servicesList.loading") : ""}
                         </div>
                     )}
@@ -259,7 +245,6 @@ const ServicesGrid = ({ services = [], content = {} }) => {
                     <a
                         href="/kontakt"
                         className="services-contact-button"
-                        // Buton metin uyuşmazlığını gidermek için
                         suppressHydrationWarning={true}
                     >
                         {t("servicesList.contact_cta") || "Kontaktiere Uns"}

@@ -10,7 +10,6 @@ import { useLocale } from "@/hooks/useLocale";
 export default function QuoteModal() {
     const { t } = useTranslation();
 
-    // Tenant + locale
     const { props } = usePage();
     const tenantId =
         props?.global?.tenantId ||
@@ -20,7 +19,6 @@ export default function QuoteModal() {
 
     const locale = useLocale("de");
 
-    // Bu modaldaki form her zaman ID = 2 (Emin misin? Değilse 1 yapabilirsin)
     const targetFormId = 2;
 
     const [open, setOpen] = useState(false);
@@ -41,7 +39,6 @@ export default function QuoteModal() {
     const dialogRef = useRef(null);
     const openerRef = useRef(null);
 
-    // Dışarıdan event ile açma
     useEffect(() => {
         const openHandler = () => {
             openerRef.current = document.activeElement;
@@ -52,7 +49,6 @@ export default function QuoteModal() {
             window.removeEventListener("open-quote-modal", openHandler);
     }, []);
 
-    // Body scroll kilidi
     useEffect(() => {
         if (!open) return;
         const prev = document.body.style.overflow;
@@ -62,7 +58,6 @@ export default function QuoteModal() {
         };
     }, [open]);
 
-    // ESC + TAB trap
     useEffect(() => {
         if (!open) return;
         const onKey = (e) => {
@@ -115,7 +110,6 @@ export default function QuoteModal() {
     const onChange = (e) => {
         const { name, type, value, checked } = e.target;
 
-        // Hata varsa temizle
         if (errors[name]) {
             setErrors((prev) => {
                 const newErrors = { ...prev };
@@ -147,18 +141,15 @@ export default function QuoteModal() {
 
         setSubmitting(true);
 
-        // --- PAYLOAD HAZIRLIĞI (Backend Uyumu) ---
         const payload = {
-            // Temel veriler
             name: formState.name,
             email: formState.email,
             phone: formState.phone,
             message: formState.message,
-            service: formState.service || "", // Ekstra alan
+            service: formState.service || "",
 
-            // Backend'in beklediği özel anahtarlar (Kopya)
-            "e-mail": formState.email, // <--- KRİTİK
-            messages: formState.message, // <--- KRİTİK
+            "e-mail": formState.email,
+            messages: formState.message,
             telefon: formState.phone,
             nachricht: formState.message,
             leistung: formState.service || "",
@@ -178,20 +169,17 @@ export default function QuoteModal() {
             const status = err?.response?.status;
             const data = err?.response?.data;
 
-            // 500 Hatası olsa bile başarılı say (Workaround)
             if (status === 500) {
                 setOk(true);
                 resetState();
                 return;
             }
 
-            // 422 Validation Hataları
             if (status === 422 && data?.errors) {
                 const backendErrors = data.errors;
                 let normalized = {};
 
                 Object.keys(backendErrors).forEach((key) => {
-                    // Hata mesajını ilgili forma alanına eşle
                     if (key === "e-mail")
                         normalized["email"] = backendErrors[key][0];
                     else if (key === "messages")
@@ -200,10 +188,6 @@ export default function QuoteModal() {
                 });
 
                 setErrors(normalized);
-
-                // Opsiyonel: Kullanıcıya alert ile de göster
-                // const flat = Object.values(normalized).join("\n");
-                // alert(flat);
             } else {
                 alert(
                     t(
@@ -260,7 +244,6 @@ export default function QuoteModal() {
                                     required
                                     value={formState.name}
                                     onChange={(e) => {
-                                        // Sadece harf girişi (Rakam engelleme)
                                         if (/^[^0-9]*$/.test(e.target.value)) {
                                             onChange(e);
                                         }
@@ -304,7 +287,6 @@ export default function QuoteModal() {
                                     required
                                     value={formState.phone}
                                     onChange={(e) => {
-                                        // Sadece rakam ve sembol girişi
                                         if (
                                             /^[0-9+\-()\s]*$/.test(
                                                 e.target.value

@@ -46,7 +46,6 @@ export function safeParse(html, options) {
     });
 
     const replace = (node) => {
-        // Dış linkler ⇒ güvenli aç
         if (node instanceof Element && node.name === "a") {
             const props = node.attribs || {};
             const href = props.href || "";
@@ -61,7 +60,6 @@ export function safeParse(html, options) {
             }
         }
 
-        // script / style asla render etme
         if (
             node instanceof Element &&
             (node.name === "script" || node.name === "style")

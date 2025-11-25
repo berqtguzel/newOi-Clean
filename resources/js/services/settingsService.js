@@ -1,7 +1,6 @@
 import axios from "axios";
 import remoteConfig from "./remoteConfig";
 
-// Varsayılan API (v1 için)
 const BASE_URL = remoteConfig.apiBase || "https://omerdogan.de/api/v1";
 
 const api = axios.create({
@@ -9,7 +8,7 @@ const api = axios.create({
     timeout: remoteConfig.timeout || 10000,
 });
 
-// Header ve Tenant ID oluşturucu
+
 function buildRequestConfig({ tenantId, locale, signal } = {}) {
     const headers = {};
 
@@ -35,7 +34,7 @@ function buildRequestConfig({ tenantId, locale, signal } = {}) {
     };
 }
 
-// Standart Fetch (v1 kullananlar için)
+
 async function fetchSettings(endpoint, options = {}) {
     const config = buildRequestConfig(options);
     try {
@@ -48,17 +47,15 @@ async function fetchSettings(endpoint, options = {}) {
     }
 }
 
-/* =========================================================
-   DÜZELTİLEN KISIM: LANGUAGES (v1 OLMADAN ÇAĞRILMALI)
-   ========================================================= */
+
 export async function getLanguageSettings(options = {}) {
     const config = buildRequestConfig(options);
 
-    // URL'yi manuel ve tam olarak veriyoruz ki 'v1' eklemesin.
+
     const url = "https://omerdogan.de/api/global/settings/languages";
 
     try {
-        // 'api' instance yerine direkt 'axios' kullanıyoruz
+
         const res = await axios.get(url, config);
         return res?.data?.data ?? res?.data ?? [];
     } catch (error) {
@@ -67,7 +64,7 @@ export async function getLanguageSettings(options = {}) {
     }
 }
 
-// --- Diğer Fonksiyonlar (Aynen Kalıyor) ---
+
 
 export function getGeneralSettings(options = {}) {
     return fetchSettings("general", options);

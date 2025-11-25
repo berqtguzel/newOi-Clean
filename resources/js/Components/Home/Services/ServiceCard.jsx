@@ -19,7 +19,6 @@ function stripHtml(str = "") {
         .trim();
 }
 
-// "de-DE", "tr-TR", "EN" → normalize: de, tr, en
 function normLang(code) {
     return String(code || "")
         .toLowerCase()
@@ -39,10 +38,6 @@ const ServiceCard = ({
 
     const currentLang = normLang(i18n.language || "de");
 
-    /* ======================================================
-     * DİL SEÇİMİ
-     * ====================================================== */
-
     const activeTranslation = translations.find(
         (tr) => normLang(tr.language_code) === currentLang
     );
@@ -56,10 +51,6 @@ const ServiceCard = ({
         activeTranslation?.content ||
         "";
 
-    /* ======================================================
-     * IMAGE LOADING
-     * ====================================================== */
-
     const imageRef = useRef(null);
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -69,18 +60,11 @@ const ServiceCard = ({
         }
     }, []);
 
-    /* ======================================================
-     * SLUG – ŞEHİR EKLEME ALGORİTMASI
-     * ====================================================== */
-
-    // Location show sayfasında mıyız? (ör: /aalen, /berlin)
-    // Location show sayfası: sadece bir segment var ve service prefix'leri ile başlamıyor
     const isLocationShowPage = () => {
         if (typeof window === "undefined") return false;
         const path = window.location.pathname;
         const parts = path.split("/").filter(Boolean);
 
-        // Sadece bir segment varsa ve service prefix'leri ile başlamıyorsa location show sayfası
         if (parts.length === 1) {
             const slug = parts[0] || "";
             const isServicePrefix =
@@ -97,7 +81,6 @@ const ServiceCard = ({
         return false;
     };
 
-    // Mevcut URL'den city slug'ını al (location show sayfası için)
     const getCurrentCitySlug = () => {
         if (typeof window === "undefined") return null;
         const path = window.location.pathname;
@@ -143,20 +126,16 @@ const ServiceCard = ({
             .replace(/[^a-z0-9-]+/g, "-")
             .replace(/^-+|-+$/g, "");
 
-    // Service slug kontrolü: slug zaten service prefix'leri ile başlıyorsa
     const isServiceSlug =
         /^(gebaudereinigung|wohnungsrenovierung|hotelreinigung)-/.test(
             String(slug || "").toLowerCase()
         );
 
-    // Location show sayfasındaysak city ekleme mantığını UYGULA - location'a göre URL oluştur
     const isOnLocationPage = isLocationShowPage();
 
     let effectiveSlug = slug || "";
 
     if (isOnLocationPage) {
-        // Location show sayfasındaysak city slug'ını al ve ekle
-        // Örnek: /berlin sayfasındayken /baufeinreinigung-berlin'e yönlendir
         const currentCitySlug = getCurrentCitySlug();
         const slugValue = effectiveSlug.startsWith("/")
             ? effectiveSlug.slice(1)
@@ -172,12 +151,10 @@ const ServiceCard = ({
             effectiveSlug = slugValue;
         }
     } else if (isServiceSlug) {
-        // Service slug ise olduğu gibi kullan
         effectiveSlug = effectiveSlug.startsWith("/")
             ? effectiveSlug.slice(1)
             : effectiveSlug;
     } else {
-        // Normal sayfalarda city ekleme mantığı
         const currentCitySlug = getCitySlugFromPath();
         const slugValue = effectiveSlug.startsWith("/")
             ? effectiveSlug.slice(1)
@@ -194,7 +171,6 @@ const ServiceCard = ({
 
     const href = buildHref({ link, slug: effectiveSlug });
 
-    // HYDRATION FIX: useMemo ile sarmala ve i18n.language dependency ekle
     const plainTitle = useMemo(() => {
         return (
             stripHtml(displayTitle) ||

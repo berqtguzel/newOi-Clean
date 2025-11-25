@@ -1,4 +1,3 @@
-// resources/js/services/pageService.js
 import axios from "axios";
 import remoteConfig from "./remoteConfig";
 
@@ -6,12 +5,12 @@ function normalizeLang(code) {
     return String(code || "de").toLowerCase().split("-")[0];
 }
 
-// Burada base url'i güvenli şekilde belirliyoruz
+
 const API_BASE =
-    remoteConfig.baseUrl ||            // senin projende varsa
-    remoteConfig.apiBaseUrl ||         // bazı projelerde böyle oluyor
-    remoteConfig.apiUrl ||             // ya da böyle
-    "/api/v1";                         // hiçbirini bulamazsa fallback
+    remoteConfig.baseUrl ||
+    remoteConfig.apiBaseUrl ||
+    remoteConfig.apiUrl ||
+    "/api/v1";
 
 export async function fetchPageBySlug(slug, { tenantId, locale } = {}) {
     if (!slug) throw new Error("slug is required");

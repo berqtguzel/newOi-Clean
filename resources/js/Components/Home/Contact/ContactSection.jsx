@@ -19,7 +19,6 @@ const ContactSection = () => {
     const { t } = useTranslation();
     const { props } = usePage();
 
-    // 1. AYARLARI ÇEKME
     const { data: settings } = useSettings();
 
     const contactInfo = useMemo(() => {
@@ -31,7 +30,6 @@ const ContactSection = () => {
         return settings?.contact || {};
     }, [settings]);
 
-    // --- VERİ HAZIRLAMA ---
     const displayPhone =
         contactInfo.phone || contactInfo.mobile || "+49 (0)36874 38 55 67";
     const phoneHref = displayPhone.replace(/[^+\d]/g, "");
@@ -172,7 +170,6 @@ const ContactSection = () => {
             });
             handleSuccess();
         } catch (err) {
-            // Hata loglarını temizledik
             if (err?.response?.status === 500) {
                 handleSuccess();
                 return;
@@ -269,7 +266,7 @@ const ContactSection = () => {
                         <h2 className="contact-title">
                             {t("contact.title", "Kontaktieren Sie uns")}
                         </h2>
-                        {/* <p> -> <div> DEĞİŞİKLİĞİ (Hydration Fix) */}
+
                         <div className="contact-description text-gray-600 dark:text-gray-300 mb-6">
                             {t(
                                 "contact.description",
@@ -290,7 +287,7 @@ const ContactSection = () => {
                                                 "Telefon"
                                             )}
                                         </h3>
-                                        {/* <p> -> <div> */}
+
                                         <div className="text-gray-600 dark:text-gray-300">
                                             <a href={`tel:${phoneHref}`}>
                                                 {displayPhone}

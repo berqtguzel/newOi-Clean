@@ -75,10 +75,8 @@ const CookieBanner = () => {
     return (
         <div className="cookie-banner-container">
             <div className="cookie-card">
-                {/* Dekoratif Işık Efekti */}
                 <div className="cookie-glow"></div>
 
-                {/* Başlık */}
                 <div className="cookie-header">
                     <div className="cookie-icon-box">
                         <FaCookieBite />
@@ -94,7 +92,6 @@ const CookieBanner = () => {
                     </div>
                 </div>
 
-                {/* Detaylar (Açılır Kapanır) */}
                 {showDetails && (
                     <div className="cookie-details">
                         {Object.keys(INITIAL_COOKIES).map((key) => (
@@ -137,7 +134,6 @@ const CookieBanner = () => {
                     </div>
                 )}
 
-                {/* Butonlar */}
                 <div className="cookie-actions">
                     <div className="cookie-btn-group">
                         {showDetails ? (

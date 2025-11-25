@@ -1,5 +1,3 @@
-// resources/js/Pages/Locations/Show.jsx
-
 import React, { useEffect, useState, useMemo } from "react";
 import { Head, usePage } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
@@ -14,7 +12,6 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
     const { props } = usePage();
     const { t, i18n } = useTranslation();
 
-    // HYDRATION FIX: Server ve client'ta aynı değerleri kullan
     const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
@@ -26,11 +23,10 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
 
     const [remoteServices, setRemoteServices] = useState([]);
     const [matchedService, setMatchedService] = useState(null);
-    // HYDRATION FIX: Server-side'da loading false olmalı
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // HYDRATION FIX: Server ve client'ta aynı slug değerini kullan
     const currentUrlSlug = useMemo(() => {
         if (slug) return slug;
         if (!isMounted || typeof window === "undefined") return "";
@@ -47,12 +43,11 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
             .join(" ");
     }, [currentUrlSlug]);
 
-    // Nihai şehir değeri - HYDRATION FIX: Server-side'da slug'dan al
     const city = useMemo(() => {
         if (matchedService?.city) return matchedService.city;
         if (page?.city) return page.city;
         if (cityFromUrl) return cityFromUrl;
-        // Server-side fallback
+
         if (!isMounted && slug) {
             const fallbackCity = slug
                 .replace("gebaudereinigung-in-", "")
@@ -65,7 +60,6 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
         return "";
     }, [matchedService?.city, page?.city, cityFromUrl, isMounted, slug]);
 
-    // HERO BAŞLIK - HYDRATION FIX: Server ve client'ta aynı değer
     const heroTitle = useMemo(() => {
         if (matchedService?.title) return matchedService.title;
         if (matchedService?.name) return matchedService.name;
@@ -75,13 +69,20 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
             city: cityValue,
             defaultValue: `Gebäudereinigung in ${cityValue}`,
         });
-    }, [matchedService?.title, matchedService?.name, page?.title, city, t, i18n.language]);
+    }, [
+        matchedService?.title,
+        matchedService?.name,
+        page?.title,
+        city,
+        t,
+        i18n.language,
+    ]);
 
-    // HERO İÇERİK - HYDRATION FIX: Server ve client'ta aynı değer
     const heroDesc = useMemo(() => {
         if (matchedService?.raw?.content) return matchedService.raw.content;
         if (matchedService?.description) return matchedService.description;
-        if (matchedService?.shortDescription) return matchedService.shortDescription;
+        if (matchedService?.shortDescription)
+            return matchedService.shortDescription;
         if (page?.intro) return page.intro;
         const cityValue = city || "dieser Stadt";
         return t("locations.hero.content", {
@@ -101,7 +102,6 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
     const placeholderImage =
         "https://images.unsplash.com/photo-1581578731117-e0a820bd4928?q=80&w=1920&auto=format&fit=crop";
 
-    // HYDRATION FIX: Server ve client'ta aynı image değeri
     const heroImageSrc = useMemo(() => {
         return (
             matchedService?.image ||
@@ -109,26 +109,14 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
             page?.hero?.image ||
             placeholderImage
         );
-    }, [matchedService?.image, page?.image, page?.hero?.image, placeholderImage]);
-
-    // ===========================================
-    // 💡 Konsol Logları: Değişkenlerin Değerlerini Göster
-    // ===========================================
-    useEffect(() => {
-        console.groupCollapsed("📍 LocationShow Bileşen Verileri (Başlangıç)");
-        console.log("Current URL Slug:", currentUrlSlug);
-        console.log("URL'den Çıkarılan Şehir (cityFromUrl):", cityFromUrl);
-        console.log("Nihai Şehir Değeri (city):", city);
-        console.log("Ana Başlık (heroTitle):", heroTitle);
-        console.log("Açıklama/İçerik (heroDesc):", heroDesc);
-        console.groupEnd();
-    }, [currentUrlSlug, cityFromUrl, city, heroTitle, heroDesc]);
-    // ===========================================
-    // 💡 Konsol Logları Sonu
-    // ===========================================
+    }, [
+        matchedService?.image,
+        page?.image,
+        page?.hero?.image,
+        placeholderImage,
+    ]);
 
     useEffect(() => {
-        // HYDRATION FIX: Sadece client-side'da çalış
         if (!isMounted) return;
 
         let isComponentMounted = true;
@@ -173,37 +161,13 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
                     setMatchedService(finalMatchedService);
                 }
 
-                // ===========================================
-                // 💡 Konsol Logları: API ve Eşleşme Sonucu
-                // ===========================================
-                console.groupCollapsed("🌐 API Verileri ve Eşleşme Sonuçları");
-                console.log(
-                    "API'dan Gelen Toplam Servis Sayısı:",
-                    servicesList.length
-                );
                 if (finalMatchedService) {
-                    console.log(
-                        "Eşleşen Servis Verisi (matchedService):",
-                        finalMatchedService
-                    );
-                    console.log(
-                        "Eşleşen Servis Adı (Title):",
-                        finalMatchedService.title || finalMatchedService.name
-                    );
-                    console.log(
-                        "Eşleşen Servis İçeriği (raw.content / description):",
-                        finalMatchedService.raw?.content ||
-                            finalMatchedService.description
-                    );
                 } else {
                     console.warn(
                         "URL Slug'ı veya Şehir ile Eşleşen Servis Bulunamadı."
                     );
                 }
                 console.groupEnd();
-                // ===========================================
-                // 💡 Konsol Logları Sonu
-                // ===========================================
 
                 if (isComponentMounted) {
                     setError(null);
@@ -231,10 +195,9 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
 
         const filtered = list.filter((s) => {
             const hasCity = s.city && s.city.toString().trim() !== "";
-            // Şehir alanı dolu olan servisleri (yani diğer lokasyon sayfalarını) filtrele.
+
             if (hasCity) return false;
 
-            // ... SEO filtreleme mantığı (korundu) ...
             const slugStr = (s.slug || "").toString().toLowerCase();
             const nameStr = (s.title || s.name || "").toString().toLowerCase();
             const catRaw =
@@ -259,7 +222,6 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
             if (isSeoCategory || isSeoSlug || isSeoName) {
                 return false;
             }
-            // ... SEO filtreleme mantığı sonu ...
 
             return true;
         });
@@ -270,7 +232,6 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
                 const baseServiceSlug = s.slug || "";
                 const baseTitle = s.title || s.name || "";
 
-                // i18n ile "in [City]" kısmını oluştur
                 const inCityPart =
                     city &&
                     t("services.location.in_city", {
@@ -278,7 +239,6 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
                         defaultValue: `in ${city}`,
                     });
 
-                // Başlıkta zaten şehir adı geçmiyorsa sonuna ekle
                 const title =
                     baseTitle &&
                     city &&
@@ -305,7 +265,6 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
             });
     }, [remoteServices, city, t, i18n.language]);
 
-    // HYDRATION FIX: Server ve client'ta aynı meta değerleri
     const pageTitle = useMemo(() => {
         return t("locations.meta.title", {
             heroTitle,
@@ -317,9 +276,6 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
         return heroDesc.replace(/<[^>]*>?/gm, "").substring(0, 160);
     }, [heroDesc]);
 
-    // ====================================================================
-    // 🆕 YENİ BAŞLIK VE İÇERİK DEĞİŞKENLERİ - HYDRATION FIX
-    // ====================================================================
     const servicesSectionTitle = useMemo(() => {
         if (matchedService?.title) return matchedService.title;
         if (matchedService?.name) return matchedService.name;
@@ -339,17 +295,25 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
             defaultValue:
                 "Professionelle Reinigungsdienstleistungen in Ihrer Nähe.",
         });
-    }, [matchedService?.content, matchedService?.description, city, t, i18n.language]);
+    }, [
+        matchedService?.content,
+        matchedService?.description,
+        city,
+        t,
+        i18n.language,
+    ]);
 
-    // HTML tag'leri temizlenmeli ve paragraf yapısı korunmalı (description/content genellikle HTML içerir)
     const servicesSectionHtmlContent = useMemo(() => {
         return (
             matchedService?.raw?.content ||
             matchedService?.description ||
             servicesSectionContent
         );
-    }, [matchedService?.raw?.content, matchedService?.description, servicesSectionContent]);
-    // ====================================================================
+    }, [
+        matchedService?.raw?.content,
+        matchedService?.description,
+        servicesSectionContent,
+    ]);
 
     return (
         <AppLayout>
@@ -358,7 +322,6 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
                 <meta name="description" content={metaDesc} />
             </Head>
 
-            {/* HERO BÖLÜMÜ */}
             <section className="locx-hero">
                 <div className="locx-hero__media">
                     <img
@@ -408,16 +371,13 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
                 </div>
             </section>
 
-            {/* HİZMETLER LİSTESİ - Güncellendi */}
             <section className="locx-services">
                 <div className="container">
                     <div className="locx-services__header">
-                        {/* 1. Başlık: matchedService.title/name ya da i18n fallback */}
                         <h2 className="locx-services__title">
                             {servicesSectionTitle}
                         </h2>
 
-                        {/* 2. İçerik: matchedService.content/description ya da i18n fallback. HTML içerebileceği için dangerouslySetInnerHTML kullanıldı. */}
                         <div
                             className="locx-services__subtitle"
                             dangerouslySetInnerHTML={{
@@ -426,7 +386,6 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
                         />
                     </div>
 
-                    {/* HYDRATION FIX: Server ve client'ta aynı yapıyı göster */}
                     {loading && isMounted && (
                         <div className="locx-services__loading">
                             <div className="locx-services__spinner"></div>
@@ -458,7 +417,6 @@ export default function LocationShow({ slug, page = {}, structuredData }) {
                         </div>
                     )}
 
-                    {/* HYDRATION FIX: Server-side'da boş div, client-side'da içerik */}
                     {!loading && !error && (
                         <div className="locx-services__grid">
                             {servicesToRender.length > 0

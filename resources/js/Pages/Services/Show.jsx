@@ -1,5 +1,3 @@
-// resources/js/Pages/Services/Show.jsx
-
 import React, { useEffect, useState, useMemo } from "react";
 import { Head, usePage } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
@@ -9,7 +7,6 @@ import { useTranslation } from "react-i18next";
 import SafeHtml from "@/Components/Common/SafeHtml";
 import "../../../css/service-show.css";
 
-/** "baucontainer-reinigung" -> "Baucontainer Reinigung" */
 function humanizeSlug(slug = "") {
     return String(slug)
         .split("-")
@@ -18,14 +15,12 @@ function humanizeSlug(slug = "") {
         .join(" ");
 }
 
-/** "baucontainer-reinigung-berlin" -> "berlin" */
 function extractCityFromSlug(slug = "") {
     const parts = String(slug).split("-").filter(Boolean);
     if (parts.length <= 1) return null;
 
     const last = parts[parts.length - 1].toLowerCase();
 
-    // city kısmı service prefix'i olmasın
     const isServicePrefix =
         /^(gebaudereinigung|wohnungsrenovierung|hotelreinigung)$/i.test(last);
     if (isServicePrefix) return null;
@@ -33,7 +28,6 @@ function extractCityFromSlug(slug = "") {
     return last;
 }
 
-/** "berlin" -> "Berlin", "bad-vilbel" -> "Bad Vilbel" */
 function prettifyCity(citySlug = "") {
     return String(citySlug)
         .split("-")
@@ -47,7 +41,6 @@ export default function ServiceShow() {
     const { t, i18n } = useTranslation();
     const locale = useLocale("de");
 
-    // Inertia'dan gelen props
     const {
         slug: propSlug,
         originalSlug,
@@ -63,9 +56,6 @@ export default function ServiceShow() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // ---- ŞEHİR BİLGİSİ ----
-    // 1) Backend'ten gelen citySlug varsa onu kullan
-    // 2) Yoksa originalSlug veya slug üzerinden city çıkar
     const citySlug = useMemo(() => {
         if (propCitySlug) return String(propCitySlug).toLowerCase();
         if (originalSlug && originalSlug.includes("-")) {
@@ -81,7 +71,6 @@ export default function ServiceShow() {
 
     const cityName = citySlug ? prettifyCity(citySlug) : null;
 
-    // ---- SERVİSİ YÜKLE ----
     useEffect(() => {
         const slug = propSlug || originalSlug;
         if (!slug) return;
@@ -97,7 +86,6 @@ export default function ServiceShow() {
                 let fetchedService = null;
                 let raw = null;
 
-                // Önce tam slug'ı dene (örn: baucontainer-reinigung-berlin)
                 try {
                     const result = await fetchServiceByIdOrSlug(fullSlug, {
                         tenantId,
@@ -106,7 +94,6 @@ export default function ServiceShow() {
                     fetchedService = result.service;
                     raw = result.raw;
                 } catch (firstError) {
-                    // Tam slug yoksa ve slug tire içeriyorsa base slug'ı dene
                     if (fullSlug.includes("-")) {
                         const baseSlug = fullSlug.split("-")[0];
                         try {
@@ -147,7 +134,6 @@ export default function ServiceShow() {
         };
     }, [propSlug, originalSlug, tenantId, locale]);
 
-    // ---- AKTİF ÇEVİRİ ----
     const activeTranslation = useMemo(() => {
         const translations = rawService?.translations || [];
         if (!Array.isArray(translations) || translations.length === 0)
@@ -163,7 +149,6 @@ export default function ServiceShow() {
         return found || null;
     }, [rawService, locale]);
 
-    // ---- BAŞLIK & METİN ----
     const baseTitle =
         activeTranslation?.title ||
         activeTranslation?.name ||
@@ -240,7 +225,6 @@ export default function ServiceShow() {
 
             {!loading && !error && (
                 <>
-                    {/* HERO SECTION */}
                     <section className="service-show__hero">
                         <div className="service-show__hero-media">
                             <img
@@ -266,7 +250,6 @@ export default function ServiceShow() {
                         </div>
                     </section>
 
-                    {/* CONTENT SECTION */}
                     {content && (
                         <section className="service-show__content">
                             <div className="container">

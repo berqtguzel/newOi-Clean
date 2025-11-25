@@ -27,18 +27,15 @@ export default function Footer({ settings }) {
     const { t } = useTranslation();
     const { props } = usePage();
 
-    /** INERTIA LOCALE */
     const inertiaLocale = props?.locale || "en";
     const locale = normalizeLang(inertiaLocale);
 
-    /** Tenant ID */
     const tenantId =
         props?.global?.tenantId ||
         props?.global?.tenant_id ||
         props?.global?.talentId ||
         "";
 
-    /** MENÜLERİ ÇEK */
     const { data: menus, loading } = useMenus({
         tenantId,
         locale,
@@ -47,7 +44,6 @@ export default function Footer({ settings }) {
 
     const [footerLinks, setFooterLinks] = useState([]);
 
-    /** FOOTER MENÜ HAZIRLA */
     useEffect(() => {
         if (!menus || !menus.length) {
             setFooterLinks([]);
@@ -69,23 +65,19 @@ export default function Footer({ settings }) {
         setFooterLinks(links);
     }, [menus, locale]);
 
-    // --- SETTINGS PARSING (GÜNCELLENDİ) ---
     const contactData = settings?.contact || {};
     const social = settings?.social || {};
     const footer = settings?.footer || {};
     const general = settings?.general || {};
 
-    // API'den gelen yapı: { contact_infos: [...] }
-    // Diziden 'is_primary' olanı bul, yoksa ilkini al, o da yoksa boş obje.
     const contactInfos = contactData?.contact_infos || [];
     const activeContact =
         contactInfos.find((c) => c.is_primary) || contactInfos[0] || {};
 
     const siteName = general?.site_name || "O&I CLEAN";
 
-    // Verileri activeContact üzerinden çekiyoruz
     const address = activeContact.address || "";
-    // Phone yoksa mobile alanına bak
+
     const phone = activeContact.phone || activeContact.mobile || "";
     const email = activeContact.email || "";
 
@@ -96,7 +88,6 @@ export default function Footer({ settings }) {
         <footer className="footer relative overflow-hidden">
             <div className="container mx-auto px-6 pt-20 pb-10">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-                    {/* SOL BLOK */}
                     <div className="md:col-span-5">
                         <h3 className="text-2xl font-extrabold">
                             <a href="/">{siteName}</a>
@@ -108,7 +99,6 @@ export default function Footer({ settings }) {
                             className="mt-2 muted text-sm leading-relaxed max-w-md footer-desc-content"
                         />
 
-                        {/* Sosyal medya */}
                         <div className="mt-4 flex flex-wrap gap-3">
                             {social.facebook_url && (
                                 <a
@@ -158,7 +148,6 @@ export default function Footer({ settings }) {
                         </div>
                     </div>
 
-                    {/* FOOTER MENÜ */}
                     <nav className="md:col-span-3">
                         {/* 🚨 HİDRASYON DÜZELTME: Metin uyuşmazlığını engellemek için eklendi */}
                         <h4
@@ -188,9 +177,7 @@ export default function Footer({ settings }) {
                         </ul>
                     </nav>
 
-                    {/* İLETİŞİM (GÜNCELLENDİ) */}
                     <div className="md:col-span-4">
-                        {/* 🚨 HİDRASYON DÜZELTME: Metin uyuşmazlığını engellemek için eklendi */}
                         <h4
                             className="text-lg font-semibold mb-3"
                             suppressHydrationWarning={true}
@@ -199,7 +186,6 @@ export default function Footer({ settings }) {
                         </h4>
 
                         <address className="not-italic text-sm space-y-4">
-                            {/* Adres Kısmı */}
                             {address && (
                                 <div className="flex items-start">
                                     <FaMapMarkerAlt className="mr-3 mt-1 text-accent shrink-0" />
@@ -207,7 +193,6 @@ export default function Footer({ settings }) {
                                 </div>
                             )}
 
-                            {/* Telefon Kısmı */}
                             {phone && (
                                 <div className="flex items-center">
                                     <FaPhoneAlt className="mr-3 text-accent shrink-0" />
@@ -220,7 +205,6 @@ export default function Footer({ settings }) {
                                 </div>
                             )}
 
-                            {/* Email Kısmı */}
                             {email && (
                                 <div className="flex items-center">
                                     <FaEnvelope className="mr-3 text-accent shrink-0" />
@@ -236,8 +220,6 @@ export default function Footer({ settings }) {
                     </div>
                 </div>
 
-                {/* ALT */}
-                {/* 🚨 HİDRASYON DÜZELTME: Copyright metnini korumak için */}
                 <div
                     className="mt-12 border-t pt-8 text-sm text-center md:text-left"
                     suppressHydrationWarning={true}

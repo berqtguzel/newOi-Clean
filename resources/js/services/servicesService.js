@@ -1,10 +1,7 @@
-// resources/js/services/servicesService.js
 import { httpRequest } from "../lib/http";
 import { remoteConfig } from "./remoteConfig";
 
-/* ------------------------------------------------------
- * IMAGE PICKER
- * ------------------------------------------------------ */
+
 function pickImage(it) {
     return (
         it?.image_url ||
@@ -15,26 +12,22 @@ function pickImage(it) {
     );
 }
 
-/* ------------------------------------------------------
- * NORMALIZE LANGUAGE CODE
- * ------------------------------------------------------ */
+
 function normLang(code) {
     return String(code || "").toLowerCase().split("-")[0];
 }
 
-/* ------------------------------------------------------
- * NORMALIZE SERVICE
- * ------------------------------------------------------ */
+
 export function normalizeService(it, i = 0, options = {}) {
     const { locale, fallbackLocale } = options;
 
-    // 🔵 Eğer API translations göndermiyorsa → biz üretelim
+
     let translations = Array.isArray(it?.translations)
         ? it.translations
         : [];
 
     if (translations.length === 0) {
-        // Tek dil verisini translations formatına oturt
+
         translations = [
             {
                 language_code: normLang(locale || "en"),
@@ -47,7 +40,7 @@ export function normalizeService(it, i = 0, options = {}) {
         ];
     }
 
-    // 🔵 Aktif çeviriyi seç
+
     const want = normLang(locale);
     const fallback = normLang(fallbackLocale);
 
@@ -57,7 +50,7 @@ export function normalizeService(it, i = 0, options = {}) {
         translations[0] ||
         null;
 
-    // 🔥 TERCİH SIRASI
+
     const translatedTitle =
         activeTr?.title ||
         activeTr?.name ||
@@ -105,7 +98,7 @@ export function normalizeService(it, i = 0, options = {}) {
         order: typeof it?.order === "number" ? it.order : null,
         views: typeof it?.views === "number" ? it.views : null,
 
-        // ⭐ Çeviri bilgileri
+
         translations,
         activeTranslation: activeTr,
         hasTranslations: translations.length > 0,
@@ -114,9 +107,7 @@ export function normalizeService(it, i = 0, options = {}) {
     };
 }
 
-/* ------------------------------------------------------
- * FETCH SERVICES LIST
- * ------------------------------------------------------ */
+
 export async function fetchServices({
     page = 1,
     perPage = 50,
@@ -167,14 +158,6 @@ export async function fetchServices({
     };
 }
 
-/* ------------------------------------------------------
- * BUILD SLUG FOR API REQUEST
- * ------------------------------------------------------ */
-// Prefix ekleme mantığı kaldırıldı - API slug'ları olduğu gibi bekliyor
-
-/* ------------------------------------------------------
- * FETCH SINGLE SERVICE BY ID OR SLUG
- * ------------------------------------------------------ */
 export async function fetchServiceByIdOrSlug(identifier, opts = {}) {
     const { tenantId, locale } = opts;
 
@@ -185,11 +168,10 @@ export async function fetchServiceByIdOrSlug(identifier, opts = {}) {
     if (locale) params.locale = String(locale);
 
     const idStr = String(identifier || "").trim();
-    
-    // Sayısal id ise direkt kullan, değilse slug'ı olduğu gibi kullan
-    // Prefix ekleme mantığı kaldırıldı - API slug'ları olduğu gibi bekliyor
+
+
     const isNumericId = /^\d+$/.test(idStr);
-    const apiIdentifier = idStr; // Slug'ı olduğu gibi kullan, prefix ekleme
+    const apiIdentifier = idStr;
 
     try {
         const res = await httpRequest(
@@ -218,10 +200,10 @@ export async function fetchServiceByIdOrSlug(identifier, opts = {}) {
             raw,
         };
     } catch (err) {
-        // Sayısal id ise fallback yapma, direkt hata fırlat
+
         if (isNumericId || err?.response?.status !== 404) throw err;
 
-        // Slug için fallback denemeleri
+
         const trySlugs = [apiIdentifier];
 
         if (idStr.includes("-")) {
@@ -259,7 +241,5 @@ export async function fetchServiceByIdOrSlug(identifier, opts = {}) {
     }
 }
 
-/* ------------------------------------------------------
- * FETCH SERVICE BY ID OR SLUG (alias for backward compatibility)
- * ------------------------------------------------------ */
+
 export const fetchServiceBySlug = fetchServiceByIdOrSlug;

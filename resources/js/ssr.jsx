@@ -10,8 +10,21 @@ import i18n from "./i18n";
 
 const appName = "O&I CLEAN group GmbH";
 
-createServer((page) =>
-    createInertiaApp({
+createServer(async (page) => {
+    const backendLocale = page.props.locale || "de";
+
+    if (i18n.language !== backendLocale) {
+        try {
+            await i18n.changeLanguage(backendLocale);
+        } catch (e) {
+            console.error(
+                `[SSR] Failed to change language to ${backendLocale}:`,
+                e
+            );
+        }
+    }
+
+    return await createInertiaApp({
         page,
         render: ReactDOMServer.renderToString,
         title: (title) => (title ? `${title} - ${appName}` : appName),
@@ -27,18 +40,11 @@ createServer((page) =>
                     location: new URL(page.props.ziggy.location),
                 });
 
-            // HYDRATION FIX: Server-side'da i18n'i backend locale ile senkron başlat
-            const backendLocale = props?.locale || "de";
-            // Senkron olarak language'i ayarla (changeLanguage asenkron, bu yüzden direkt set ediyoruz)
-            if (backendLocale && i18n.language !== backendLocale) {
-                i18n.language = backendLocale;
-            }
-
             return (
                 <SSRThemeProvider initial="light">
                     <App {...props} />
                 </SSRThemeProvider>
             );
         },
-    })
-);
+    });
+});

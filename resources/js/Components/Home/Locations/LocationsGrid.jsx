@@ -42,7 +42,7 @@ const mapServiceToLocation = (svc) => {
     };
 };
 
-const CATEGORY_ID = 2; // Gebäudereinigung
+const CATEGORY_ID = 2;
 const CATEGORY_NAME = "Gebäudereinigung";
 
 const LocationsGrid = () => {
@@ -136,7 +136,6 @@ const LocationsGrid = () => {
 
     const usedItems = items || [];
 
-    // Çeviri değişkenleri
     const pageTitle = t(
         "locations.page_title",
         "Standorte - O&I CLEAN group GmbH"
@@ -159,7 +158,6 @@ const LocationsGrid = () => {
     const ctaAria = t("locations.cta_aria", "Jetzt Kontakt aufnehmen");
     const contactHref = t("locations.contact_href", "/kontakt");
 
-    // Schema Data (Aynen korundu)
     const schemaData = {
         "@context": "https://schema.org",
         "@type": "Organization",
@@ -238,7 +236,6 @@ const LocationsGrid = () => {
 
                 <div className="locations-grid">
                     {loading && !usedItems.length && (
-                        // 🚨 Düzeltme 2: Yükleme metni uyuşmazlığını gider
                         <p
                             className="locations-loading"
                             suppressHydrationWarning={true}
@@ -248,7 +245,6 @@ const LocationsGrid = () => {
                     )}
 
                     {!loading && !usedItems.length && (
-                        // 🚨 Düzeltme 1: Boş metin uyuşmazlığını gider
                         <p
                             className="locations-empty"
                             suppressHydrationWarning={true}
@@ -272,7 +268,6 @@ const LocationsGrid = () => {
                         href={contactHref}
                         className="locations-contact-button"
                         aria-label={ctaAria}
-                        // 🚨 Düzeltme 3: Buton metin uyuşmazlığını gider
                         suppressHydrationWarning={true}
                     >
                         <SafeHtml html={ctaLabel} as="span" />
