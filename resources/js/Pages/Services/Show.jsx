@@ -253,10 +253,27 @@ export default function ServiceShow() {
                     {content && (
                         <section className="service-show__content">
                             <div className="container">
-                                <div className="service-show__content-inner">
+                                <div className="service-show__content-grid">
                                     <div className="service-show__prose">
                                         <SafeHtml html={content} />
                                     </div>
+
+                                    <aside className="service-show__side-media">
+                                        <img
+                                            src={heroImage}
+                                            alt={title}
+                                            className="service-show__side-img"
+                                            onError={(e) => {
+                                                if (
+                                                    e.currentTarget.src !==
+                                                    placeholderImage
+                                                ) {
+                                                    e.currentTarget.src =
+                                                        placeholderImage;
+                                                }
+                                            }}
+                                        />
+                                    </aside>
                                 </div>
                             </div>
                         </section>

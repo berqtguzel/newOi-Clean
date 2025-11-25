@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link, usePage } from "@inertiajs/react";
 import {
     FaMapMarkerAlt,
@@ -36,7 +36,8 @@ export default function Footer({ settings }) {
         props?.global?.talentId ||
         "";
 
-    const { data: menus, loading } = useMenus({
+    // useMenus hook'u asenkron veri çeker
+    const { data: menus, loading: menusLoading } = useMenus({
         tenantId,
         locale,
         perPage: 100,
@@ -45,7 +46,7 @@ export default function Footer({ settings }) {
     const [footerLinks, setFooterLinks] = useState([]);
 
     useEffect(() => {
-        if (!menus || !menus.length) {
+        if (menusLoading || !menus || !menus.length) {
             setFooterLinks([]);
             return;
         }
@@ -63,16 +64,25 @@ export default function Footer({ settings }) {
         }));
 
         setFooterLinks(links);
-    }, [menus, locale]);
+    }, [menus, locale, menusLoading]);
 
-    const contactData = settings?.contact || {};
-    const social = settings?.social || {};
-    const footer = settings?.footer || {};
-    const general = settings?.general || {};
+    // useMemo kullanarak settings verilerini güvenli bir şekilde hesaplayın
+    const { contactData, social, footer, general, activeContact } =
+        useMemo(() => {
+            // Eğer settings null ise, tüm alt objeleri de null/{} olarak tanımlarız.
+            const safeSettings = settings || {};
 
-    const contactInfos = contactData?.contact_infos || [];
-    const activeContact =
-        contactInfos.find((c) => c.is_primary) || contactInfos[0] || {};
+            const contactData = safeSettings?.contact || {};
+            const social = safeSettings?.social || {};
+            const footer = safeSettings?.footer || {};
+            const general = safeSettings?.general || {};
+
+            const contactInfos = contactData?.contact_infos || [];
+            const activeContact =
+                contactInfos.find((c) => c.is_primary) || contactInfos[0] || {};
+
+            return { contactData, social, footer, general, activeContact };
+        }, [settings]); // Sadece settings prop'u değiştiğinde hesaplanır
 
     const siteName = general?.site_name || "O&I CLEAN";
 
@@ -93,10 +103,12 @@ export default function Footer({ settings }) {
                             <a href="/">{siteName}</a>
                         </h3>
 
+                        {/* SSR/Hidrasyon hatalarını önlemek için suppressHydrationWarning eklendi */}
                         <SafeHtml
                             html={footer?.footer_text}
                             as="div"
                             className="mt-2 muted text-sm leading-relaxed max-w-md footer-desc-content"
+                            suppressHydrationWarning={true}
                         />
 
                         <div className="mt-4 flex flex-wrap gap-3">
@@ -149,7 +161,6 @@ export default function Footer({ settings }) {
                     </div>
 
                     <nav className="md:col-span-3">
-                        {/* 🚨 HİDRASYON DÜZELTME: Metin uyuşmazlığını engellemek için eklendi */}
                         <h4
                             className="text-lg font-semibold mb-3"
                             suppressHydrationWarning={true}
@@ -169,9 +180,12 @@ export default function Footer({ settings }) {
                                 </li>
                             ))}
 
-                            {!loading && footerLinks.length === 0 && (
+                            {!menusLoading && footerLinks.length === 0 && (
                                 <li className="text-xs text-gray-500">
-                                    Menü boş veya ayarlanmamış
+                                    {t(
+                                        "footer.menu_not_found",
+                                        "Menü boş veya ayarlanmamış"
+                                    )}
                                 </li>
                             )}
                         </ul>

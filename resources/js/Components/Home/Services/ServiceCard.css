@@ -92,6 +92,9 @@
 .dark .service-card__image-wrapper {
   background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
 }
+.dark .service-card__title{
+    color: white;
+}
 
 /* Image */
 .service-card__image {
@@ -224,7 +227,7 @@
 }
 
 .service-card__title {
-  font-size: 1.375rem;
+  font-size: 0.99rem;
   font-weight: 700;
   line-height: 1.4;
   color: var(--service-card-text-primary);

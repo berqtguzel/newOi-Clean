@@ -67,7 +67,7 @@ export function httpRequest(path, opts = {}) {
       headersToSend["X-Locale"] = lang;
     }
   } catch (e) {
-    // ignore
+
   }
 
   return withRetry(

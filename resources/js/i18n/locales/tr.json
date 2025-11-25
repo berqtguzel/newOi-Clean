@@ -58,7 +58,8 @@
   },
   "contact": {
     "page_title": "İletişim",
-    "intro_text": "Ücretsiz & bağlayıcı değil – <strong>en kısa sürede size dönüş yapıyoruz</strong>.",
+  "intro_static_text": "Ücretsiz ve bağlayıcı değildir –",
+    "intro_dynamic_text": "en kısa sürede size dönüş yapacağız",
     "title": "Bizimle iletişime geçin",
     "description": "Şirketiniz için profesyonel temizlik hizmetleri. Sizi memnuniyetle bireysel olarak bilgilendiririz.",
     "submit_label": "Mesaj gönder",

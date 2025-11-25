@@ -103,12 +103,31 @@
     color: #f1f5f9;
 }
 
+/*
+   Eskiden burada her card ayrı bir grid item'dı.
+   Artık bu container sadece "satırları" (card + map setlerini) taşıyor.
+*/
 .contactx-location-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
     max-width: 1200px;
     margin: 0 auto;
+}
+
+/* Her lokasyon satırı: SOLDa card, SAĞda map */
+.contactx-location-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.6fr); /* card | map */
+    gap: 2rem;
+    align-items: stretch;
+}
+
+/* Küçük ekranlarda card + map alt alta */
+@media (max-width: 1024px) {
+    .contactx-location-row {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* --- Location Card --- */
@@ -285,25 +304,7 @@
     background-color: #334155;
 }
 
-/* --- Maps Section --- */
-.contactx-maps-wrapper {
-    padding: 4rem 1rem;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.contactx-map-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2.5rem;
-}
-
-@media (min-width: 1024px) {
-    .contactx-map-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
+/* --- Map Box (satırın sağ tarafı) --- */
 .contactx-map-item {
     border-radius: 1.25rem;
     overflow: hidden;
@@ -316,4 +317,23 @@
 .dark .contactx-map-item {
     border-color: #334155;
     background: #1e293b;
+}
+
+/* --- Eski ayrı maps wrapper/grid (artık kullanılmıyor ama dursa da sorun yok) --- */
+.contactx-maps-wrapper {
+    display: none;
+}
+
+/* --- Küçük yardımcı class'lar (eğer Tailwind yoksa) --- */
+.text-center {
+    text-align: center;
+}
+
+.py-6 {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+}
+
+.opacity-70 {
+    opacity: 0.7;
 }

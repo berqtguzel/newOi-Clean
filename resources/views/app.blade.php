@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+      data-locale="{{ app()->getLocale() }}">
 <head>
     {{-- 1. TEMEL META AYARLARI --}}
     <meta charset="utf-8">

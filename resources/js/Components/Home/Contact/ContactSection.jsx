@@ -14,10 +14,17 @@ import {
     FaEnvelope,
     FaMapMarkerAlt,
 } from "react-icons/fa";
+import SuccessModal from "@/Components/SuccesModal";
 
 const ContactSection = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { props } = usePage();
+
+    // HYDRATION FIX: isMounted state
+    const [isMounted, setIsMounted] = useState(false);
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const { data: settings } = useSettings();
 
@@ -63,6 +70,9 @@ const ContactSection = () => {
     const [errors, setErrors] = useState({});
     const [data, setData] = useState({});
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    // Modal açılışını SuccessModal prop'u için takip eden ek state'ler eklendi
+    const [successMessage, setSuccessMessage] = useState(null);
+    const [successModalOpen, setSuccessModalOpen] = useState(false);
 
     const tenantId =
         props?.global?.tenantId ||
@@ -90,29 +100,44 @@ const ContactSection = () => {
         }
     };
 
+    // HYDRATION FIX: Translate labels with useMemo
+    const formLabels = useMemo(
+        () => ({
+            name: t("contact.form.name", "Name"),
+            phone: t("contact.form.phone", "Telefon"),
+            email: t("contact.form.email", "E-Mail"),
+            message: t("contact.form.message", "Nachricht"),
+            other: t("contact.form.other", "Feld"),
+        }),
+        [t, i18n.language]
+    );
+
     const getFieldLabel = (field, index) => {
         const type = String(field.type || "").toLowerCase();
         const raw = String(field.name || field.label || "").toLowerCase();
 
         if (raw.includes("name") || (type === "text" && index === 0))
-            return t("contact.form.name", "Name");
+            return formLabels.name;
         if (raw.includes("phone") || raw.includes("tel") || type === "tel")
-            return t("contact.form.phone", "Telefon");
+            return formLabels.phone;
         if (raw.includes("mail") || type === "email")
-            return t("contact.form.email", "E-Mail");
+            return formLabels.email;
         if (
             raw.includes("message") ||
             raw.includes("nachricht") ||
             type === "textarea"
         )
-            return t("contact.form.message", "Nachricht");
+            return formLabels.message;
 
-        return field.label || t("contact.form.other", "Feld");
+        return field.label || formLabels.other;
     };
 
     const handleSuccess = () => {
         setShowSuccessModal(true);
+        setSuccessModalOpen(true); // Modal state'ini aç
         setData({});
+        // Hidrasyon hatasını önlemek için window.location.reload() kullanmaktan kaçının
+        // veya delay'i uzatın. Ancak bu projeye özel bir zorunluluk olabilir.
         setTimeout(() => {
             window.location.reload();
         }, 3000);
@@ -213,38 +238,91 @@ const ContactSection = () => {
         }
     };
 
-    const submitLabelHtml =
-        formToDisplay?.submit_label ||
-        t("contact.submit_label", "Nachricht senden");
+    const submitLabelHtml = useMemo(
+        () =>
+            formToDisplay?.submit_label ||
+            t("contact.submit_label", "Nachricht senden"),
+        [formToDisplay?.submit_label, t, i18n.language]
+    );
 
-    if (loading) return <div className="py-10 text-center"></div>;
-    if (!formToDisplay) return null;
+    // HYDRATION FIX: Tüm çevirileri useMemo ile stabilize et
+    const contactTitle = useMemo(
+        () => t("contact.title", "Kontaktieren Sie uns"),
+        [t, i18n.language]
+    );
+    const contactDescription = useMemo(
+        () =>
+            t(
+                "contact.description",
+                "Professionelle Reinigungsdienstleistungen für Ihr Unternehmen."
+            ),
+        [t, i18n.language]
+    );
+    const phoneLabel = useMemo(
+        () => t("contact.phone_label", "Telefon"),
+        [t, i18n.language]
+    );
+    const emailLabel = useMemo(
+        () => t("contact.email_label", "E-Mail"),
+        [t, i18n.language]
+    );
+    const addressLabel = useMemo(
+        () => t("contact.address_label", "Adresse"),
+        [t, i18n.language]
+    );
+    const successTitle = useMemo(
+        () => t("contact.success_title", "Vielen Dank!"),
+        [t, i18n.language]
+    );
+    const successMessageText = useMemo(
+        () =>
+            t(
+                "contact.success_message",
+                "Ihre Nachricht wurde erfolgreich übermittelt."
+            ),
+        [t, i18n.language]
+    );
+    const successSub = useMemo(
+        () =>
+            t(
+                "contact.success_sub",
+                "Wir melden uns zeitnah bei Ihnen."
+            ),
+        [t, i18n.language]
+    );
+    const okButton = useMemo(() => t("common.ok", "OK"), [t, i18n.language]);
+    const loadingText = useMemo(
+        () => t("common.loading", "Yükleniyor..."),
+        [t, i18n.language]
+    );
 
+    // HYDRATION FIX: SSR-safe rendering - her zaman aynı yapıyı render et
+    const shouldShowForm = !loading && formToDisplay;
+
+    // HYDRATION FIX: Her zaman aynı yapıyı render et
     return (
-        <section className="contact-section rbits-section" id="contact">
+        <section
+            className="contact-section rbits-section"
+            id="contact"
+            suppressHydrationWarning={true}
+        >
+            {/* Modal bileşeni, portal kullandığı varsayılsa da, çağrıldığı yere de dikkat */}
             {showSuccessModal && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-md w-full text-center transform transition-all scale-100">
-                        <div className="flex justify-center mb-4 text-green-500">
-                            <FaCheckCircle size={64} />
-                        </div>
-                        <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">
-                            {t("contact.success_title", "Başarılı!")}
-                        </h3>
-                        <p className="text-slate-600 dark:text-slate-300 mb-6">
-                            {t(
-                                "contact.success_message",
-                                "Mesajınız başarıyla gönderildi."
-                            )}
-                        </p>
-                        <p className="text-sm text-slate-400">
-                            {t("contact.redirecting", "Sayfa yenileniyor...")}
-                        </p>
-                    </div>
-                </div>
+                <SuccessModal
+                    isOpen={successModalOpen}
+                    onClose={() => setSuccessModalOpen(false)}
+                    title={successTitle}
+                    message={successMessage || successMessageText}
+                    subMessage={successSub}
+                    buttonText={okButton}
+                />
             )}
 
-            <div className="rbits-bg-wrap" aria-hidden>
+            <div
+                className="rbits-bg-wrap"
+                aria-hidden
+                suppressHydrationWarning={true}
+            >
                 <DotGrid
                     dotSize={10}
                     gap={15}
@@ -263,15 +341,18 @@ const ContactSection = () => {
             <div className="contact-container">
                 <div className="contact-content">
                     <div className="contact-info">
-                        <h2 className="contact-title">
-                            {t("contact.title", "Kontaktieren Sie uns")}
+                        <h2
+                            className="contact-title"
+                            suppressHydrationWarning={true}
+                        >
+                            {contactTitle}
                         </h2>
 
-                        <div className="contact-description text-gray-600 dark:text-gray-300 mb-6">
-                            {t(
-                                "contact.description",
-                                "Professionelle Reinigungsdienstleistungen für Ihr Unternehmen."
-                            )}
+                        <div
+                            className="contact-description text-gray-600 dark:text-gray-300 mb-6"
+                            suppressHydrationWarning={true}
+                        >
+                            {contactDescription}
                         </div>
 
                         <div className="contact-details">
@@ -280,14 +361,8 @@ const ContactSection = () => {
                                     <div className="contact-icon-box">
                                         <FaPhoneAlt className="h-5 w-5" />
                                     </div>
-                                    <div>
-                                        <h3>
-                                            {t(
-                                                "contact.phone_label",
-                                                "Telefon"
-                                            )}
-                                        </h3>
-
+                                    <div suppressHydrationWarning={true}>
+                                        <h3>{phoneLabel}</h3>
                                         <div className="text-gray-600 dark:text-gray-300">
                                             <a href={`tel:${phoneHref}`}>
                                                 {displayPhone}
@@ -301,10 +376,8 @@ const ContactSection = () => {
                                     <div className="contact-icon-box">
                                         <FaEnvelope className="h-5 w-5" />
                                     </div>
-                                    <div>
-                                        <h3>
-                                            {t("contact.email_label", "E-Mail")}
-                                        </h3>
+                                    <div suppressHydrationWarning={true}>
+                                        <h3>{emailLabel}</h3>
                                         <div className="text-gray-600 dark:text-gray-300">
                                             <a href={`mailto:${displayEmail}`}>
                                                 {displayEmail}
@@ -318,20 +391,16 @@ const ContactSection = () => {
                                     <div className="contact-icon-box">
                                         <FaMapMarkerAlt className="h-5 w-5" />
                                     </div>
-                                    <div>
-                                        <h3>
-                                            {t(
-                                                "contact.address_label",
-                                                "Adresse"
-                                            )}
-                                        </h3>
-
+                                    <div suppressHydrationWarning={true}>
+                                        <h3>{addressLabel}</h3>
                                         <div className="text-gray-600 dark:text-gray-300">
+                                            {/* HATA ÇÖZÜMÜ: SafeHtml ve onun içindeki dinamik metin */}
                                             <SafeHtml
                                                 html={displayAddress.replace(
                                                     /\n/g,
                                                     "<br/>"
                                                 )}
+                                                suppressHydrationWarning={true}
                                             />
                                         </div>
                                     </div>
@@ -340,13 +409,15 @@ const ContactSection = () => {
                         </div>
                     </div>
 
-                    <form
-                        onSubmit={handleSubmit}
-                        className="contact-form"
-                        noValidate
-                    >
-                        <div className="form-grid">
-                            {fields.map((f, index) => {
+                    {shouldShowForm ? (
+                        <form
+                            onSubmit={handleSubmit}
+                            className="contact-form"
+                            noValidate
+                            suppressHydrationWarning={true}
+                        >
+                            <div className="form-grid">
+                                {fields.map((f, index) => {
                                 const fieldError = errors[f.name];
                                 const labelText = getFieldLabel(f, index);
                                 const inputId = f.name || `field-${index}`;
@@ -372,6 +443,7 @@ const ContactSection = () => {
                                         .includes("ad");
 
                                 return (
+                                    // Dinamik form alanlarının ana div'ini bastır
                                     <div
                                         key={inputId}
                                         className={`form-group ${
@@ -379,6 +451,7 @@ const ContactSection = () => {
                                                 ? "full-width"
                                                 : ""
                                         }`}
+                                        suppressHydrationWarning={true}
                                     >
                                         <label htmlFor={inputId}>
                                             {labelText} {f.required && "*"}
@@ -452,7 +525,10 @@ const ContactSection = () => {
                         {(errors.general ||
                             (Object.keys(errors).length > 0 &&
                                 !fields.some((f) => errors[f.name]))) && (
-                            <div className="error-message general-error mb-4">
+                            <div
+                                className="error-message general-error mb-4"
+                                suppressHydrationWarning={true}
+                            >
                                 {errors.general ||
                                     "Lütfen formdaki hataları kontrol edin."}
                             </div>
@@ -462,6 +538,7 @@ const ContactSection = () => {
                             type="submit"
                             className="submit-button bg-button"
                             disabled={isSubmitting || showSuccessModal}
+                            suppressHydrationWarning={true}
                         >
                             {isSubmitting ? (
                                 "..."
@@ -470,6 +547,15 @@ const ContactSection = () => {
                             )}
                         </button>
                     </form>
+                    ) : (
+                        <div className="py-10 text-center" suppressHydrationWarning={true}>
+                            {loading && (
+                                <span suppressHydrationWarning={true}>
+                                    {loadingText}
+                                </span>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </section>

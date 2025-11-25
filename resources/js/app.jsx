@@ -5,26 +5,22 @@ import "../css/loading.css";
 import "../css/404.css";
 import "./i18n";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { createInertiaApp } from "@inertiajs/react";
-import { createRoot, hydrateRoot } from "react-dom/client";
+import { hydrateRoot, createRoot } from "react-dom/client";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 import route from "../../vendor/tightenco/ziggy/dist/index.m.js";
 import { ThemeProvider } from "./Context/ThemeContext";
 import i18n from "i18next";
 
-if (document.documentElement.style.visibility === "hidden") {
-} else {
-    document.documentElement.style.visibility = "visible";
-}
-
+/* ---------------------------------------------------------
+   Renk Değişkenleri
+--------------------------------------------------------- */
 function applyCssVarsFromColors(colors = {}) {
-    Object.entries(colors).forEach(([key, val]) => {
-        if (!val) return;
-        document.documentElement.style.setProperty(
-            `--${key.replace(/_/g, "-")}`,
-            val
-        );
+    const root = document.documentElement;
+    Object.entries(colors).forEach(([key, value]) => {
+        if (!value) return;
+        root.style.setProperty(`--${key.replace(/_/g, "-")}`, value);
     });
 }
 
@@ -36,106 +32,87 @@ if (typeof window !== "undefined" && window.__SITE_COLORS__) {
     }
 }
 
-if (window.__SITE_COLORS__) {
-    const root = document.documentElement;
-    const colors = window.__SITE_COLORS__;
-
-    Object.entries(colors).forEach(([key, value]) => {
-        if (typeof value === "string" && value.startsWith("#")) {
-            const cssVar = `--${key.replace(/_/g, "-")}`;
-            root.style.setProperty(cssVar, value);
-        }
-    });
-}
-
-const APP_NAME = "O&I CLEAN group GmbH";
-
+/* ---------------------------------------------------------
+   Tema Algılama
+--------------------------------------------------------- */
 function getInitialTheme() {
     if (typeof window === "undefined") return "light";
+
     try {
         const saved = localStorage.getItem("theme");
-        if (saved === "dark" || saved === "light") return saved;
-        const prefersDark = window.matchMedia?.(
-            "(prefers-color-scheme: dark)"
-        )?.matches;
-        return prefersDark ? "dark" : "light";
+        if (saved === "light" || saved === "dark") return saved;
+        return window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
     } catch {
         return "light";
     }
 }
 
-const RootComponent = ({ App, props, initialTheme }) => {
-    useEffect(() => {
-        requestAnimationFrame(() => {
-            document.documentElement.style.visibility = "visible";
-        });
-    }, []);
+const APP_NAME = "O&I CLEAN group GmbH";
 
-    return (
-        <ThemeProvider initial={initialTheme}>
-            <App {...props} />
-        </ThemeProvider>
-    );
-};
+/* ---------------------------------------------------------
+   Root Wrapper Component
+--------------------------------------------------------- */
+const RootComponent = ({ App, props, initialTheme }) => (
+    <ThemeProvider initial={initialTheme}>
+        <App {...props} />
+    </ThemeProvider>
+);
 
+/* ---------------------------------------------------------
+   INERTIA APP (SSR UYUMLU)
+--------------------------------------------------------- */
 createInertiaApp({
     title: (title) => (title ? `${title} - ${APP_NAME}` : APP_NAME),
 
     resolve: (name) =>
         resolvePageComponent(`./Pages/${name}.jsx`, {
-            ...import.meta.glob("./Pages/**/*.jsx", { eager: true }),
-            ...import.meta.glob("./Pages/**/*.tsx", { eager: true }),
+            ...import.meta.glob("./Pages/**/*.jsx"),
+            ...import.meta.glob("./Pages/**/*.tsx"),
         }),
 
     setup({ el, App, props }) {
-        const initialPageProps = props.initialPage?.props;
-        const initialLocale = initialPageProps?.locale || "de";
+        const initialLocale = props?.initialPage?.props?.locale || "de";
         const initialTheme = getInitialTheme();
 
-        let appStarted = false;
+        /** SSR Hydration için React element */
+        const reactApp = (
+            <RootComponent
+                App={App}
+                props={props}
+                initialTheme={initialTheme}
+            />
+        );
 
-        if (i18n.isInitialized) {
-            i18n.language = initialLocale;
-        }
-
-        const startApp = () => {
-            if (appStarted) return;
-            appStarted = true;
-
+        /** Dil eşleme (SSR → Client) */
+        const startApp = async () => {
             if (i18n.language !== initialLocale) {
-                i18n.language = initialLocale;
+                await i18n.changeLanguage(initialLocale);
             }
 
-            const Root = (
-                <RootComponent
-                    App={App}
-                    props={props}
-                    initialTheme={initialTheme}
-                />
-            );
-
             if (el.hasChildNodes()) {
+                // 🟢 SSR → hydrateRoot
                 try {
-                    hydrateRoot(el, Root);
-                } catch (e) {
-                    console.error(
-                        "Hydration Failed. Falling back to client-side render.",
-                        e
+                    hydrateRoot(el, reactApp);
+                } catch (err) {
+                    console.warn(
+                        "Hydration error, SPA render uygulanıyor:",
+                        err
                     );
-                    createRoot(el).render(Root);
+                    createRoot(el).render(reactApp);
                 }
             } else {
-                createRoot(el).render(Root);
+                // 🟢 SPA → normal render
+                createRoot(el).render(reactApp);
             }
         };
 
-        if (i18n.isInitialized) {
-            setTimeout(startApp, 10);
-        } else {
-            i18n.on("initialized", startApp);
-        }
+        if (i18n.isInitialized) startApp();
+        else i18n.on("initialized", startApp);
 
-        const ziggy = initialPageProps?.ziggy;
+        /** Ziggy route helper */
+        const ziggy = props?.initialPage?.props?.ziggy;
         if (ziggy) {
             window.route = (name, params, absolute) =>
                 route(name, params, absolute, {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "../../../css/contact-maps.css";
 
 export default function ContactMap({
@@ -7,26 +7,48 @@ export default function ContactMap({
     title = "Unser Standort",
     description = "Besuchen Sie uns oder kontaktieren Sie uns über das Formular. Wir freuen uns auf Ihre Nachricht!",
 }) {
-    const [loaded, setLoaded] = React.useState(false);
+    // HYDRATION FIX: isMounted state
+    const [isMounted, setIsMounted] = useState(false);
+    const [loaded, setLoaded] = useState(false);
 
-    const q = encodeURIComponent(query);
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
-    const src = `https://maps.google.com/maps?q=${q}&t=&z=${zoom}&ie=UTF8&iwloc=&output=embed`;
-    const openLink = `https://maps.google.com/?q=${q}`;
+    const q = useMemo(() => encodeURIComponent(query), [query]);
+    const src = useMemo(
+        () =>
+            `https://maps.google.com/maps?q=${q}&t=&z=${zoom}&ie=UTF8&iwloc=&output=embed`,
+        [q, zoom]
+    );
+
+    // HYDRATION FIX: Server'da skeleton göster, client'ta yükleme durumuna göre
+    const showSkeleton = !isMounted || !loaded;
 
     return (
-        <section className="cmap-section">
+        <div className="cmap-wrapper" suppressHydrationWarning={true}>
             <div className="cmap-container">
                 <div className="cmap-head">
-                    <h2 className="cmap-title">{title}</h2>
-                    {description ? (
-                        <p className="cmap-sub">{description}</p>
-                    ) : null}
+                    <h2 className="cmap-title" suppressHydrationWarning={true}>
+                        {title}
+                    </h2>
+                    {description && (
+                        <p
+                            className="cmap-sub"
+                            suppressHydrationWarning={true}
+                        >
+                            {description}
+                        </p>
+                    )}
                 </div>
 
                 <div className="cmap-wrap">
-                    {!loaded && (
-                        <div className="cmap-skeleton" aria-hidden="true">
+                    {showSkeleton && (
+                        <div
+                            className="cmap-skeleton"
+                            aria-hidden="true"
+                            suppressHydrationWarning={true}
+                        >
                             <div className="cmap-skeleton-wave" />
                         </div>
                     )}
@@ -40,17 +62,18 @@ export default function ContactMap({
                             loading="lazy"
                             referrerPolicy="no-referrer-when-downgrade"
                             onLoad={() => setLoaded(true)}
+                            suppressHydrationWarning={true}
                         />
                     </div>
                 </div>
 
-                <div className="cmap-note">
+                <div className="cmap-note" suppressHydrationWarning={true}>
                     <span>
-                        Tipp: Klicken Sie auf „Route planen“, um die Navigation
+                        Tipp: Klicken Sie auf „Route planen", um die Navigation
                         in Google Maps zu starten.
                     </span>
                 </div>
             </div>
-        </section>
+        </div>
     );
 }

@@ -5,10 +5,21 @@ import "../../../css/loading.css";
 
 export default function Loading() {
     const { t } = useTranslation();
+
+    // 🚨 SSR → false, Client mount sonrası → true
+    const [mounted, setMounted] = useState(false);
     const [active, setActive] = useState(false);
-    const [message, setMessage] = useState(t("ui.loading.message") || "");
+    const [message, setMessage] = useState("");
 
     useEffect(() => {
+        // Client mount olduktan hemen sonra "mounted" true olur
+        setMounted(true);
+    }, []);
+
+    // Inertia event binding
+    useEffect(() => {
+        if (!mounted) return;
+
         let timeout = null;
 
         function onStart() {
@@ -25,33 +36,22 @@ export default function Loading() {
         Inertia.on("finish", onFinish);
         Inertia.on("error", onFinish);
 
-        if (document.readyState !== "complete") {
-            setActive(true);
-            const t = setTimeout(() => setActive(false), 700);
-            return () => clearTimeout(t);
-        }
-
         return () => {
             clearTimeout(timeout);
             try {
-                if (typeof Inertia.off === "function") {
-                    Inertia.off("start", onStart);
-                    Inertia.off("finish", onFinish);
-                    Inertia.off("error", onFinish);
-                } else if (
-                    Inertia.events &&
-                    typeof Inertia.events.off === "function"
-                ) {
-                    Inertia.events.off("start", onStart);
-                    Inertia.events.off("finish", onFinish);
-                    Inertia.events.off("error", onFinish);
-                }
-            } catch (e) {}
+                Inertia.off("start", onStart);
+                Inertia.off("finish", onFinish);
+                Inertia.off("error", onFinish);
+            } catch (_) {}
         };
-    }, []);
+    }, [mounted, t]);
 
-    if (!active) return null;
+    // 🚨 SSR & İlk Client Render → hiçbir şey render ETME
+    if (!mounted || !active) {
+        return null;
+    }
 
+    // Client tarafında aktif loading UI
     return (
         <div className="oi-loading" role="status" aria-live="polite">
             <div className="oi-loading__backdrop" />
