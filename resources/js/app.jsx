@@ -5,16 +5,16 @@ import "../css/loading.css";
 import "../css/404.css";
 import "./i18n";
 
-import React from "react";
+import React, { useMemo } from "react"; // useMemo eklendi
 import { createInertiaApp } from "@inertiajs/react";
 import { hydrateRoot, createRoot } from "react-dom/client";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
-import route from "../../vendor/tightenco/ziggy/dist/index.m.js";
+import route from "ziggy-js";
 import { ThemeProvider } from "./Context/ThemeContext";
 import i18n from "i18next";
 
 /* ---------------------------------------------------------
-   Renk Değişkenleri
+    Renk Değişkenleri
 --------------------------------------------------------- */
 function applyCssVarsFromColors(colors = {}) {
     const root = document.documentElement;
@@ -33,7 +33,7 @@ if (typeof window !== "undefined" && window.__SITE_COLORS__) {
 }
 
 /* ---------------------------------------------------------
-   Tema Algılama
+    Tema Algılama
 --------------------------------------------------------- */
 function getInitialTheme() {
     if (typeof window === "undefined") return "light";
@@ -52,7 +52,7 @@ function getInitialTheme() {
 const APP_NAME = "O&I CLEAN group GmbH";
 
 /* ---------------------------------------------------------
-   Root Wrapper Component
+    Root Wrapper Component
 --------------------------------------------------------- */
 const RootComponent = ({ App, props, initialTheme }) => (
     <ThemeProvider initial={initialTheme}>
@@ -61,7 +61,7 @@ const RootComponent = ({ App, props, initialTheme }) => (
 );
 
 /* ---------------------------------------------------------
-   INERTIA APP (SSR UYUMLU)
+    INERTIA APP (SSR UYUMLU)
 --------------------------------------------------------- */
 createInertiaApp({
     title: (title) => (title ? `${title} - ${APP_NAME}` : APP_NAME),
