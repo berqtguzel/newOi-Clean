@@ -3,19 +3,30 @@ import laravel from 'laravel-vite-plugin'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
-  plugins: [
-    react(),
-    laravel({
-      input: [
-        'resources/css/app.css',
-        'resources/js/app.jsx',
-      ],
-      ssr: 'resources/js/ssr.jsx',
-      refresh: true,
-    }),
-  ],
-  ssr: {
-    noExternal: ['@inertiajs/react'],
-    external: ['gsap'],
-  },
+
+
+    plugins: [
+        react(),
+        laravel({
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.jsx',
+            ],
+            ssr: 'resources/js/ssr.jsx',
+            refresh: true,
+        }),
+    ],
+    ssr: {
+
+        noExternal: ['@inertiajs/react'],
+
+        external: ['gsap'],
+    },
+
+    resolve: {
+
+        alias: {
+            'ziggy-js': 'ziggy-js/dist/index.js',
+        },
+    },
 })
