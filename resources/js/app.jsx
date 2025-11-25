@@ -9,7 +9,7 @@ import React, { useMemo } from "react"; // useMemo eklendi
 import { createInertiaApp } from "@inertiajs/react";
 import { hydrateRoot, createRoot } from "react-dom/client";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
-import route from "ziggy-js";
+import { route } from "ziggy-js";
 import { ThemeProvider } from "./Context/ThemeContext";
 import i18n from "i18next";
 
