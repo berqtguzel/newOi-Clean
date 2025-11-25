@@ -104,12 +104,8 @@ export default function Footer({ settings }) {
                         </h3>
 
                         {/* SSR/Hidrasyon hatalarını önlemek için suppressHydrationWarning eklendi */}
-                        <SafeHtml
-                            html={footer?.footer_text}
-                            as="div"
-                            className="mt-2 muted text-sm leading-relaxed max-w-md footer-desc-content"
-                            suppressHydrationWarning={true}
-                        />
+
+                        <div>{footer?.footer_text}</div>
 
                         <div className="mt-4 flex flex-wrap gap-3">
                             {social.facebook_url && (

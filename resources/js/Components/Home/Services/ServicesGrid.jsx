@@ -57,6 +57,9 @@ const useIntersectionObserver = (ref) => {
     }, [ref]);
 };
 
+/**
+ * SEO için tüm dillerdeki açıklamaları tek stringte topluyor
+ */
 const getAllDescriptions = (service) => {
     if (!service) return "";
 
@@ -81,6 +84,52 @@ const getAllDescriptions = (service) => {
     return descriptions.join(" ");
 };
 
+/**
+ * Tek bir locale için title/name çeker
+ */
+const getLocalizedTitle = (service, locale) => {
+    if (!service) return "";
+
+    const base = service.title || service.name || "";
+
+    if (!Array.isArray(service.translations) || !locale) {
+        return base;
+    }
+
+    const tr =
+        service.translations.find(
+            (t) =>
+                t?.locale === locale ||
+                t?.lang === locale ||
+                t?.language === locale
+        ) || {};
+
+    return tr.title || tr.name || base;
+};
+
+/**
+ * Tek bir locale için description çeker
+ */
+const getLocalizedDescription = (service, locale) => {
+    if (!service) return "";
+
+    const base = service.description || "";
+
+    if (!Array.isArray(service.translations) || !locale) {
+        return String(base).trim();
+    }
+
+    const tr =
+        service.translations.find(
+            (t) =>
+                t?.locale === locale ||
+                t?.lang === locale ||
+                t?.language === locale
+        ) || {};
+
+    return String(tr.description || base || "").trim();
+};
+
 const ServicesGrid = ({ services = [], content = {} }) => {
     const { t } = useTranslation();
     const [mounted, setMounted] = React.useState(false);
@@ -99,6 +148,7 @@ const ServicesGrid = ({ services = [], content = {} }) => {
         props?.global?.talentId ||
         "";
 
+    // Örn. "de", "en" vs.
     const locale = useLocale("de");
 
     const { services: remoteServices, loading } = useServices({
@@ -142,7 +192,7 @@ const ServicesGrid = ({ services = [], content = {} }) => {
         "@context": "https://schema.org",
         "@type": "ItemList",
         itemListElement: servicesToRender.map((s, i) => {
-            const title = s.title || s.name || "";
+            const title = getLocalizedTitle(s, locale);
             return {
                 "@type": "Service",
                 position: i + 1,
@@ -232,13 +282,22 @@ const ServicesGrid = ({ services = [], content = {} }) => {
                         servicesToRender.map((s) => (
                             <ServiceCard
                                 key={s.id}
-                                title={s.title || s.name}
-                                description={getAllDescriptions(s)}
+                                title={getLocalizedTitle(s, locale)}
+                                description={getLocalizedDescription(s, locale)}
                                 image={s.image}
                                 slug={s.slug}
                                 translations={s.translations}
                             />
                         ))}
+
+                    {!loading && servicesToRender.length === 0 && (
+                        <div className="services-empty">
+                            {t(
+                                "servicesList.empty",
+                                "Şu anda listelenecek hizmet bulunmamaktadır."
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <div className="services-cta">
