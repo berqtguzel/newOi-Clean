@@ -5,7 +5,7 @@ import "../css/loading.css";
 import "../css/404.css";
 import "./i18n";
 
-import React, { useMemo } from "react"; // useMemo eklendi
+import React, { useMemo } from "react";
 import { createInertiaApp } from "@inertiajs/react";
 import { hydrateRoot, createRoot } from "react-dom/client";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
@@ -76,7 +76,6 @@ createInertiaApp({
         const initialLocale = props?.initialPage?.props?.locale || "de";
         const initialTheme = getInitialTheme();
 
-        /** SSR Hydration için React element */
         const reactApp = (
             <RootComponent
                 App={App}
@@ -92,7 +91,6 @@ createInertiaApp({
             }
 
             if (el.hasChildNodes()) {
-                // 🟢 SSR → hydrateRoot
                 try {
                     hydrateRoot(el, reactApp);
                 } catch (err) {
@@ -103,7 +101,6 @@ createInertiaApp({
                     createRoot(el).render(reactApp);
                 }
             } else {
-                // 🟢 SPA → normal render
                 createRoot(el).render(reactApp);
             }
         };
@@ -111,7 +108,6 @@ createInertiaApp({
         if (i18n.isInitialized) startApp();
         else i18n.on("initialized", startApp);
 
-        /** Ziggy route helper */
         const ziggy = props?.initialPage?.props?.ziggy;
         if (ziggy) {
             window.route = (name, params, absolute) =>

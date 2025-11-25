@@ -3,7 +3,9 @@ import ReactDOMServer from "react-dom/server";
 import { createInertiaApp } from "@inertiajs/react";
 import createServer from "@inertiajs/react/server";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
-import route from "../../vendor/tightenco/ziggy/dist/index.m";
+// DÜZELTME: SSR build hatasını çözmek için göreceli vendor import'u yerine
+// named npm import kullanılıyor.
+import { route } from "ziggy-js";
 
 import { ThemeProvider as SSRThemeProvider } from "./Context/ThemeContext.ssr";
 import i18n from "./i18n";
@@ -34,6 +36,7 @@ createServer(async (page) => {
                 import.meta.glob("./Pages/**/*.jsx")
             ),
         setup: ({ App, props }) => {
+            // Ziggy route helper'ı artık named import'tan gelen 'route' fonksiyonunu kullanıyor
             global.route = (name, params, absolute) =>
                 route(name, params, absolute, {
                     ...page.props.ziggy,
