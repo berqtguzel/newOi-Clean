@@ -145,17 +145,26 @@
     {{-- 5. KRİTİK CSS & GÖRÜNÜRLÜK AYARLARI --}}
     <style>
         :root {
-            --site-primary-color: {{ $c['site_primary_color'] }};
-            --site-secondary-color: {{ $c['site_secondary_color'] }};
-            --site-accent-color: {{ $c['site_accent_color'] }};
-            --button-color: {{ $c['button_color'] }};
-            --text-color: {{ $c['text_color'] }};
-            --link-color: {{ $c['link_color'] }};
-            --background-color: {{ $c['background_color'] }};
-            --header-background-color: {{ $c['header_background_color'] }};
-            --footer-background-color: {{ $c['footer_background_color'] }};
-        }
 
+        --site-primary-color: {{ $c['site_primary_color'] ?? '#003dff' }};
+        --site-secondary-color: {{ $c['site_secondary_color'] ?? '#006aff' }};
+        --site-accent-color: {{ $c['site_accent_color'] ?? '#00b9ff' }};
+
+
+        --button-color: {{ $c['button_color'] ?? '#005eff' }};
+        --text-color: {{ $c['text_color'] ?? '#ffffff' }};
+        --link-color: {{ $c['link_color'] ?? '#000000' }};
+
+
+        --h1-color: {{ $c['h1_color'] ?? '#000000' }};
+        --h2-color: {{ $c['h2_color'] ?? '#000000' }};
+        --h3-color: {{ $c['h3_color'] ?? '#000000' }};
+
+
+        --background-color: {{ $c['background_color'] ?? '#ffffff' }};
+        --header-background-color: {{ $c['header_background_color'] ?? '#6387f1' }};
+        --footer-background-color: {{ $c['footer_background_color'] ?? '#004cff' }};
+    }
 
         html { background-color: {{ $c['background_color'] }}; }
 

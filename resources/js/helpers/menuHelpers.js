@@ -3,7 +3,7 @@ export const normalizeLang = (code) =>
         .toLowerCase()
         .split("-")[0];
 
-export function resolveMenuLabel(node, locale = "de", fallback = "en") {
+export function resolveMenuLabel(node, locale = "de", fallback = "de") {
     if (!node) return "";
 
     const lang = normalizeLang(locale);

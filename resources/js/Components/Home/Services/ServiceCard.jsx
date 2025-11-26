@@ -1,11 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { Link } from "@inertiajs/react";
 import "./ServiceCard.css";
 import SafeHtml from "@/Components/Common/SafeHtml";
 import { useTranslation } from "react-i18next";
-import { useMemo } from "react";
-/* ------------------------------ helpers ------------------------------ */
 
+/* ------------------------------ helpers ------------------------------ */
 function buildHref({ link, slug }) {
     if (link) return link;
     if (!slug) return "/";
@@ -35,7 +34,6 @@ const ServiceCard = ({
     translations = [],
 }) => {
     const { t, i18n } = useTranslation();
-
     const currentLang = normLang(i18n.language || "de");
 
     const activeTranslation = translations.find(
@@ -45,160 +43,58 @@ const ServiceCard = ({
     const displayTitle =
         title || activeTranslation?.title || activeTranslation?.name || "";
 
-    const displayDesc =
-        description ||
-        activeTranslation?.description ||
-        activeTranslation?.content ||
-        "";
-
     const imageRef = useRef(null);
     const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
-        if (imageRef.current && imageRef.current.complete) {
+        if (imageRef.current?.complete) {
             setIsLoaded(true);
         }
     }, []);
 
-    const isLocationShowPage = () => {
-        if (typeof window === "undefined") return false;
-        const path = window.location.pathname;
-        const parts = path.split("/").filter(Boolean);
-
-        if (parts.length === 1) {
-            const slug = parts[0] || "";
-            const isServicePrefix =
-                /^(gebaudereinigung|wohnungsrenovierung|hotelreinigung)-/.test(
-                    slug.toLowerCase()
-                );
-            const isSpecialRoute =
-                /^(services|standorte|kontakt|dienstleistungen|lang|home)$/i.test(
-                    slug
-                );
-            return !isServicePrefix && !isSpecialRoute;
-        }
-
-        return false;
-    };
-
-    const getCurrentCitySlug = () => {
-        if (typeof window === "undefined") return null;
-        const path = window.location.pathname;
-        const parts = path.split("/").filter(Boolean);
-        if (parts.length === 1) {
-            const slug = parts[0] || "";
-            const isServicePrefix =
-                /^(gebaudereinigung|wohnungsrenovierung|hotelreinigung)-/.test(
-                    slug.toLowerCase()
-                );
-            const isSpecialRoute =
-                /^(services|standorte|kontakt|dienstleistungen|lang|home)$/i.test(
-                    slug
-                );
-            if (!isServicePrefix && !isSpecialRoute) {
-                return slug;
-            }
-        }
-        return null;
-    };
-
-    const getCitySlugFromPath = () => {
-        if (typeof window === "undefined") return null;
-        const parts = window.location.pathname.split("/").filter(Boolean);
-        if (!parts.length) return null;
-
-        const last = parts[parts.length - 1] || "";
-        const slugParts = last.split("-");
-
-        if (slugParts.length <= 1) return null;
-
-        const cityParts =
-            slugParts[1] === "in" ? slugParts.slice(2) : slugParts.slice(1);
-
-        if (!cityParts.length) return null;
-
-        return cityParts.join("-").toLowerCase();
-    };
-
-    const normalize = (v) =>
-        String(v || "")
-            .toLowerCase()
-            .replace(/[^a-z0-9-]+/g, "-")
-            .replace(/^-+|-+$/g, "");
-
-    const isServiceSlug =
-        /^(gebaudereinigung|wohnungsrenovierung|hotelreinigung)-/.test(
-            String(slug || "").toLowerCase()
-        );
-
-    const isOnLocationPage = isLocationShowPage();
-
-    let effectiveSlug = slug || "";
-
-    if (isOnLocationPage) {
-        const currentCitySlug = getCurrentCitySlug();
-        const slugValue = effectiveSlug.startsWith("/")
-            ? effectiveSlug.slice(1)
-            : effectiveSlug;
-
-        if (
-            currentCitySlug &&
-            slugValue &&
-            !normalize(slugValue).includes(normalize(currentCitySlug))
-        ) {
-            effectiveSlug = `${slugValue}-${currentCitySlug}`;
-        } else {
-            effectiveSlug = slugValue;
-        }
-    } else if (isServiceSlug) {
-        effectiveSlug = effectiveSlug.startsWith("/")
-            ? effectiveSlug.slice(1)
-            : effectiveSlug;
-    } else {
-        const currentCitySlug = getCitySlugFromPath();
-        const slugValue = effectiveSlug.startsWith("/")
-            ? effectiveSlug.slice(1)
-            : effectiveSlug;
-
-        if (
-            currentCitySlug &&
-            slugValue &&
-            !normalize(slugValue).includes(normalize(currentCitySlug))
-        ) {
-            effectiveSlug = `${slugValue}-${currentCitySlug}`;
-        }
-    }
-
+    // 📌 Slug → olduğu gibi kullanıyoruz
+    const effectiveSlug = slug || "";
     const href = buildHref({ link, slug: effectiveSlug });
 
-    const plainTitle = useMemo(() => {
-        return (
+    // 🔥 Konsol Log
+    const handleClick = () => {
+        console.log("📌 Service Card Click");
+        console.log("   raw slug:", slug);
+        console.log("   href:", href);
+    };
+
+    const plainTitle = useMemo(
+        () =>
             stripHtml(displayTitle) ||
-            t("services.card.default_service_name", "Service")
-        );
-    }, [displayTitle, t, i18n.language]);
+            t("services.card.default_service_name", "Service"),
+        [displayTitle, t, i18n.language]
+    );
 
-    const buttonLabel = useMemo(() => {
-        return t("services.card.button", "Details");
-    }, [t, i18n.language]);
+    const buttonLabel = useMemo(
+        () => t("services.card.button", "Details"),
+        [t, i18n.language]
+    );
 
-    const ariaLabel = useMemo(() => {
-        return t("services.card.aria", {
-            service: plainTitle,
-            defaultValue: `Learn more about ${plainTitle}`,
-        });
-    }, [t, i18n.language, plainTitle]);
+    const ariaLabel = useMemo(
+        () =>
+            t("services.card.aria", {
+                service: plainTitle,
+                defaultValue: `Learn more about ${plainTitle}`,
+            }),
+        [t, i18n.language, plainTitle]
+    );
 
     return (
-        <Link href={href} className="service-card group" aria-label={ariaLabel}>
+        <Link
+            href={href}
+            className="service-card group"
+            aria-label={ariaLabel}
+            onClick={handleClick} // 👈 EKLEDİK
+        >
             <div className="service-card__image-wrapper">
                 {!isLoaded && image && (
-                    <div
-                        className="service-card__skeleton"
-                        aria-hidden="true"
-                    />
+                    <div className="service-card__skeleton" aria-hidden />
                 )}
-
                 {image ? (
                     <img
                         ref={imageRef}
@@ -218,12 +114,6 @@ const ServiceCard = ({
                         {Icon && <Icon className="w-12 h-12" />}
                     </div>
                 )}
-
-                {Icon && (
-                    <div className="service-card__overlay" aria-hidden="true">
-                        <Icon className="service-card__icon" />
-                    </div>
-                )}
             </div>
 
             <div className="service-card__content">
@@ -239,7 +129,6 @@ const ServiceCard = ({
                         className="service-card__arrow"
                         viewBox="0 0 24 24"
                         fill="none"
-                        aria-hidden="true"
                     >
                         <path
                             d="M5 12H19M19 12L12 5M19 12L12 19"

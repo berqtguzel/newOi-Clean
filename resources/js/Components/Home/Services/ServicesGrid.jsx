@@ -1,9 +1,8 @@
 import React from "react";
-import { Head, usePage } from "@inertiajs/react";
+import { Head } from "@inertiajs/react";
 import { useTranslation } from "react-i18next";
 import ServiceCard from "./ServiceCard";
 import "./ServicesGrid.css";
-
 import LiquidEther from "@/Components/ReactBits/Backgrounds/LiquidEther";
 import { useServices } from "@/hooks/useServices";
 import { useLocale } from "@/hooks/useLocale";
@@ -16,13 +15,14 @@ function useIsDark() {
 
     React.useEffect(() => {
         if (typeof document === "undefined") return;
-
         const get = () => document.documentElement.classList.contains("dark");
         setIsDark(get());
 
-        const el = document.documentElement;
         const obs = new MutationObserver(() => setIsDark(get()));
-        obs.observe(el, { attributes: true, attributeFilter: ["class"] });
+        obs.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["class"],
+        });
 
         return () => obs.disconnect();
     }, []);
@@ -50,216 +50,147 @@ const useIntersectionObserver = (ref) => {
             { threshold: 0.1 }
         );
 
-        const current = ref.current;
-        if (current) observer.observe(current);
+        if (ref.current) observer.observe(ref.current);
 
-        return () => current && observer.unobserve(current);
+        return () => ref.current && observer.unobserve(ref.current);
     }, [ref]);
 };
 
-/**
- * SEO için tüm dillerdeki açıklamaları tek stringte topluyor
- */
 const getAllDescriptions = (service) => {
     if (!service) return "";
-
-    const descriptions = [];
+    const desc = [];
 
     if (service.description) {
-        const base = String(service.description).trim();
-        if (base) descriptions.push(base);
+        desc.push(String(service.description).trim());
     }
 
     if (Array.isArray(service.translations)) {
         service.translations.forEach((tr) => {
             if (tr?.description) {
-                const desc = String(tr.description).trim();
-                if (desc && !descriptions.includes(desc)) {
-                    descriptions.push(desc);
-                }
+                const d = String(tr.description).trim();
+                if (!desc.includes(d)) desc.push(d);
             }
         });
     }
 
-    return descriptions.join(" ");
+    return desc.join(" ");
 };
 
-/**
- * Tek bir locale için title/name çeker
- */
-const getLocalizedTitle = (service, locale) => {
-    if (!service) return "";
-
-    const base = service.title || service.name || "";
-
-    if (!Array.isArray(service.translations) || !locale) {
-        return base;
-    }
-
-    const tr =
-        service.translations.find(
-            (t) =>
-                t?.locale === locale ||
-                t?.lang === locale ||
-                t?.language === locale
-        ) || {};
-
-    return tr.title || tr.name || base;
-};
-
-/**
- * Tek bir locale için description çeker
- */
-const getLocalizedDescription = (service, locale) => {
-    if (!service) return "";
-
-    const base = service.description || "";
-
-    if (!Array.isArray(service.translations) || !locale) {
-        return String(base).trim();
-    }
-
-    const tr =
-        service.translations.find(
-            (t) =>
-                t?.locale === locale ||
-                t?.lang === locale ||
-                t?.language === locale
-        ) || {};
-
-    return String(tr.description || base || "").trim();
-};
-
-const ServicesGrid = ({ services = [], content = {} }) => {
+const ServicesGrid = ({ content = {} }) => {
     const { t } = useTranslation();
+    const locale = useLocale("de");
     const [mounted, setMounted] = React.useState(false);
     const gridRef = React.useRef(null);
+
     useIntersectionObserver(gridRef);
 
-    React.useEffect(() => {
-        setMounted(true);
-    }, []);
+    React.useEffect(() => setMounted(true), []);
 
-    const { props } = usePage();
-    const liquidInnerRef = React.useRef(null);
-    const tenantId =
-        props?.global?.tenantId ||
-        props?.global?.tenant_id ||
-        props?.global?.talentId ||
-        "";
-
-    // Örn. "de", "en" vs.
-    const locale = useLocale("de");
-
+    // 🔥 TÜM SAYFALARDAN TÜM SERVİSLERİ ÇEK
     const { services: remoteServices, loading } = useServices({
         perPage: 200,
-        tenantId,
         locale,
+        fetchAll: true,
     });
 
-    const safeRemoteServices = Array.isArray(remoteServices)
-        ? remoteServices
-        : [];
+    const safeRemote = Array.isArray(remoteServices) ? remoteServices : [];
 
-    const filteredServices = safeRemoteServices.filter((s) => {
-        const catName = String(s.categoryName || "").toLowerCase();
-        const catId = s.categoryId;
+    const parentServices = safeRemote
+        .filter((s) => {
+            const parentId =
+                s.parentId ?? s.parent_id ?? s.raw?.parent_id ?? null;
+            const hasLocation =
+                !!s.city ||
+                !!s.country ||
+                !!s.district ||
+                !!s.hasMaps ||
+                (Array.isArray(s.maps) && s.maps.length > 0);
 
-        if (catName === "seo") return false;
+            return (
+                (parentId === null ||
+                    parentId === undefined ||
+                    parentId === 0 ||
+                    parentId === "0") &&
+                !hasLocation
+            );
+        })
+        .sort((a, b) => {
+            const getOrder = (x) =>
+                x.order ??
+                x.sort_order ??
+                x.raw?.order ??
+                x.raw?.sort_order ??
+                null;
 
-        if (
-            catId === 2 ||
-            catName === "gebäudereinigung" ||
-            catName === "gebaudereinigung"
-        ) {
-            return false;
-        }
+            const orderA = getOrder(a);
+            const orderB = getOrder(b);
 
-        return true;
-    });
+            if (orderA != null && orderB == null) return -1;
+            if (orderA == null && orderB != null) return 1;
+            if (orderA != null && orderB != null && orderA !== orderB)
+                return orderA - orderB;
 
-    const topLevelServices = filteredServices.filter((s) => s.parentId == null);
-
-    const servicesToRender = topLevelServices.length
-        ? topLevelServices
-        : services;
+            return (a.title || a.name || "").localeCompare(
+                b.title || b.name || "",
+                locale || "de"
+            );
+        });
 
     const isDark = useIsDark();
-    const lightColors = ["#085883", "#0C9FE2", "#2EA7E0"];
-    const darkColors = ["#47B3FF", "#7CCBFF", "#B5E3FF"];
-
-    const schemaData = {
-        "@context": "https://schema.org",
-        "@type": "ItemList",
-        itemListElement: servicesToRender.map((s, i) => {
-            const title = getLocalizedTitle(s, locale);
-            return {
-                "@type": "Service",
-                position: i + 1,
-                name: title,
-                description: getAllDescriptions(s),
-                url: s.slug ? `${BASE_DOMAIN}/${s.slug}` : BASE_DOMAIN,
-            };
-        }),
-    };
+    const colors = isDark
+        ? ["#47B3FF", "#7CCBFF", "#B5E3FF"]
+        : ["#085883", "#0C9FE2", "#2EA7E0"];
 
     const headingHtml =
-        content.services_title || t("servicesList.title") || "Leistungen";
+        content.services_title ||
+        t("servicesList.title") ||
+        "Unsere Leistungen";
 
     const subtitleHtml =
         content.services_subtitle ||
         t("servicesList.subtitle") ||
         "Unsere Services";
 
+    const schemaData = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        itemListElement: parentServices.map((s, i) => ({
+            "@type": "Service",
+            position: i + 1,
+            name: s.title || s.name,
+            description: getAllDescriptions(s),
+            url: s.slug ? `${BASE_DOMAIN}/${s.slug}` : BASE_DOMAIN,
+        })),
+    };
+
     return (
         <section
+            id="services"
             className="services-section relative overflow-hidden"
             aria-labelledby="services-title"
         >
             <Head>
-                <title>
-                    {t(
-                        "servicesList.meta_title",
-                        "Unsere Leistungen - O&I CLEAN group GmbH"
-                    )}
-                </title>
+                <title>{t("servicesList.meta_title")}</title>
                 <meta
                     name="description"
-                    content={t(
-                        "servicesList.meta_description",
-                        "Professionelle Reinigung und Gebäudemanagement"
-                    )}
+                    content={t("servicesList.meta_description")}
                 />
-                <script type="application/ld+json">
+                <script id="schema-services" type="application/ld+json">
                     {JSON.stringify(schemaData)}
                 </script>
             </Head>
 
-            <div className="absolute inset-0 z-10 liquid-ether-bg">
-                <div
-                    className="liquid-ether-inner"
-                    aria-hidden
-                    ref={liquidInnerRef}
-                >
-                    {mounted && (
+            {mounted && (
+                <div className="absolute inset-0 z-10 liquid-ether-bg">
+                    <div className="liquid-ether-inner" aria-hidden>
                         <LiquidEther
-                            containerRef={liquidInnerRef}
                             className="w-full h-full"
-                            colors={isDark ? darkColors : lightColors}
-                            mouseForce={35}
-                            cursorSize={140}
-                            isViscous={false}
-                            viscous={25}
-                            iterationsViscous={32}
-                            iterationsPoisson={32}
-                            resolution={0.6}
+                            colors={colors}
                             autoDemo
-                            autoSpeed={0.4}
-                            autoIntensity={1.6}
                         />
-                    )}
+                    </div>
                 </div>
-            </div>
+            )}
 
             <div className="services-container relative z-10">
                 <div className="services-header">
@@ -274,48 +205,26 @@ const ServicesGrid = ({ services = [], content = {} }) => {
                 <div ref={gridRef} className="services-grid">
                     {loading && (
                         <div className="services-loading">
-                            {mounted ? t("servicesList.loading") : ""}
+                            {t("servicesList.loading")}
                         </div>
                     )}
 
                     {!loading &&
-                        servicesToRender.map((s) => (
+                        parentServices.map((s) => (
                             <ServiceCard
                                 key={s.id}
-                                title={getLocalizedTitle(s, locale)}
-                                description={getLocalizedDescription(s, locale)}
+                                title={s.title || s.name}
+                                description={getAllDescriptions(s)}
                                 image={s.image}
                                 slug={s.slug}
                                 translations={s.translations}
                             />
                         ))}
-
-                    {!loading && servicesToRender.length === 0 && (
-                        <div className="services-empty">
-                            {t(
-                                "servicesList.empty",
-                                "Şu anda listelenecek hizmet bulunmamaktadır."
-                            )}
-                        </div>
-                    )}
                 </div>
 
                 <div className="services-cta">
-                    <a
-                        href="/kontakt"
-                        className="services-contact-button"
-                        suppressHydrationWarning={true}
-                    >
-                        {t("servicesList.contact_cta") || "Kontaktiere Uns"}
-                        <svg viewBox="0 0 24 24" fill="none">
-                            <path
-                                d="M5 12H19M19 12L12 5M19 12L12 19"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            />
-                        </svg>
+                    <a href="/kontakt" className="services-contact-button">
+                        {t("servicesList.contact_cta")}
                     </a>
                 </div>
             </div>

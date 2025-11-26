@@ -14,15 +14,42 @@ const stripHtml = (s = "") =>
 
 let FallbackImg = (props) => <img {...props} />;
 
+/** 🔧 Slug → { citySlug, cityTitle } helper
+ *  "gebaudereinigung-in-amberg"      -> { citySlug: "amberg", cityTitle: "Amberg" }
+ *  "gebaudereinigung-in-lubeck"      -> { citySlug: "lubeck", cityTitle: "Lubeck" }
+ *  "gebaudereinigung-in-muhlhausen-thuringen"
+ *                                   -> { citySlug: "muhlhausen-thuringen",
+ *                                        cityTitle: "Muhlhausen Thuringen" }
+ *  "berlin"                         -> { citySlug: "berlin", cityTitle: "Berlin" }
+ */
+function getCityFromSlug(slug) {
+    if (!slug) return { citySlug: "", cityTitle: "" };
+
+    let citySlug = slug;
+
+    const lower = slug.toLowerCase();
+    const prefix1 = "gebaudereinigung-in-";
+    const prefix2 = "gebaudereinigung-";
+
+    if (lower.startsWith(prefix1)) {
+        citySlug = slug.slice(prefix1.length);
+    } else if (lower.startsWith(prefix2)) {
+        citySlug = slug.slice(prefix2.length);
+    }
+
+    const cityTitle = citySlug
+        .split("-")
+        .filter(Boolean)
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
+
+    return { citySlug, cityTitle };
+}
+
 export default function LocationCard({ location, onHover, isActive }) {
     const [Img, setImg] = useState(() => FallbackImg);
     const locale = useLocale("de");
-    const { t, i18n } = useTranslation();
-
-    const [isMounted, setIsMounted] = useState(false);
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
+    const { t } = useTranslation();
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -37,14 +64,12 @@ export default function LocationCard({ location, onHover, isActive }) {
         const list = location?.translations;
         if (!Array.isArray(list) || list.length === 0) return null;
 
-        let found = list.find((tr) => tr.language_code === locale);
-        if (!found) {
-            found = list.find((tr) => tr.language_code === "de");
-        }
-        if (!found) {
-            found = list[0];
-        }
-        return found || null;
+        return (
+            list.find((tr) => tr.language_code === locale) ||
+            list.find((tr) => tr.language_code === "de") ||
+            list[0] ||
+            null
+        );
     }, [location, locale]);
 
     const titleHtml =
@@ -54,39 +79,18 @@ export default function LocationCard({ location, onHover, isActive }) {
         location.name ||
         "";
 
-    const cityRaw =
-        activeTranslation?.city ||
-        location.city ||
-        location.district ||
-        location.country ||
-        activeTranslation?.title ||
-        location.title ||
-        activeTranslation?.name ||
-        location.name ||
-        "";
-
-    const cityText = stripHtml(cityRaw) || "dieser Stadt";
-
     const originalSlug = location.slug;
+    if (!originalSlug) return null;
 
-    if (!originalSlug) {
-        return null;
-    }
+    // 🔥 Şehir bilgisini slug'dan çıkar
+    const { citySlug, cityTitle } = getCityFromSlug(originalSlug);
+    const cityText = cityTitle || stripHtml(titleHtml) || "dieser Stadt";
 
-    const cleanedSlug = originalSlug.replace(/^[^-]+-/, "");
-
-    if (!cleanedSlug) {
-        // Bu, slug'ın sadece 'gebaudereinigung-' gibi bir ön ekten oluştuğu anlamına gelir.
-        // Bu durumda da yönlendirme yapamayız.
-        return null;
-    }
+    // 🔗 Artık /gebaudereinigung-in-amberg değil, sadece /amberg
+    const href = `/${citySlug}`;
 
     const hasMaps = Array.isArray(location.maps) && location.maps.length > 0;
     const primaryMap = hasMaps ? location.maps[0] : null;
-    const slug = location.slug;
-
-    // Yönlendirme yolu (Örnek: /berlin veya /hamburg)
-    const href = `/${cleanedSlug}`;
 
     const CTA_TEXT = {
         de: "Mehr erfahren",
@@ -100,26 +104,17 @@ export default function LocationCard({ location, onHover, isActive }) {
         tr: "{{city}}'deki temizlik hizmetlerimiz hakkında daha fazla bilgi alın",
     };
 
-    // Hidrasyon hatalarını azaltmak için i18n.language bağımlılığı kaldırılmıştır.
-    const ctaLabel = useMemo(() => {
-        return t("locations.card.cta", {
-            defaultValue: CTA_TEXT[locale] || CTA_TEXT.de,
-        });
-    }, [t, locale]);
-
-    const ctaAria = useMemo(() => {
-        return t("locations.card.cta_aria", {
-            defaultValue: CTA_ARIA[locale] || CTA_ARIA.de,
-            city: cityText,
-        });
-    }, [t, locale, cityText]);
+    const ctaLabel = CTA_TEXT[locale] || CTA_TEXT.de;
+    const ctaAria = (CTA_ARIA[locale] || CTA_ARIA.de).replace(
+        "{{city}}",
+        cityText
+    );
 
     return (
         <Link
             href={href}
             className={`location-card ${isActive ? "active" : ""}`}
-            onMouseEnter={onHover}
-            onFocus={onHover}
+            aria-label={ctaAria}
             data-map-id={primaryMap?.id}
             data-map-name={primaryMap?.name}
             data-map-type={primaryMap?.map_type}
@@ -149,8 +144,8 @@ export default function LocationCard({ location, onHover, isActive }) {
 
             <div className="location-card-content">
                 <div className="location-card-footer">
-                    <span className="location-card-button" aria-label={ctaAria}>
-                        <span suppressHydrationWarning={true}>{ctaLabel}</span>
+                    <span className="location-card-button">
+                        <span suppressHydrationWarning>{ctaLabel}</span>
                         <svg
                             className="location-card-arrow"
                             viewBox="0 0 24 24"

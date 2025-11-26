@@ -1,6 +1,6 @@
+// resources/js/services/servicesService.js
 import { httpRequest } from "../lib/http";
 import { remoteConfig } from "./remoteConfig";
-
 
 function pickImage(it) {
     return (
@@ -12,25 +12,18 @@ function pickImage(it) {
     );
 }
 
-
 function normLang(code) {
     return String(code || "").toLowerCase().split("-")[0];
 }
 
-
 export function normalizeService(it, i = 0, options = {}) {
     const { locale, fallbackLocale } = options;
-
-
-    let translations = Array.isArray(it?.translations)
-        ? it.translations
-        : [];
+    let translations = Array.isArray(it?.translations) ? it.translations : [];
 
     if (translations.length === 0) {
-
         translations = [
             {
-                language_code: normLang(locale || "en"),
+                language_code: normLang(locale || "de"),
                 name: it?.name,
                 title: it?.title,
                 description: it?.description || it?.content,
@@ -40,85 +33,57 @@ export function normalizeService(it, i = 0, options = {}) {
         ];
     }
 
-
     const want = normLang(locale);
     const fallback = normLang(fallbackLocale);
 
     let activeTr =
         translations.find((tr) => normLang(tr.language_code) === want) ||
         translations.find((tr) => normLang(tr.language_code) === fallback) ||
-        translations[0] ||
-        null;
-
-
-    const translatedTitle =
-        activeTr?.title ||
-        activeTr?.name ||
-        it?.title ||
-        it?.name ||
-        null;
-
-    const translatedDescription =
-        activeTr?.short_description ||
-        activeTr?.description ||
-        activeTr?.content ||
-        it?.short_description ||
-        it?.description ||
-        it?.content ||
-        "";
+        translations[0];
 
     return {
         id: it?.id ?? i,
-        title: translatedTitle,
-        name: translatedTitle,
-        description: translatedDescription,
+        title: activeTr?.title || activeTr?.name || it?.title || it?.name,
+        name: activeTr?.title || activeTr?.name,
+        description:
+            activeTr?.short_description ||
+            activeTr?.description ||
+            activeTr?.content ||
+            "",
         shortDescription: activeTr?.short_description || "",
-
         slug: it?.slug || null,
         url: it?.url || null,
         image: pickImage(it),
-
-        categoryId: it?.category_id ?? null,
-        categoryName: it?.category_name || null,
-        categorySlug: it?.category_slug || null,
-
-        parentId: it?.parent_id ?? null,
-        parentName: it?.parent_name ?? null,
-
-        country: it?.country || null,
+        categoryId: it?.category_id
+            ? Number(it.category_id)
+            : it?.category?.id
+              ? Number(it.category.id)
+              : null,
+        categoryName: it?.category_name || it?.category?.name,
+        categorySlug: it?.category_slug || it?.category?.slug,
         city: it?.city || null,
-        district: it?.district || null,
         latitude: it?.latitude ? Number(it.latitude) : null,
         longitude: it?.longitude ? Number(it.longitude) : null,
-
         hasMaps: !!it?.has_maps,
         maps: Array.isArray(it?.maps) ? it.maps : [],
-
-        status: it?.status || null,
-        order: typeof it?.order === "number" ? it.order : null,
-        views: typeof it?.views === "number" ? it.views : null,
-
-
-        translations,
-        activeTranslation: activeTr,
-        hasTranslations: translations.length > 0,
-
         raw: it,
     };
 }
 
+export async function fetchServices(options = {}) {
+    const {
+        page = 1,
+        perPage = 200,
+        tenantId,
+        locale,
+        search,
+        city,
+        district,
+        locationSlug,
+        locationId,
+        categoryId,
+    } = options;
 
-export async function fetchServices({
-    page = 1,
-    perPage = 50,
-    tenantId,
-    locale,
-    search,
-    city,
-    district,
-    locationSlug,
-    locationId,
-} = {}) {
     const headers = {};
     if (tenantId) headers["X-Tenant-ID"] = String(tenantId);
 
@@ -129,6 +94,7 @@ export async function fetchServices({
     if (district) params.district = district;
     if (locationSlug) params.location_slug = locationSlug;
     if (locationId) params.location_id = locationId;
+    if (categoryId != null) params.category_id = Number(categoryId);
 
     const res = await httpRequest("/v1/services", {
         method: "GET",
@@ -139,26 +105,55 @@ export async function fetchServices({
     });
 
     const list = Array.isArray(res?.data) ? res.data : [];
-
-    const languagesMeta = res?.meta?.languages || {};
-    const currentLang = locale || languagesMeta.current || languagesMeta.default;
-    const fallbackLang = languagesMeta.default || languagesMeta.current;
+    const meta = res?.meta || {};
+    const languagesMeta = meta.languages || {};
 
     const services = list.map((it, i) =>
         normalizeService(it, i, {
-            locale: currentLang,
-            fallbackLocale: fallbackLang,
+            locale: locale || languagesMeta.current || languagesMeta.default,
+            fallbackLocale: languagesMeta.default || languagesMeta.current,
         })
     );
 
-    return {
-        services,
-        meta: res?.meta || {},
-        pagination: res?.pagination || null,
-    };
+    return { services, meta: meta || {}, pagination: res?.pagination || null };
 }
 
-export async function fetchServiceByIdOrSlug(identifier, opts = {}) {
+export async function fetchAllServices(options = {}) {
+    let all = [];
+    let page = 1;
+    const perPage = options.perPage || 200;
+    let lastMeta = {};
+    let lastPagination = null;
+
+    while (true) {
+        const { services, meta, pagination } = await fetchServices({
+            ...options,
+            page,
+            perPage,
+        });
+
+        all = all.concat(services);
+        lastMeta = meta;
+        lastPagination = pagination;
+
+        if (!pagination || pagination.current_page >= pagination.last_page) {
+            break;
+        }
+
+        page++;
+    }
+
+    return { services: all, meta: lastMeta, pagination: lastPagination };
+}
+
+/* ------------------------------------------------------
+ * YENİ - Slug hiçbir değişikliğe uğramaz!
+ * ------------------------------------------------------ */
+function buildApiSlug(identifier) {
+    return String(identifier || "").trim().toLowerCase();
+}
+
+export async function fetchServiceBySlug(slug, opts = {}) {
     const { tenantId, locale } = opts;
 
     const headers = {};
@@ -167,79 +162,24 @@ export async function fetchServiceByIdOrSlug(identifier, opts = {}) {
     const params = {};
     if (locale) params.locale = String(locale);
 
-    const idStr = String(identifier || "").trim();
+    const apiSlug = buildApiSlug(slug);
 
+    const res = await httpRequest(`/v1/services/${apiSlug}`, {
+        method: "GET",
+        headers,
+        params,
+    });
 
-    const isNumericId = /^\d+$/.test(idStr);
-    const apiIdentifier = idStr;
-
-    try {
-        const res = await httpRequest(
-            `/v1/services/${encodeURIComponent(apiIdentifier)}`,
-            {
-                method: "GET",
-                headers,
-                params,
-                timeoutMs: remoteConfig.timeout,
-                retries: 1,
-            }
-        );
-
-        const raw = res?.data || res;
-        const languagesMeta =
-            raw?._meta?.languages || res?.meta?.languages || {};
-
-        const currentLang = locale || languagesMeta.current || languagesMeta.default;
-        const fallbackLang = languagesMeta.default || languagesMeta.current;
-
-        return {
-            service: normalizeService(raw, 0, {
-                locale: currentLang,
-                fallbackLocale: fallbackLang,
-            }),
-            raw,
-        };
-    } catch (err) {
-
-        if (isNumericId || err?.response?.status !== 404) throw err;
-
-
-        const trySlugs = [apiIdentifier];
-
-        if (idStr.includes("-")) {
-            trySlugs.push(idStr);
-            trySlugs.push(idStr.split("-")[0]);
-        }
-
-        for (const slug of trySlugs) {
-            try {
-                const r = await httpRequest(
-                    `/v1/services/${encodeURIComponent(slug)}`,
-                    { method: "GET", headers, params }
-                );
-
-                const raw = r?.data || r;
-                const languagesMeta =
-                    raw?._meta?.languages || r?.meta?.languages || {};
-
-                const currentLang =
-                    locale || languagesMeta.current || languagesMeta.default;
-                const fallbackLang =
-                    languagesMeta.default || languagesMeta.current;
-
-                return {
-                    service: normalizeService(raw, 0, {
-                        locale: currentLang,
-                        fallbackLocale: fallbackLang,
-                    }),
-                    raw,
-                };
-            } catch {}
-        }
-
-        throw err;
-    }
+    const raw = res?.data || res;
+    return {
+        service: normalizeService(raw, 0, {
+            locale,
+            fallbackLocale: locale,
+        }),
+        raw,
+    };
 }
 
-
-export const fetchServiceBySlug = fetchServiceByIdOrSlug;
+export async function fetchServiceByIdOrSlug(identifier, opts = {}) {
+    return fetchServiceBySlug(identifier, opts);
+}

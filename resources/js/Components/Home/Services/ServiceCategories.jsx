@@ -1,158 +1,110 @@
-import React from "react";
-import { Link } from "@inertiajs/react";
+import React, { useMemo } from "react";
 import { motion } from "framer-motion";
-import { FaHotel, FaBuilding, FaTools } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
-import Aurora from "@/Components/ReactBits/Backgrounds/Aurora";
+import { usePage } from "@inertiajs/react";
+import useWidgets from "@/hooks/useWidgets";
 import SafeHtml from "@/Components/Common/SafeHtml";
+import Aurora from "@/Components/ReactBits/Backgrounds/Aurora";
 import "./ServiceCategories.css";
-
-const gradientStyle = (from, to) => ({
-    backgroundImage: `linear-gradient(to right, ${from}, ${to})`,
-});
-
-const stripHtml = (str = "") =>
-    String(str)
-        .replace(/<[^>]+>/g, "")
-        .trim();
 
 export default function ServiceCategories({ content = {} }) {
     const { t } = useTranslation();
+    const { props } = usePage();
 
-    const sectionTitle =
-        content.section_services ||
-        t("services.section_title", "Unser breites Leistungsspektrum");
+    const tenantId =
+        props?.global?.tenantId ||
+        props?.global?.tenant_id ||
+        "oi_cleande_690e161c3a1dd";
 
-    const sectionSubtitle =
-        content.section_services_subtitle ||
-        t(
-            "services.section_subtitle",
-            "Wir bieten schlüsselfertige Lösungen für alle Anforderungen Ihrer Einrichtungen und Gebäude – mit deutscher Präzision und Qualität."
-        );
+    const locale = props?.locale || "de";
 
-    const categories = [
-        {
-            key: "hotel",
-            title: t(
-                "services.categories.hotel.title",
-                "Hotelreinigung & Housekeeping"
-            ),
-            description: t(
-                "services.categories.hotel.description",
-                "Von der Zimmerreinigung bis zur Spülküche – perfekte Hygiene und effiziente Abläufe in jedem Bereich Ihres Hotels."
-            ),
-            icon: FaHotel,
-            url: "/dienstleistungen/hotel",
-            gradient: ["#2563EB", "#60A5FA"],
-        },
-        {
-            key: "building",
-            title: t(
-                "services.categories.building.title",
-                "Professionelle Gebäudereinigung"
-            ),
-            description: t(
-                "services.categories.building.description",
-                "Büros, Gewerbeflächen, Bauendreinigung und Spezialreinigungen – wir lassen Ihre Immobilien glänzen."
-            ),
-            icon: FaBuilding,
-            url: "/dienstleistungen/gebaeude",
-            gradient: ["#334155", "#64748B"],
-        },
-        {
-            key: "renovation",
-            title: t(
-                "services.categories.renovation.title",
-                "Renovierung, Reparatur & Instandhaltung"
-            ),
-            description: t(
-                "services.categories.renovation.description",
-                "Maler-, Spachtel- und Trockenbauarbeiten sowie Bodenverlegung und kleinere Reparaturen."
-            ),
-            icon: FaTools,
-            url: "/dienstleistungen/renovierung",
-            gradient: ["#CA8A04", "#F59E0B"],
-        },
-    ];
+    const { widgets, loading, error } = useWidgets({
+        tenant: tenantId,
+        locale,
+    });
 
-    const learnMoreLabel = t("services.learn_more", "Mehr erfahren");
+    const services = useMemo(() => {
+        const raw = widgets?.highlights;
+        return Array.isArray(raw) ? raw : raw?.data || [];
+    }, [widgets]);
 
     return (
-        <section
-            id="services"
-            className="svc-section"
-            style={{ isolation: "isolate" }}
-        >
+        <section className="svc-section">
             <div className="svc-aurora">
                 <Aurora
                     className="svc-aurora-canvas"
                     colorStops={["#0894D7", "#2967EC", "#0284C7"]}
-                    blend={0}
-                    amplitude={0.65}
+                    amplitude={0.9}
                     speed={0.6}
                 />
             </div>
 
             <div className="svc-container">
                 <motion.div
+                    className="svc-header"
                     initial={{ opacity: 0, y: 40 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
                     viewport={{ once: true }}
-                    className="svc-header"
                 >
                     <h2 className="svc-title">
-                        <SafeHtml html={sectionTitle} />
+                        <SafeHtml
+                            html={
+                                content.section_services ||
+                                t("services.section_title")
+                            }
+                        />
                     </h2>
-                    <div className="svc-subtitle">
-                        <SafeHtml html={sectionSubtitle} />
-                    </div>
+
+                    <p className="svc-subtitle">
+                        <SafeHtml
+                            html={
+                                content.section_services_subtitle ||
+                                t("services.section_subtitle")
+                            }
+                        />
+                    </p>
                 </motion.div>
 
-                <div className="svc-grid">
-                    {categories.map((cat, index) => {
-                        const Icon = cat.icon;
-                        const [from, to] = cat.gradient;
-                        const plainTitle =
-                            stripHtml(cat.title) || "diese Kategorie";
+                {loading && <p className="svc-loading">⏳ {t("loading")}</p>}
+                {error && <p className="svc-error">❌ {t("error")}</p>}
 
-                        return (
+                <div className="svc-grid">
+                    {!loading &&
+                        !error &&
+                        services.map((svc, index) => (
                             <motion.article
-                                key={cat.key}
+                                key={svc.id}
+                                className="svc-card"
                                 initial={{ opacity: 0, y: 50 }}
                                 whileInView={{ opacity: 1, y: 0 }}
+                                whileHover={{ scale: 1.05 }}
                                 transition={{
-                                    duration: 0.5,
-                                    delay: index * 0.2,
+                                    duration: 0.4,
+                                    delay: index * 0.1,
                                 }}
-                                whileHover={{ scale: 1.03 }}
                                 viewport={{ once: true }}
-                                className="svc-card"
                             >
-                                <div
-                                    className="svc-card-bar"
-                                    style={gradientStyle(from, to)}
-                                />
+                                <div className="svc-card-bar" />
+
+                                {svc.image && (
+                                    <img
+                                        src={svc.image}
+                                        className="svc-card-img"
+                                        loading="lazy"
+                                    />
+                                )}
 
                                 <div className="svc-card-body">
-                                    <div
-                                        className="svc-card-icon"
-                                        style={gradientStyle(from, to)}
-                                    >
-                                        <Icon size={36} />
-                                    </div>
-
                                     <h3 className="svc-card-title">
-                                        <SafeHtml html={cat.title} />
+                                        <SafeHtml html={svc.name} />
                                     </h3>
 
-                                    <div className="svc-card-desc">
-                                        <SafeHtml html={cat.description} />
-                                    </div>
+                                    <p className="svc-card-desc">
+                                        <SafeHtml html={svc.description} />
+                                    </p>
                                 </div>
                             </motion.article>
-                        );
-                    })}
+                        ))}
                 </div>
             </div>
         </section>

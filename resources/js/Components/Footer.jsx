@@ -27,7 +27,7 @@ export default function Footer({ settings }) {
     const { t } = useTranslation();
     const { props } = usePage();
 
-    const inertiaLocale = props?.locale || "en";
+    const inertiaLocale = props?.locale || "de";
     const locale = normalizeLang(inertiaLocale);
 
     const tenantId =

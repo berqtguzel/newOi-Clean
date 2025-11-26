@@ -156,6 +156,14 @@ body {
     position: relative;
     overflow: hidden;
 }
+.dark .locx-services{
+    background: linear-gradient(
+        to bottom,
+        var(--bg-light) 0%,
+        #0f172a 50%,
+        var(--bg-light) 100%
+    );
+}
 
 .locx-services::before {
     content: "";
@@ -514,4 +522,13 @@ body {
 
 :root.dark .services-grid-5 h3 {
     color: #f1f5f9;
+}
+.locx-city-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var( --text-color);
+  margin-bottom: 1.25rem;
+}
+.dark  .locx-city-title{
+    color: white;
 }

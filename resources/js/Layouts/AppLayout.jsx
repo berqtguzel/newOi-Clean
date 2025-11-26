@@ -16,7 +16,7 @@ export default function AppLayout({ children }) {
         props?.global?.talentId ||
         "";
 
-    const locale = useLocale(props?.locale || "en");
+    const locale = useLocale(props?.locale || "de");
 
     const { data: asyncSettings, isLoading: settingsLoading } = useSettings({
         tenantId,

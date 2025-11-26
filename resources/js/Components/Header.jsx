@@ -698,7 +698,14 @@ const Header = ({ currentRoute, settings: propSettings }) => {
     const menuErrorText = menuError ? String(menuError) : "";
 
     return (
-        <header ref={headerRef} className="site-header">
+        <header
+            ref={headerRef}
+            className="site-header"
+            // Yapışkanlık sorununun üstesinden gelmek için ek stil eklendi.
+            // Bu, CSS dosyanızdaki `position: sticky; top: 0;` kuralını
+            // üst öğelerden gelen olası kısıtlamalara karşı zorlayacaktır.
+            style={{ position: "sticky", top: 0, zIndex: 100 }}
+        >
             <BitsBackground />
             <div className="topbar">
                 <div className="container">

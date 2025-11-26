@@ -6,289 +6,93 @@ import GermanyMap from "./GermanyMap";
 import LocationCard from "./LocationCard";
 import SafeHtml from "@/Components/Common/SafeHtml";
 import { useLocale } from "@/hooks/useLocale";
-import { fetchServices, normalizeService } from "@/services/servicesService";
+import { useServices } from "@/hooks/useServices";
 
 const stripHtml = (s = "") => s.replace(/<[^>]*>/g, "").trim();
 
-const mapServiceToLocation = (svc) => {
-    const lat = svc.latitude;
-    const lng = svc.longitude;
-
-    const coordinates =
-        typeof lat === "number" &&
-        !isNaN(lat) &&
-        typeof lng === "number" &&
-        !isNaN(lng)
-            ? { lat, lng }
-            : null;
-
-    const city =
-        svc.city ||
-        svc.district ||
-        svc.country ||
-        stripHtml(svc.name || svc.title || "");
-
-    return {
-        id: svc.id,
-        city,
-        title: svc.name || svc.title,
-        image: svc.image,
-        coordinates,
-        slug: svc.slug,
-        link: svc.url,
-        maps: svc.maps || [],
-        has_maps: svc.hasMaps ?? svc.has_maps,
-        service: svc.raw || svc,
-    };
-};
-
-const CATEGORY_ID = 2;
-const CATEGORY_NAME = "Gebäudereinigung";
-
-const LocationsGrid = () => {
+export default function LocationsGrid() {
     const { t } = useTranslation();
     const { props } = usePage();
 
     const tenantId =
         props?.global?.tenantId ||
         props?.global?.tenant_id ||
-        props?.global?.talentId ||
-        "";
+        "oi_cleande_690e161c3a1dd";
 
-    const uiLocaleRaw = useLocale("de") || "de";
-    const apiLocale = String(uiLocaleRaw).toLowerCase();
+    const apiLocale = (useLocale("de") || "de").toLowerCase();
 
-    const [items, setItems] = React.useState([]);
-    const [loading, setLoading] = React.useState(false);
+    // 🔥 SADECE Gebäudereinigung şehirlerini çek
+    const { services = [], loading } = useServices({
+        tenantId,
+        locale: apiLocale,
+        fetchAll: true,
+        perPage: 500,
+        parentSlug: "Gebäudereinigung",
+    });
+
+    const sortedItems = [...services]
+        .filter(
+            (s) => s.slug?.startsWith("gebaudereinigung-in-") && s.city?.trim()
+        )
+        .sort((a, b) => {
+            const orderA = a.order ?? null;
+            const orderB = b.order ?? null;
+
+            if (orderA != null && orderB == null) return -1;
+            if (orderA == null && orderB != null) return 1;
+            if (orderA !== null && orderB !== null && orderA !== orderB)
+                return orderA - orderB;
+
+            return (a.city || "").localeCompare(b.city || "", "de");
+        })
+        .map((s) => ({
+            ...s,
+            title: stripHtml(s.title || s.name),
+        }));
+
     const [activeLocation, setActiveLocation] = React.useState(null);
 
-    React.useEffect(() => {
-        let isMounted = true;
-
-        const load = async () => {
-            setLoading(true);
-            try {
-                // Tüm servisleri çek
-                const { services } = await fetchServices({
-                    page: 1,
-                    perPage: 100,
-                    tenantId,
-                    locale: apiLocale,
-                });
-
-                if (!isMounted) return;
-
-                const list = Array.isArray(services) ? services : [];
-
-                // category_id=2 (Gebäudereinigung) olanları filtrele
-                const filtered = list.filter((svc) => {
-                    const categoryId = svc.categoryId;
-                    const categoryName = svc.categoryName;
-
-                    const matchesCategory =
-                        categoryId === CATEGORY_ID ||
-                        (categoryName &&
-                            categoryName.toLowerCase() ===
-                                CATEGORY_NAME.toLowerCase());
-
-                    return matchesCategory;
-                });
-
-                const mapped = filtered
-                    .map((svc) => {
-                        return mapServiceToLocation(svc);
-                    })
-                    .filter((loc) => {
-                        // city alanı dolu olmalı (coordinates opsiyonel)
-                        const hasCity =
-                            loc && loc.city && String(loc.city).trim() !== "";
-
-                        if (!hasCity) {
-                            console.log(
-                                "[LocationsGrid] filtered out (no city):",
-                                loc
-                            );
-                        }
-
-                        return hasCity;
-                    });
-
-                setItems(mapped);
-            } catch (err) {
-                console.error("[LocationsGrid] Service fetch failed:", {
-                    message: err?.message,
-                    status: err?.response?.status,
-                    data: err?.response?.data,
-                });
-                if (isMounted) {
-                    setItems([]);
-                }
-            } finally {
-                if (isMounted) setLoading(false);
-            }
-        };
-
-        load();
-        return () => {
-            isMounted = false;
-        };
-    }, [tenantId, apiLocale]);
-
-    const usedItems = items || [];
-
-    const pageTitle = t(
-        "locations.page_title",
-        "Standorte - O&I CLEAN group GmbH"
-    );
-    const pageDescription = t(
-        "locations.page_description",
-        "Professionelle Reinigungsservices an verschiedenen Standorten in Deutschland. Lokale Expertise, bundesweite Qualität."
-    );
-    const title = t("locations.title", "Standorte");
-    const subtitle = t(
-        "locations.subtitle",
-        "Entdecken Sie unsere Standorte in Deutschland"
-    );
-    const loadingText = t("locations.loading", "Standorte werden geladen...");
-    const emptyText = t(
-        "locations.empty",
-        "Derzeit sind keine Standorte verfügbar."
-    );
-    const ctaLabel = t("locations.cta_label", "Standort anfragen");
-    const ctaAria = t("locations.cta_aria", "Jetzt Kontakt aufnehmen");
-    const contactHref = t("locations.contact_href", "/kontakt");
-
-    const schemaData = {
-        "@context": "https://schema.org",
-        "@type": "Organization",
-        name: "O&I CLEAN group GmbH",
-        url: "https://oi-clean.de",
-        logo: "https://oi-clean.de/images/logo.svg",
-        areaServed: usedItems
-            .filter((l) => l && l.coordinates)
-            .map((loc) => {
-                const city = stripHtml(loc.city || "");
-                return {
-                    "@type": "City",
-                    name: city,
-                    geo: {
-                        "@type": "GeoCoordinates",
-                        latitude: loc.coordinates.lat,
-                        longitude: loc.coordinates.lng,
-                    },
-                };
-            }),
-        location: usedItems
-            .filter((l) => l && l.coordinates)
-            .map((loc) => {
-                const city = stripHtml(loc.city || "");
-                const locTitle = stripHtml(loc.title || loc.city || "");
-                return {
-                    "@type": "Place",
-                    name: locTitle || city,
-                    address: {
-                        "@type": "PostalAddress",
-                        addressLocality: city,
-                        addressCountry: "DE",
-                    },
-                    geo: {
-                        "@type": "GeoCoordinates",
-                        latitude: loc.coordinates.lat,
-                        longitude: loc.coordinates.lng,
-                    },
-                };
-            }),
-    };
+    const title = t("locations.title", "Unsere Standorte");
 
     return (
-        <section
-            id="location"
-            className="locations-section relative overflow-hidden"
-            aria-labelledby="locations-title"
-        >
+        <section id="location" className="locations-section">
             <Head>
-                <title>{pageTitle}</title>
-                <meta name="description" content={pageDescription} />
-                <script type="application/ld+json">
-                    {JSON.stringify(schemaData)}
-                </script>
+                <title>{title}</title>
+                <meta
+                    name="description"
+                    content="Professionelle Gebäudereinigung in Deutschland – wählen Sie Ihren Standort"
+                />
             </Head>
 
             <div className="locations-container">
                 <div className="locations-header">
-                    <h1 id="locations-title" className="locations-title">
-                        <SafeHtml html={title} as="span" />
-                    </h1>
-                    <SafeHtml
-                        html={subtitle}
-                        as="p"
-                        className="locations-subtitle"
-                    />
+                    <h1 className="locations-title">{title}</h1>
                 </div>
 
                 <div className="map-container">
                     <GermanyMap
-                        locations={usedItems}
+                        locations={sortedItems}
                         activeId={activeLocation}
                         setActiveId={setActiveLocation}
                     />
                 </div>
 
                 <div className="locations-grid">
-                    {loading && !usedItems.length && (
-                        <p
-                            className="locations-loading"
-                            suppressHydrationWarning={true}
-                        >
-                            {loadingText}
-                        </p>
+                    {loading && <p>📍 Standorte werden geladen…</p>}
+                    {!loading && !sortedItems.length && (
+                        <p>⛔ Noch keine Standorte vorhanden.</p>
                     )}
 
-                    {!loading && !usedItems.length && (
-                        <p
-                            className="locations-empty"
-                            suppressHydrationWarning={true}
-                        >
-                            {emptyText}
-                        </p>
-                    )}
-
-                    {usedItems.map((location) => (
+                    {sortedItems.map((loc) => (
                         <LocationCard
-                            key={`${location.id}-${location.city}`}
-                            location={location}
-                            onHover={() => setActiveLocation(location.id)}
-                            isActive={activeLocation === location.id}
+                            key={loc.id}
+                            location={loc}
+                            isActive={activeLocation === loc.id}
+                            onHover={() => setActiveLocation(loc.id)}
                         />
                     ))}
-                </div>
-
-                <div className="locations-cta">
-                    <a
-                        href={contactHref}
-                        className="locations-contact-button"
-                        aria-label={ctaAria}
-                        suppressHydrationWarning={true}
-                    >
-                        <SafeHtml html={ctaLabel} as="span" />
-                        <svg
-                            className="locations-arrow-icon"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                        >
-                            <path
-                                d="M5 12H19M19 12L12 5M19 12L12 19"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            />
-                        </svg>
-                    </a>
                 </div>
             </div>
         </section>
     );
-};
-
-export default LocationsGrid;
+}

@@ -60,3 +60,87 @@
 
 
 .footer address > div{ display:flex; align-items:center; gap:.75rem; }
+
+/* =========================================
+   FOOTER RESPONSIVE OPTIMIZATION (Mobile)
+   ========================================= */
+
+@media (max-width: 768px) {
+
+  .footer {
+    text-align: center;
+  }
+
+  /* Footer Izgara/Düzen yapısı */
+  .footer .col,
+  .footer .footer-col,
+  .footer .media-wrap,
+  .footer .footer-section,
+  .footer .footer-links,
+  .footer .footer-contact {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+  }
+
+  /* Liste elemanları */
+  .footer ul,
+  .footer-links ul {
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    padding: 0;
+    margin: 0 auto;
+    align-items: center;
+  }
+
+  /* Logo ve sosyal medya merkezi */
+  .footer-logo,
+  .footer-social {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .footer-social a {
+    margin: 0 .4rem;
+  }
+
+  /* Adres / iletişim bilgileri */
+  .footer address > div {
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* "Yukarı çık" butonu konum güncelleme */
+  .footer-backtop {
+    position: static;
+    margin: 2rem auto 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .footer-backtop .btn {
+    margin: 0 auto;
+  }
+
+  /* Telif - Footer alt yazı */
+  .footer-bottom {
+    text-align: center;
+    padding-top: 1.5rem;
+  }
+}
+
+/* Küçük mobil için optimize */
+@media (max-width: 480px) {
+  .footer {
+    padding-left: .5rem;
+    padding-right: .5rem;
+  }
+  .footer-social a svg {
+    width: 20px;
+    height: 20px;
+  }
+}

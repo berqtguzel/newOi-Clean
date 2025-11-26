@@ -17,16 +17,25 @@ class ContactController extends Controller
         $this->dashboardService = $dashboardService;
     }
 
+    /**
+     * Kontakt Sayfasını Göster
+     */
+    public function index()
+    {
+        return inertia('kontakt/index'); // 📌 /resources/js/Pages/kontakt/index.jsx
+    }
+
+    /**
+     * Form Submit → Dashboard API + Email
+     */
     public function submit(ContactFormRequest $request)
     {
         try {
-
             $response = $this->dashboardService->submitContact($request->validated());
 
             if (!$response) {
                 throw new \Exception('Dashboard API error');
             }
-
 
             if (config('dashboard.send_backup_email', true)) {
                 Mail::to(config('mail.admin_email', 'info@oi-clean.de'))

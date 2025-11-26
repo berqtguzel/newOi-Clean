@@ -1,24 +1,26 @@
 :root{
-  --hd-surface: var(--header-background-color, var(--background-color, #ffffff));
-  --hd-ink: var(--text-color, #0f172a);
+  /* Ana Değişkenler: Açık Tema */
+  --hd-surface: var(--header-background-color, var(--background-color, #ffffff)); /* Başlık arka planı */
+  --hd-ink: var(--text-color, #0f172a); /* Temel metin rengi */
 
-  --hd-primary: var(--site-primary-color, #2563eb);
-  --hd-accent: var(--site-accent-color, var(--hd-primary));
-  --hd-link: var(--link-color, var(--hd-primary));
-  --hd-button: var(--button-color, var(--hd-primary));
+  --hd-primary: var(--site-primary-color, #2563eb); /* Ana renk */
+  --hd-accent: var(--site-accent-color, var(--hd-primary)); /* Vurgu rengi */
+  --hd-link: var(--link-color, var(--hd-primary)); /* Bağlantı rengi */
+  --hd-button: var(--button-color, var(--hd-primary)); /* Buton rengi */
 
-  --hd-glass: color-mix(in srgb, var(--hd-surface) 78%, transparent);
-  --hd-border: color-mix(in srgb, var(--hd-ink) 12%, #fff 88%);
-  --hd-shadow: 0 10px 30px color-mix(in srgb, #000 10%, transparent);
+  --hd-glass: color-mix(in srgb, var(--hd-surface) 78%, transparent); /* Opaklık/blur için cam efekti */
+  --hd-border: color-mix(in srgb, var(--hd-ink) 12%, #fff 88%); /* Kenarlık rengi */
+  --hd-shadow: 0 10px 30px color-mix(in srgb, #000 10%, transparent); /* Gölgelendirme */
 
-  --hd-ghost-bg: rgba(255,255,255,.15);
-  --hd-btn-icon-border: #e2e8f0;
+  --hd-ghost-bg: rgba(255,255,255,.15); /* Hayalet buton arka planı */
+  --hd-btn-icon-border: #e2e8f0; /* İkon buton kenarlığı */
 
   --hd-radius: 16px;
-  --hd-h: 80px;
+  --hd-h: 80px; /* Navigasyon yüksekliği */
 }
 
 :root.dark, .dark{
+  /* Ana Değişkenler: Koyu Tema */
   --hd-surface: var(--header-background-color, #0f172a);
   --hd-ink: #e5e7eb;
 
@@ -38,30 +40,30 @@
 .site-header *{ transition: background-color .2s, color .2s, border-color .2s; }
 
 
-.site-header{
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: transparent;
-  color: var(--hd-ink);
+.site-header {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 9999 !important;
+    width: 100%;
+    background: transparent;
 }
 
-
 .rbits-bg{
-display: none;
+  display: none; /* Bu arka plan öğesi gizlenmiş */
 }
 
 
 .container{ max-width:1200px; margin-inline:auto; padding-inline:20px; }
 
 
+/* --- TOP BAR (Üst Bilgi Çubuğu) --- */
 .topbar{
   display:none;
   background: linear-gradient(90deg, color-mix(in srgb, var(--hd-primary) 65%, var(--hd-accent) 35%), var(--hd-primary));
   color:#fff;
   font-size:14px;
 }
-@media (min-width:768px){ .topbar{ display:block; } }
+@media (min-width:768px){ .topbar{ display:block; } } /* Sadece tablet ve masaüstünde göster */
 .topbar__inner{ display:flex; align-items:center; justify-content:space-between; padding:10px 0; }
 .topbar__left{ display:flex; align-items:center; gap:24px; }
 .topbar__phone{ display:inline-flex; gap:8px; align-items:center; opacity:.95; }
@@ -82,15 +84,20 @@ display: none;
 }
 
 
+/* --- NAV WRAP (Ana Navigasyon Alanı) --- */
 .navwrap{
-  backdrop-filter: saturate(1.1) blur(8px);
+  backdrop-filter: saturate(1.1) blur(8px); /* Blur/cam efekti */
   background: var(--hd-glass);
   box-shadow: 0 1px 0 var(--hd-border);
 }
 .navwrap__inner{
   display:flex; align-items:center; justify-content:space-between; height: var(--hd-h);
-}
 
+}
+.navwrap {
+    position: relative !important;
+    z-index: 999;
+}
 .brand{ display:flex; align-items:center; gap:12px; border-radius:12px; outline:0; text-decoration:none; color:inherit; }
 .brand__logo{ height:48px; width:auto; max-width:180px; object-fit:contain; }
 .brand__logo--dark{ display:none; }
@@ -100,6 +107,7 @@ display: none;
 @media (max-width:380px){ .brand__logo{ height:42px; max-width:150px; } }
 
 
+/* --- DESKTOP NAV (Masaüstü Menü) --- */
 .nav--desktop{ display:none; align-items:center; gap:8px; }
 @media (min-width:1024px){ .nav--desktop{ display:flex; } }
 .nav__item{ position:relative; }
@@ -116,7 +124,7 @@ display: none;
 }
 .nav__chev{ opacity:.7; font-size:11px; }
 
-
+/* Pointer:fine için (mouse kullanan cihazlar) alttan çizgi efekti */
 @media (pointer:fine){
   .nav__link::after{
     content:""; position:absolute; left:12px; right:12px; bottom:6px; height:2px;
@@ -126,10 +134,10 @@ display: none;
   .nav__link:hover::after{ transform: scaleX(1); }
 }
 
-
 .nav__cta{ margin-left:8px; display:flex; align-items:center; }
 
 
+/* --- BUTON STİLLERİ --- */
 .btn{
   display:inline-flex; align-items:center; gap:8px;
   border-radius:999px; padding:10px 16px; font-weight:600;
@@ -142,9 +150,10 @@ display: none;
 .btn--icon{ background:transparent; border:1px solid var(--hd-btn-icon-border); border-radius:12px; padding:8px; }
 .btn--circle{ border-radius:999px; padding:2px 10px; }
 .btn--block{ width:100%; justify-content:center; }
-.bg-button{ background: var(--hd-button) !important; color:#fff !important; }
+.bg-button{ background: var(--hd-button) !important; color:#fff !important; } /* Zorunlu primary butonu */
 
 
+/* --- DROPDOWN VE SUBMENU --- */
 .dropdown{
   position:absolute; left:0; top:calc(100% + 12px);
   background: var(--background-color, #fff);
@@ -188,12 +197,13 @@ display: none;
 .submenu__link:hover{ background: color-mix(in srgb, var(--hd-primary) 10%, transparent); color: var(--hd-primary); }
 
 
+/* --- MOBİL MENÜ (Hamburger ve Drawer) --- */
 .hamburger{
   display:inline-flex; align-items:center; justify-content:center;
   padding:10px; border-radius:12px; border:1px solid var(--hd-btn-icon-border);
   background: var(--background-color, #fff); color: color-mix(in srgb, var(--hd-ink) 75%, #fff 25%);
 }
-@media (min-width:1024px){ .hamburger{ display:none; } }
+@media (min-width:1024px){ .hamburger{ display:none; } } /* Masaüstünde gizle */
 
 
 .drawer{ position:fixed; inset:0; z-index:110; pointer-events:none; }
@@ -206,7 +216,7 @@ display: none;
   box-shadow: var(--hd-shadow);
   transform: translateX(100%); transition: transform .25s ease;
 }
-.drawer.is-open .drawer__panel{ transform: translateX(0); }
+.drawer.is-open .drawer__panel{ transform: translateX(0); } /* Açıkken sağdan içeri kaydır */
 .drawer__head{
   display:flex; align-items:center; justify-content:space-between;
   height:80px; padding:0 20px; border-bottom:1px solid var(--hd-border);
@@ -216,10 +226,21 @@ display: none;
   overflow:auto; height:calc(100% - 80px);
 }
 
-.dark .drawer__panel{ background: var(--surface, #0f172a); }
 .dark .drawer__head{ border-color:#1e293b; }
+.dark .drawer__panel{
+    /* Doğrudan tam opak, koyu yüzey rengini kullan */
+    background: #1e293b;
+}
+.dark .acc{
+     background: #1e293b;
+}
+.dark .hamburger{
+    background: #1e293b;
+    border-color: #1e293b;
+    color: #e5e7eb;
+}
 
-
+/* --- MOBİL AKORDİYON (Mobile Accordion) --- */
 .acc{ border:1px solid var(--hd-border); border-radius:16px; background: var(--background-color, #fff); overflow:hidden; }
 .acc__toggle{
   width:100%; display:flex; align-items:center; justify-content:space-between;
@@ -229,7 +250,7 @@ display: none;
 .acc__chev{ opacity:.7; transition: transform .22s; }
 .acc__toggle[aria-expanded="true"] .acc__chev{ transform: rotate(180deg); }
 .acc__content{ max-height:0; opacity:0; visibility:hidden; overflow:hidden; transition:max-height .28s, opacity .22s, visibility .22s; }
-.acc__content.open{ max-height:85vh; opacity:1; visibility:visible; }
+.acc__content.open{ max-height:85vh; opacity:1; visibility:visible; } /* Açıldığında görünüyor */
 
 .acc__menu{ padding:8px 12px; }
 .acc__details{ border:1px solid var(--hd-border); border-radius:12px; overflow:hidden; }
@@ -259,9 +280,11 @@ display: none;
 .drawer__lang-buttons{ display:flex; gap:8px; }
 
 
+/* --- DÜZENLEMELER (Responsiveness) --- */
 @media (max-width:1023px){
+  /* Mobil menü açıldığında içerik görünür kalsın */
   .drawer .acc__content.open{ max-height:none !important; }
-  .nav__cta{ display:none; }
+  .nav__cta{ display:none; } /* Mobil görünümde CTA'yı gizle */
   .drawer .acc,
   .drawer .acc__content,
   .drawer .acc__details{ overflow:visible !important; }
@@ -270,6 +293,7 @@ display: none;
 @media (max-width:1023px){ .acc{ overflow:visible; } }
 
 
+/* --- DİL DEĞİŞTİRİCİ (Language Switcher) --- */
 .lang-switch {
     position: relative;
     display: inline-flex;

@@ -8,17 +8,11 @@ import tr from "./locales/tr.json";
 // SSR ve CSR eşleşmesi için:
 const detectInitialLng = () => {
   if (typeof window === "undefined") {
-    // SSR her zaman DE olacak → mismatch yok
+
     return "de";
   }
 
-  //
-  // ❗ BURADA OTO-DETEKTE DİL PROBLEMLİYDİ.
-  // Çünkü HTML lang = en → CSR "en" oluyordu.
-  // Hydration mismatch doğuyordu.
-  //
-  // BİZ SERVER İLE AYNI BAŞLAMAK İSTİYORUZ → "de"
-  //
+
   return document.documentElement.getAttribute("data-locale") || "de";
 };
 

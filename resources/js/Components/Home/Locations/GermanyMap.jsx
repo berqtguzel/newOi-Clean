@@ -1,108 +1,51 @@
-import React, { memo, useMemo, useState, useEffect } from "react";
+import React, { memo, useMemo } from "react";
 import {
     ComposableMap,
     Geographies,
     Geography,
     Marker,
 } from "react-simple-maps";
-import { fetchServices } from "@/services/servicesService";
+import { useMaps } from "@/hooks/useMaps";
 import { usePage } from "@inertiajs/react";
 
 const DE_STATES_URL =
     "https://cdn.jsdelivr.net/gh/isellsoap/deutschlandGeoJSON@master/2_bundeslaender/4_niedrig.geo.json";
 
-const CITY_COORDS = {
-    aachen: { lat: 50.7753, lng: 6.0839 },
-    "bad vilbel": { lat: 50.1877, lng: 8.7362 },
-    "bad salzuflen": { lat: 52.0868, lng: 8.7527 },
-    "bad oeynhausen": { lat: 52.207, lng: 8.8003 },
-    "bad nauheim": { lat: 50.3665, lng: 8.7397 },
-    "bad kreuznach": { lat: 49.8454, lng: 7.8653 },
-    köln: { lat: 50.9375, lng: 6.9603 },
-    düsseldorf: { lat: 51.2277, lng: 6.7735 },
-    frankfurt: { lat: 50.1109, lng: 8.6821 },
-    berlin: { lat: 52.52, lng: 13.405 },
-    hamburg: { lat: 53.5511, lng: 9.9937 },
-    münchen: { lat: 48.1351, lng: 11.582 },
-    stuttgart: { lat: 48.7758, lng: 9.1829 },
-};
-
 const GermanyMap = ({ activeId, setActiveId }) => {
     const { props } = usePage();
-    const tenantId = props?.global?.tenantId || "";
+
+    const tenantId =
+        props?.global?.tenantId ||
+        props?.global?.tenant_id ||
+        "oi_cleande_690e161c3a1dd";
+
     const locale = props?.locale || "de";
 
-    const [locations, setLocations] = useState([]);
-    const [loading, setLoading] = useState(true);
+    // ✅ DOĞRU KULLANIM: Parametre Objeyle
+    const { maps, loading, error } = useMaps({
+        tenantId,
+        locale,
+    });
 
-    useEffect(() => {
-        let isMounted = true;
+    // 🧪 DEBUG LOGS
+    console.log("🌍 Tenant:", tenantId);
+    console.log("🌐 Locale:", locale);
+    console.log("🗺️ Maps API Result:", maps);
+    console.log("⏳ Loading:", loading);
+    console.log("❌ Error:", error);
 
-        async function loadMapData() {
-            try {
-                const data = await fetchServices({
-                    tenantId,
-                    locale,
-                    perPage: 1000,
-                });
+    const markers = useMemo(() => {
+        if (!maps?.length || !maps[0]?.map_data?.markers) return [];
 
-                if (isMounted) {
-                    const allServices = data.services || [];
-
-                    const cleaningServices = allServices.filter((s) => {
-                        const lowerTitle = (s.title || "").toLowerCase();
-                        const lowerCat = (s.categoryName || "").toLowerCase();
-
-                        return (
-                            lowerCat.includes("gebäudereinigung") ||
-                            lowerCat.includes("building cleaning") ||
-                            lowerTitle.includes("gebäudereinigung") ||
-                            lowerTitle.includes("building cleaning")
-                        );
-                    });
-
-                    const uniqueLocationsMap = new Map();
-
-                    cleaningServices.forEach((s) => {
-                        const cityName = s.city ? s.city.trim() : "";
-                        const cityKey = cityName.toLowerCase();
-
-                        let lat = parseFloat(s.latitude);
-                        let lng = parseFloat(s.longitude);
-
-                        if (!lat || !lng) {
-                            const fallback = CITY_COORDS[cityKey];
-                            if (fallback) {
-                                lat = fallback.lat;
-                                lng = fallback.lng;
-                            }
-                        }
-
-                        if (lat && lng && !uniqueLocationsMap.has(cityKey)) {
-                            uniqueLocationsMap.set(cityKey, {
-                                id: s.id,
-                                name: cityName || s.title,
-                                coords: [lng, lat],
-                            });
-                        }
-                    });
-
-                    setLocations(Array.from(uniqueLocationsMap.values()));
-                }
-            } catch (error) {
-            } finally {
-                if (isMounted) setLoading(false);
-            }
-        }
-
-        loadMapData();
-
-        return () => {
-            isMounted = false;
-        };
-    }, [tenantId, locale]);
-
-    const markers = useMemo(() => locations, [locations]);
+        return maps[0].map_data.markers
+            .filter((m) => m.latitude && m.longitude)
+            .map((m) => ({
+                id: m.id,
+                name: m.name,
+                city: m.city || m.name,
+                coords: [parseFloat(m.longitude), parseFloat(m.latitude)],
+            }));
+    }, [maps]);
 
     const baseFill = "#e5e7eb";
     const stroke = "#cbd5e1";
@@ -134,6 +77,12 @@ const GermanyMap = ({ activeId, setActiveId }) => {
                 </div>
             )}
 
+            {error && (
+                <div style={{ color: "red", textAlign: "center" }}>
+                    ❌ Map API Fehler!
+                </div>
+            )}
+
             <ComposableMap
                 projection="geoMercator"
                 projectionConfig={{ center: [10.4, 51.2], scale: 3200 }}
@@ -150,19 +99,14 @@ const GermanyMap = ({ activeId, setActiveId }) => {
                                         fill: baseFill,
                                         stroke: stroke,
                                         strokeWidth: 0.8,
-                                        outline: "none",
                                     },
                                     hover: {
                                         fill: hoverFill,
                                         stroke: stroke,
-                                        strokeWidth: 0.9,
-                                        outline: "none",
                                     },
                                     pressed: {
                                         fill: activeFill,
                                         stroke: stroke,
-                                        strokeWidth: 0.9,
-                                        outline: "none",
                                     },
                                 }}
                             />
@@ -170,51 +114,24 @@ const GermanyMap = ({ activeId, setActiveId }) => {
                     }
                 </Geographies>
 
-                {markers.map((m) => {
-                    const isActive = activeId === m.id;
-                    return (
-                        <Marker
-                            key={m.id}
-                            coordinates={m.coords}
-                            onMouseEnter={() => setActiveId?.(m.id)}
-                            onMouseLeave={() => setActiveId?.(null)}
-                            onClick={() => setActiveId?.(m.id)}
-                            style={{ cursor: "pointer" }}
-                        >
-                            <circle
-                                r={10}
-                                fill="rgba(14,165,233,0.3)"
-                                stroke="none"
-                            />
-
-                            <circle
-                                r={isActive ? 6 : 4}
-                                fill={isActive ? "#0284c7" : "#0ea5e9"} // Mavi
-                                stroke="#fff"
-                                strokeWidth={1.5}
-                                style={{ transition: "all 0.2s ease" }}
-                            />
-
-                            {isActive && (
-                                <text
-                                    textAnchor="middle"
-                                    y={-15}
-                                    style={{
-                                        fontFamily: "system-ui",
-                                        fill: "#1e293b",
-                                        fontSize: "12px",
-                                        fontWeight: "bold",
-                                        pointerEvents: "none",
-                                        textShadow:
-                                            "0px 0px 2px rgba(255,255,255,0.8)",
-                                    }}
-                                >
-                                    {m.name}
-                                </text>
-                            )}
-                        </Marker>
-                    );
-                })}
+                {markers.map((m) => (
+                    <Marker
+                        key={m.id}
+                        coordinates={m.coords}
+                        onMouseEnter={() => setActiveId?.(m.id)}
+                        onMouseLeave={() => setActiveId?.(null)}
+                        onClick={() => setActiveId?.(m.id)}
+                        style={{ cursor: "pointer" }}
+                    >
+                        <circle r={10} fill="rgba(14,165,233,0.3)" />
+                        <circle
+                            r={activeId === m.id ? 6 : 4}
+                            fill={activeId === m.id ? "#0284c7" : "#0ea5e9"}
+                            stroke="#fff"
+                            strokeWidth={1.5}
+                        />
+                    </Marker>
+                ))}
             </ComposableMap>
         </div>
     );

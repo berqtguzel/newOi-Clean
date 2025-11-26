@@ -2,44 +2,61 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class ServicesController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-
-
-        return Inertia::render('Services/Index', [
-            'currentRoute' => 'services',
-        ]);
+        return Inertia::render('Services/Index');
     }
 
-    public function show(string $slug)
+    public function show($slug)
     {
-        // Slug'ı parse et: eğer tire içeriyorsa, sadece ilk kısmı al (base service slug)
-        // Örnek: baucontainer-reinigung-berlin -> baucontainer
-        // Örnek: gebaudereinigung-berlin -> gebaudereinigung
-        // Örnek: baufeinreinigung-berlin -> baufeinreinigung
-        
-        $processedSlug = $slug;
-        
-        // Eğer slug tire içeriyorsa, sadece ilk kısmı al
-        if (str_contains($slug, '-')) {
-            $parts = explode('-', $slug);
-            // İlk kısmı al (base service slug)
-            $processedSlug = $parts[0];
+        $slugLower = strtolower($slug);
+
+        $tenantId = config('services.omr.talent_id');
+        $base     = rtrim(config('services.omr.base'), '/');
+
+        // 🔥 1️⃣ Tüm servisleri cache ile al (ID eşleştirmek için)
+        $services = Cache::remember('all_services', 600, function () use ($tenantId, $base) {
+            $res = Http::withHeaders([
+                'X-Tenant-ID' => $tenantId,
+                'Accept'      => 'application/json',
+            ])->get("$base/v1/services?per_page=500");
+
+            return $res->json()['data'] ?? [];
+        });
+
+        // 🔎 Slug eşleştir → ID bul
+        $match = collect($services)->first(function ($svc) use ($slugLower) {
+            return strtolower($svc['slug']) === $slugLower;
+        });
+
+        if (!$match) {
+            return abort(404);
         }
-        
-        // Her durumda sayfayı render et - frontend'de API çağrısı yapılacak
-        // Eğer service bulunamazsa frontend'de hata gösterilecek
+
+        $id = $match['id'];
+
+        // 🔥 2️⃣ API’den ID ile detay verisini al
+        $resp = Http::withHeaders([
+            'X-Tenant-ID' => $tenantId,
+            'Accept'      => 'application/json',
+        ])->get("$base/v1/services/$id");
+
+        if (!$resp->ok()) {
+            return abort(404);
+        }
+
+        $service = $resp->json();
+
+        // 🎯 3️⃣ Vue componentine veriyi gönder
         return Inertia::render('Services/Show', [
-            'slug'         => $processedSlug, // Base service slug'ını kullan
-            'originalSlug' => $slug, // Orijinal slug'ı da gönder (frontend'de kullanılabilir)
-            'currentRoute' => 'services',
+            'slug'    => $service['slug'],
+            'service' => $service,
         ]);
     }
 }
