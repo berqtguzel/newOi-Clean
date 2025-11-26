@@ -1,14 +1,32 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import { Head, usePage } from "@inertiajs/react";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import SettingsInjector from "@/Components/SettingsInjector";
+import CookieBanner from "../Components/CookieBanner";
+
+import Cookies from "js-cookie";
+import { FaCookieBite } from "react-icons/fa";
 
 import { useSettings } from "../hooks/useSettings";
 import { useLocale } from "../hooks/useLocale";
 
 export default function AppLayout({ children }) {
     const { props } = usePage();
+
+    const [showCookieSettings, setShowCookieSettings] = useState(false);
+
+    useEffect(() => {
+        const consent = Cookies.get("cookie_consent");
+        if (!consent) {
+            setShowCookieSettings(true);
+        }
+
+        const handler = () => setShowCookieSettings(false);
+        window.addEventListener("cookie-saved", handler);
+
+        return () => window.removeEventListener("cookie-saved", handler);
+    }, []);
 
     const tenantId =
         props?.global?.tenantId ||
@@ -33,7 +51,6 @@ export default function AppLayout({ children }) {
     const siteTitle = general.site_name || branding.site_name || "O&I CLEAN";
     const siteDescription =
         general.site_description || "Professionelle Reinigungsdienste";
-
     const favicon =
         branding.favicon?.url || general.favicon?.url || "/favicon.ico";
 
@@ -49,6 +66,9 @@ export default function AppLayout({ children }) {
                 <link rel="icon" href={favicon} />
             </Head>
 
+            {/* COOKIE BANNER */}
+            <CookieBanner forceVisible={showCookieSettings} />
+
             <SettingsInjector settings={settings} />
             <Header settings={settings} />
 
@@ -57,6 +77,33 @@ export default function AppLayout({ children }) {
             </main>
 
             <Footer settings={settings} />
+
+            {/* COOKIE SETTINGS ICON */}
+            {!showCookieSettings && (
+                <button
+                    type="button"
+                    className="
+                        fixed
+                        bottom-4
+                        left-4
+                        z-50
+                        w-12
+                        h-12
+                        rounded-full
+                        bg-white
+                        shadow-lg
+                        border
+                        flex
+                        items-center
+                        justify-center
+                        cursor-pointer
+                    "
+                    aria-label="Çerez ayarları"
+                    onClick={() => setShowCookieSettings(true)}
+                >
+                    <FaCookieBite className="text-xl" />
+                </button>
+            )}
         </div>
     );
 }

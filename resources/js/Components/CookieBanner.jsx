@@ -11,12 +11,11 @@ const INITIAL_COOKIES = {
     marketing: { id: 3, required: false },
 };
 
-const CookieBanner = () => {
+const CookieBanner = ({ forceVisible = false }) => {
     const { t } = useTranslation();
     const [isVisible, setIsVisible] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
 
-    // Tercih State'i
     const [preferences, setPreferences] = useState({
         necessary: true,
         analytics: false,
@@ -25,16 +24,15 @@ const CookieBanner = () => {
 
     useEffect(() => {
         const consent = Cookies.get("cookie_consent");
-        if (!consent) {
-            // Kullanıcıyı hemen rahatsız etmemek için 1 saniye bekle
-            setTimeout(() => setIsVisible(true), 1000);
+
+        if (!consent || forceVisible) {
+            setTimeout(() => setIsVisible(true), 200);
         } else {
             try {
-                const parsed = JSON.parse(consent);
-                setPreferences((prev) => ({ ...prev, ...parsed }));
+                setPreferences(JSON.parse(consent));
             } catch {}
         }
-    }, []);
+    }, [forceVisible]);
 
     const saveConsent = (prefs) => {
         Cookies.set("cookie_consent", JSON.stringify(prefs), {
@@ -42,7 +40,10 @@ const CookieBanner = () => {
             path: "/",
             sameSite: "Lax",
         });
+
         setIsVisible(false);
+
+        window.dispatchEvent(new Event("cookie-saved"));
     };
 
     const handleAcceptAll = () => {
@@ -75,8 +76,6 @@ const CookieBanner = () => {
     return (
         <div className="cookie-banner-container">
             <div className="cookie-card">
-                <div className="cookie-glow"></div>
-
                 <div className="cookie-header">
                     <div className="cookie-icon-box">
                         <FaCookieBite />
@@ -86,7 +85,7 @@ const CookieBanner = () => {
                         <p className="cookie-text">
                             {t(
                                 "cookies.message",
-                                "Size daha iyi bir deneyim sunmak için çerezleri kullanıyoruz. Tercihlerinizi yönetebilir veya tümünü kabul edebilirsiniz."
+                                "Size daha iyi bir deneyim sunmak için çerezleri kullanıyoruz."
                             )}
                         </p>
                     </div>
@@ -106,17 +105,6 @@ const CookieBanner = () => {
                                             key.charAt(0).toUpperCase() +
                                                 key.slice(1)
                                         )}
-                                    </span>
-                                    <span className="cookie-opt-desc">
-                                        {INITIAL_COOKIES[key].required
-                                            ? t(
-                                                  "cookies.desc_necessary",
-                                                  "Site çalışması için zorunludur."
-                                              )
-                                            : t(
-                                                  `cookies.desc_${key}`,
-                                                  "Deneyimi iyileştirmek için kullanılır."
-                                              )}
                                     </span>
                                 </label>
                                 <div className="cookie-switch">
@@ -141,16 +129,14 @@ const CookieBanner = () => {
                                 className="cookie-btn btn-secondary"
                                 onClick={handleSaveSelection}
                             >
-                                <FaCheck size={12} />{" "}
-                                {t("cookies.save", "Kaydet")}
+                                <FaCheck size={12} /> {t("cookies.save", "Kaydet")}
                             </button>
                         ) : (
                             <button
                                 className="cookie-btn btn-secondary"
                                 onClick={handleRejectAll}
                             >
-                                <FaTimes size={12} />{" "}
-                                {t("cookies.reject", "Reddet")}
+                                <FaTimes size={12} /> {t("cookies.reject", "Reddet")}
                             </button>
                         )}
 
@@ -168,18 +154,8 @@ const CookieBanner = () => {
                     >
                         {showDetails
                             ? t("cookies.hide_details", "Gizle")
-                            : t("cookies.settings", "Tercihler ve Detaylar")}
+                            : t("cookies.settings", "Tercihler & Detaylar")}
                     </button>
-
-                    <div className="cookie-links">
-                        <a href="/datenschutz" className="cookie-link">
-                            {t("cookies.privacy_policy", "Gizlilik")}
-                        </a>
-                        <span>•</span>
-                        <a href="/impressum" className="cookie-link">
-                            {t("cookies.imprint", "Künye")}
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>
