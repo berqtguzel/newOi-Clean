@@ -7,7 +7,7 @@ import CookieBanner from "../Components/CookieBanner";
 
 import Cookies from "js-cookie";
 import { FaCookieBite } from "react-icons/fa";
-
+import WhatsAppWidget from "@/Components/WhatsAppWidget";
 import { useSettings } from "../hooks/useSettings";
 import { useLocale } from "../hooks/useLocale";
 
@@ -57,7 +57,8 @@ export default function AppLayout({ children }) {
     if (settingsLoading && !Object.keys(settings).length) {
         return <></>;
     }
-
+console.log("TENANT:", tenantId);
+console.log("LOCALE:", locale);
     return (
         <div className="min-h-screen flex flex-col antialiased relative">
             <Head>
@@ -96,6 +97,7 @@ export default function AppLayout({ children }) {
                         flex
                         items-center
                         justify-center
+                        text-blue-500 dark:text-blue-400
                         cursor-pointer
                     "
                     aria-label="Çerez ayarları"
@@ -104,6 +106,7 @@ export default function AppLayout({ children }) {
                     <FaCookieBite className="text-xl" />
                 </button>
             )}
+   <WhatsAppWidget tenant={tenantId} locale={locale} />
         </div>
     );
 }
