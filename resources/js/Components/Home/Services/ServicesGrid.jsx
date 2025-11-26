@@ -1,225 +1,109 @@
-import React from "react";
-import { Head } from "@inertiajs/react";
+// resources/js/Components/Home/Services/ServicesGrid.jsx
+import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { usePage } from "@inertiajs/react";
+import { useServices } from "@/hooks/useServices";
+import SafeHtml from "@/Components/Common/SafeHtml";
 import ServiceCard from "./ServiceCard";
 import "./ServicesGrid.css";
-import LiquidEther from "@/Components/ReactBits/Backgrounds/LiquidEther";
-import { useServices } from "@/hooks/useServices";
-import { useLocale } from "@/hooks/useLocale";
-import SafeHtml from "@/Components/Common/SafeHtml";
 
-const BASE_DOMAIN = "https://oi-clean.de";
+const getTranslatedValue = (item, locale) => {
+    const tr = item.translations?.find((t) => t.language_code === locale);
 
-function useIsDark() {
-    const [isDark, setIsDark] = React.useState(false);
-
-    React.useEffect(() => {
-        if (typeof document === "undefined") return;
-        const get = () => document.documentElement.classList.contains("dark");
-        setIsDark(get());
-
-        const obs = new MutationObserver(() => setIsDark(get()));
-        obs.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ["class"],
-        });
-
-        return () => obs.disconnect();
-    }, []);
-
-    return isDark;
-}
-
-const useIntersectionObserver = (ref) => {
-    React.useEffect(() => {
-        if (
-            typeof window === "undefined" ||
-            !("IntersectionObserver" in window)
-        )
-            return;
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add("is-visible");
-                        observer.unobserve(entry.target);
-                    }
-                });
-            },
-            { threshold: 0.1 }
-        );
-
-        if (ref.current) observer.observe(ref.current);
-
-        return () => ref.current && observer.unobserve(ref.current);
-    }, [ref]);
-};
-
-const getAllDescriptions = (service) => {
-    if (!service) return "";
-    const desc = [];
-
-    if (service.description) {
-        desc.push(String(service.description).trim());
-    }
-
-    if (Array.isArray(service.translations)) {
-        service.translations.forEach((tr) => {
-            if (tr?.description) {
-                const d = String(tr.description).trim();
-                if (!desc.includes(d)) desc.push(d);
-            }
-        });
-    }
-
-    return desc.join(" ");
+    return {
+        name: tr?.name || item.name,
+        description: tr?.description || item.description,
+    };
 };
 
 const ServicesGrid = ({ content = {} }) => {
     const { t } = useTranslation();
-    const locale = useLocale("de");
-    const [mounted, setMounted] = React.useState(false);
-    const gridRef = React.useRef(null);
+    const { props } = usePage();
 
-    useIntersectionObserver(gridRef);
+    const locale = props?.locale || "de";
 
-    React.useEffect(() => setMounted(true), []);
+    const tenantId =
+        props?.global?.tenantId ||
+        props?.global?.tenant_id ||
+        "oi_cleande_690e161c3a1dd"; // ✅ doğru default
 
-    // 🔥 TÜM SAYFALARDAN TÜM SERVİSLERİ ÇEK
-    const { services: remoteServices, loading } = useServices({
-        perPage: 200,
+    // 🔥 categoryId: null → backend ana servisleri döndürüyor
+    const {
+        services: fetched,
+        loading,
+        durationMs,
+        error,
+    } = useServices({
+        tenantId,
         locale,
-        fetchAll: true,
+        perPage: 50,
+        page: 1,
+        categoryId: null,
     });
 
-    const safeRemote = Array.isArray(remoteServices) ? remoteServices : [];
+    // Şimdilik ekstra filtre yok – backend zaten ana servisleri veriyor
+    const services = useMemo(
+        () => (Array.isArray(fetched) ? fetched : []),
+        [fetched]
+    );
 
-    const parentServices = safeRemote
-        .filter((s) => {
-            const parentId =
-                s.parentId ?? s.parent_id ?? s.raw?.parent_id ?? null;
-            const hasLocation =
-                !!s.city ||
-                !!s.country ||
-                !!s.district ||
-                !!s.hasMaps ||
-                (Array.isArray(s.maps) && s.maps.length > 0);
-
-            return (
-                (parentId === null ||
-                    parentId === undefined ||
-                    parentId === 0 ||
-                    parentId === "0") &&
-                !hasLocation
-            );
-        })
-        .sort((a, b) => {
-            const getOrder = (x) =>
-                x.order ??
-                x.sort_order ??
-                x.raw?.order ??
-                x.raw?.sort_order ??
-                null;
-
-            const orderA = getOrder(a);
-            const orderB = getOrder(b);
-
-            if (orderA != null && orderB == null) return -1;
-            if (orderA == null && orderB != null) return 1;
-            if (orderA != null && orderB != null && orderA !== orderB)
-                return orderA - orderB;
-
-            return (a.title || a.name || "").localeCompare(
-                b.title || b.name || "",
-                locale || "de"
-            );
-        });
-
-    const isDark = useIsDark();
-    const colors = isDark
-        ? ["#47B3FF", "#7CCBFF", "#B5E3FF"]
-        : ["#085883", "#0C9FE2", "#2EA7E0"];
-
-    const headingHtml =
-        content.services_title ||
-        t("servicesList.title") ||
-        "Unsere Leistungen";
-
-    const subtitleHtml =
-        content.services_subtitle ||
-        t("servicesList.subtitle") ||
-        "Unsere Services";
-
-    const schemaData = {
-        "@context": "https://schema.org",
-        "@type": "ItemList",
-        itemListElement: parentServices.map((s, i) => ({
-            "@type": "Service",
-            position: i + 1,
-            name: s.title || s.name,
-            description: getAllDescriptions(s),
-            url: s.slug ? `${BASE_DOMAIN}/${s.slug}` : BASE_DOMAIN,
-        })),
-    };
+    console.log("🎯 MAIN SERVICES:", services);
 
     return (
-        <section
-            id="services"
-            className="services-section relative overflow-hidden"
-            aria-labelledby="services-title"
-        >
-            <Head>
-                <title>{t("servicesList.meta_title")}</title>
-                <meta
-                    name="description"
-                    content={t("servicesList.meta_description")}
-                />
-                <script id="schema-services" type="application/ld+json">
-                    {JSON.stringify(schemaData)}
-                </script>
-            </Head>
-
-            {mounted && (
-                <div className="absolute inset-0 z-10 liquid-ether-bg">
-                    <div className="liquid-ether-inner" aria-hidden>
-                        <LiquidEther
-                            className="w-full h-full"
-                            colors={colors}
-                            autoDemo
-                        />
-                    </div>
+        <section id="services" className="services-section">
+            {durationMs && !loading && (
+                <div
+                    style={{
+                        color: "#777",
+                        fontSize: "12px",
+                        textAlign: "center",
+                        marginBottom: 8,
+                    }}
+                >
+                    ⏱ {Math.round(durationMs)} ms
                 </div>
             )}
 
-            <div className="services-container relative z-10">
+            {error && (
+                <div
+                    style={{ color: "red", textAlign: "center", margin: "8px 0" }}
+                >
+                    ❌ {error}
+                </div>
+            )}
+
+            <div className="services-container">
                 <div className="services-header">
-                    <h2 id="services-title" className="services-title">
-                        <SafeHtml html={headingHtml} />
+                    <h2 className="services-title">
+                        <SafeHtml
+                            html={
+                                content.services_title ||
+                                t("servicesList.title")
+                            }
+                        />
                     </h2>
-                    <div className="services-subtitle">
-                        <SafeHtml html={subtitleHtml} />
-                    </div>
                 </div>
 
-                <div ref={gridRef} className="services-grid">
-                    {loading && (
-                        <div className="services-loading">
-                            {t("servicesList.loading")}
-                        </div>
-                    )}
+                <div className="services-grid">
+                    {loading && <div>{t("loading")}</div>}
 
                     {!loading &&
-                        parentServices.map((s) => (
-                            <ServiceCard
-                                key={s.id}
-                                title={s.title || s.name}
-                                description={getAllDescriptions(s)}
-                                image={s.image}
-                                slug={s.slug}
-                                translations={s.translations}
-                            />
-                        ))}
+                        services.map((s) => {
+                            const { name, description } = getTranslatedValue(
+                                s,
+                                locale
+                            );
+
+                            return (
+                                <ServiceCard
+                                    key={s.id}
+                                    title={name}
+                                    description={description}
+                                    image={s.image}
+                                    slug={s.slug}
+                                />
+                            );
+                        })}
                 </div>
 
                 <div className="services-cta">

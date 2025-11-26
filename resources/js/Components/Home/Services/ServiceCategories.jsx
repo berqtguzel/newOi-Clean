@@ -25,8 +25,20 @@ export default function ServiceCategories({ content = {} }) {
 
     const services = useMemo(() => {
         const raw = widgets?.highlights;
-        return Array.isArray(raw) ? raw : raw?.data || [];
-    }, [widgets]);
+        const list = Array.isArray(raw) ? raw : raw?.data || [];
+
+        return list.map((s) => {
+            const tr = s.translations?.find(
+                (i) => i.language_code?.toLowerCase() === locale.toLowerCase()
+            );
+
+            return {
+                ...s,
+                name: tr?.name || s.name,
+                description: tr?.description || s.description,
+            };
+        });
+    }, [widgets, locale]);
 
     return (
         <section className="svc-section">

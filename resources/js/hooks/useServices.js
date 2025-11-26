@@ -1,232 +1,96 @@
-import { useEffect, useMemo, useState } from "react";
-import {
-    fetchServices,
-    fetchServiceBySlug,
-    fetchAllServices,
-} from "../services/servicesService";
+// resources/js/hooks/useServices.js
+import { useEffect, useState } from "react";
 
-const cache = new Map();
-const inflight = new Map();
+const API_BASE = "https://omerdogan.de/api/v1/services";
 
-export function useServices(params = {}) {
-    const {
-        page = 1,
-        perPage = 50,
-        tenantId,
-        locale,
-        search,
-        city,
-        district,
-        locationSlug,
-        locationId,
-        categoryId,
-        fetchAll = false, // 🔥 yeni param
-    } = params;
+export function useServices({
+    tenantId,
+    locale = "de",
+    page = 1,
+    perPage = 50,
+    categoryId = undefined, // null → ana servis, undefined → gönderme
+    locationOnly = false, // Standorte (şehir lokasyon) mod
+} = {}) {
 
-    const key = useMemo(
-        () =>
-            JSON.stringify({
-                type: "list",
-                page,
-                perPage,
-                tenantId,
-                locale,
-                search,
-                city,
-                district,
-                locationSlug,
-                locationId,
-                categoryId,
-                fetchAll,
-            }),
-        [
-            page,
-            perPage,
-            tenantId,
-            locale,
-            search,
-            city,
-            district,
-            locationSlug,
-            locationId,
-            categoryId,
-            fetchAll,
-        ]
-    );
-
-    const [data, setData] = useState(cache.get(key)?.services);
-    const [meta, setMeta] = useState(cache.get(key)?.meta || {});
-    const [loading, setLoading] = useState(!cache.has(key));
-    const [error, setError] = useState();
+    const [services, setServices] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [durationMs, setDurationMs] = useState(null);
 
     useEffect(() => {
-        let disposed = false;
-
-        if (cache.has(key)) {
-            const { services, meta } = cache.get(key);
-            setData(services);
-            setMeta(meta || {});
+        if (!tenantId) {
+            setError("Tenant ID yok!");
             setLoading(false);
             return;
         }
 
-        if (inflight.has(key)) {
-            inflight
-                .get(key)
-                .then(({ services, meta }) => {
-                    if (!disposed) {
-                        setData(services);
-                        setMeta(meta || {});
-                        setLoading(false);
-                    }
-                })
-                .catch(
-                    (e) =>
-                        !disposed &&
-                        setError(e?.message || "Servis yükleme hatası")
-                );
-            return;
-        }
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                setError(null);
 
-        setLoading(true);
+                const start = performance.now();
+                const params = new URLSearchParams();
 
-        const p = fetchAll
-            ? fetchAllServices({
-                  perPage,
-                  tenantId,
-                  locale,
-                  search,
-                  city,
-                  district,
-                  locationSlug,
-                  locationId,
-              })
-            : fetchServices({
-                  page,
-                  perPage,
-                  tenantId,
-                  locale,
-                  search,
-                  city,
-                  district,
-                  locationSlug,
-                  locationId,
-              });
+                params.append("tenant", tenantId);
+                params.append("per_page", String(perPage));
+                params.append("page", String(page));
+                params.append("locale", locale);
 
-        inflight.set(key, p);
+                // Backend logic:
+                // category_id = (empty string) → Ana servisler
+                // category_id = number → belirli kategori
+                if (categoryId === null) {
+                    params.append("category_id", "");
+                } else if (categoryId !== undefined) {
+                    params.append("category_id", String(categoryId));
+                }
 
-        p.then((r) => {
-            cache.set(key, r);
-            if (!disposed) {
-                setData(r.services);
-                setMeta(r.meta || {});
+                const url = `${API_BASE}?${params.toString()}`;
+                console.log("🌍 API Request:", url);
+
+                const res = await fetch(url, {
+                    headers: {
+                        Accept: "application/json",
+                        "X-Tenant-ID": tenantId, // Güvenli fallback
+                    },
+                });
+
+                const json = await res.json();
+                console.log("📌 RAW Response:", json);
+
+                let list = json?.data || [];
+
+                // 🔥 STANDORTE (şehir sayfalarını çek)
+                if (locationOnly) {
+                    list = list.filter((s) => {
+                        const cityOk = !!s.city;
+                        const mapsOk = !!s.has_maps;
+                        const catOk =
+                            String(s.category_name || "")
+                                .toLowerCase() === "gebäudereinigung".toLowerCase() ||
+                            String(s.category_name || "")
+                                .toLowerCase() === "gebaudereinigung".toLowerCase();
+
+                        return cityOk && mapsOk && catOk;
+                    });
+
+                    console.log("📌 Filtered Standorte:", list);
+                }
+
+                setServices(list);
+                setDurationMs(performance.now() - start);
+            } catch (err) {
+                console.error("❌ API ERROR:", err);
+                setError(err.message || "API hatası");
+                setServices([]);
+            } finally {
+                setLoading(false);
             }
-        })
-            .catch((e) => {
-                if (!disposed)
-                    setError(e?.message || "Servis yükleme hatası");
-            })
-            .finally(() => {
-                inflight.delete(key);
-                if (!disposed) setLoading(false);
-            });
-
-        return () => {
-            disposed = true;
         };
-    }, [key]);
 
-    return { services: data || [], meta, loading, error };
-}
+        fetchData();
+    }, [tenantId, locale, page, perPage, categoryId, locationOnly]);
 
-export function useLocationServices(slug, options = {}) {
-    const { page = 1, perPage = 50, tenantId, locale } = options;
-
-    const key = useMemo(
-        () =>
-            JSON.stringify({
-                type: "slug",
-                slug,
-                page,
-                perPage,
-                tenantId,
-                locale,
-            }),
-        [slug, page, perPage, tenantId, locale]
-    );
-
-    const [data, setData] = useState(cache.get(key)?.services);
-    const [meta, setMeta] = useState(cache.get(key)?.meta || {});
-    const [loading, setLoading] = useState(!cache.has(key));
-    const [error, setError] = useState();
-
-    useEffect(() => {
-        let disposed = false;
-
-        if (!slug) {
-            setData([]);
-            setMeta({});
-            setLoading(false);
-            return;
-        }
-
-        if (cache.has(key)) {
-            const { services, meta } = cache.get(key);
-            setData(services);
-            setMeta(meta || {});
-            setLoading(false);
-            return;
-        }
-
-        if (inflight.has(key)) {
-            inflight
-                .get(key)
-                .then(({ services, meta }) => {
-                    if (!disposed) {
-                        setData(services);
-                        setMeta(meta || {});
-                        setLoading(false);
-                    }
-                })
-                .catch(
-                    (e) =>
-                        !disposed &&
-                        setError(e?.message || "Servis yükleme hatası")
-                );
-            return;
-        }
-
-        setLoading(true);
-
-        const p = fetchServiceBySlug(slug, {
-            tenantId,
-            locale,
-            page,
-            perPage,
-        });
-
-        inflight.set(key, p);
-
-        p.then((r) => {
-            cache.set(key, r);
-            if (!disposed) {
-                setData(r.services);
-                setMeta(r.meta || {});
-            }
-        })
-            .catch((e) => {
-                if (!disposed)
-                    setError(e?.message || "Servis yükleme hatası");
-            })
-            .finally(() => {
-                inflight.delete(key);
-                if (!disposed) setLoading(false);
-            });
-
-        return () => {
-            disposed = true;
-        };
-    }, [key, slug]);
-
-    return { services: data || [], meta, loading, error };
+    return { services, loading, error, durationMs };
 }

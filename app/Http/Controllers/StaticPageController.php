@@ -37,39 +37,43 @@ class StaticPageController extends Controller
             $resp = Http::withHeaders([
                 'X-Tenant-ID' => $tenantId,
                 'Accept'      => 'application/json',
-            ])->get("$base/v1/services?per_page=500");
+            ])
+            ->withoutVerifying() // 🔥 SSL doğrulaması kapat
+            ->get("$base/v1/services?per_page=500");
 
             return $resp->json()['data'] ?? [];
         });
 
-     foreach ($services as $svc) {
-    $svcSlug = strtolower(trim($svc['slug'] ?? ''));
-    $citySlug = strtolower(trim($svc['city'] ?? ''));
+        foreach ($services as $svc) {
+            $svcSlug = strtolower(trim($svc['slug'] ?? ''));
+            $citySlug = strtolower(trim($svc['city'] ?? ''));
 
-    // 🔥 Önce şehir eşleşsin
-    if ($cleanSlug === $citySlug && !empty($svcSlug)) {
-        \Log::info("🏙 CITY MATCH → {$citySlug}");
-        return Inertia::render('Locations/Show', [
-            'slug' => $svcSlug,
-            'citySlug' => $cleanSlug,
-        ]);
-    }
+            // 🔥 Önce şehir eşleşsin
+            if ($cleanSlug === $citySlug && !empty($svcSlug)) {
+                \Log::info("🏙 CITY MATCH → {$citySlug}");
+                return Inertia::render('Locations/Show', [
+                    'slug' => $svcSlug,
+                    'citySlug' => $cleanSlug,
+                ]);
+            }
 
-    // ✔ Sonra hizmet slug eşleşmesi
-    if ($cleanSlug === $svcSlug) {
-        \Log::info("🧼 SERVICE MATCH → {$svcSlug}");
-        return Inertia::render('Services/Show', [
-            'slug' => $svcSlug,
-        ]);
-    }
-}
+            // ✔ Sonra hizmet slug eşleşmesi
+            if ($cleanSlug === $svcSlug) {
+                \Log::info("🧼 SERVICE MATCH → {$svcSlug}");
+                return Inertia::render('Services/Show', [
+                    'slug' => $svcSlug,
+                ]);
+            }
+        }
 
         // 3️⃣ API'ye direkt slug dene
         try {
             $resp = Http::withHeaders([
                 'X-Tenant-ID' => $tenantId,
-                'Accept' => 'application/json',
-            ])->get("$base/v1/services/" . rawurlencode($slugLower));
+                'Accept'      => 'application/json',
+            ])
+            ->withoutVerifying() // 🔥 burada da SSL doğrulaması kapat
+            ->get("$base/v1/services/" . rawurlencode($slugLower));
 
             if ($resp->successful()) {
                 $service = $resp->json();
@@ -83,10 +87,10 @@ class StaticPageController extends Controller
             \Log::error("API direct check failed: " . $e->getMessage());
         }
 
-        // 🔥 YENİ: Son güvenlik → hangi slug gelirse gelsin Service Show'a yönlendir!
+        // 🔥 Son garanti → FE API'den çeksin
         return Inertia::render('Services/Show', [
             'slug' => $slugLower,
-            'forceLoad' => true, // FE tekrar API'den çeker
+            'forceLoad' => true,
         ]);
     }
 }

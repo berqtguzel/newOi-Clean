@@ -27,12 +27,6 @@ const GermanyMap = ({ activeId, setActiveId }) => {
         locale,
     });
 
-    // 🧪 DEBUG LOGS
-    console.log("🌍 Tenant:", tenantId);
-    console.log("🌐 Locale:", locale);
-    console.log("🗺️ Maps API Result:", maps);
-    console.log("⏳ Loading:", loading);
-    console.log("❌ Error:", error);
 
     const markers = useMemo(() => {
         if (!maps?.length || !maps[0]?.map_data?.markers) return [];

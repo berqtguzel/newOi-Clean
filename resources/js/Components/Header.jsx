@@ -330,7 +330,7 @@ const Header = ({ currentRoute, settings: propSettings }) => {
 
     // CTA – yine backend + sabit fallback (i18n defaultValue yok)
     const cta = {
-        href: currentSite?.cta?.href || settings?.cta?.href || "/contact",
+        href: currentSite?.cta?.href || settings?.cta?.href || "/kontakt",
         label:
             currentSite?.cta?.label ||
             settings?.cta?.label ||

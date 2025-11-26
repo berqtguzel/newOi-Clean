@@ -19,36 +19,26 @@ export default function LocationsGrid() {
         props?.global?.tenant_id ||
         "oi_cleande_690e161c3a1dd";
 
-    const apiLocale = (useLocale("de") || "de").toLowerCase();
+    const apiLocale = useLocale("de") || "de";
 
-    // 🔥 SADECE Gebäudereinigung şehirlerini çek
-    const { services = [], loading } = useServices({
+    // 🔥 YENİ: Sadece Gebäudereinigung şehir sayfalarını al!
+    const { services = [], loading, durationMs, error } = useServices({
         tenantId,
         locale: apiLocale,
-        fetchAll: true,
-        perPage: 500,
-        parentSlug: "Gebäudereinigung",
+        perPage: 1000,
+        locationOnly: true,
     });
 
+    // Backend zaten filtreledi ama title temizleyelim
     const sortedItems = [...services]
-        .filter(
-            (s) => s.slug?.startsWith("gebaudereinigung-in-") && s.city?.trim()
-        )
-        .sort((a, b) => {
-            const orderA = a.order ?? null;
-            const orderB = b.order ?? null;
-
-            if (orderA != null && orderB == null) return -1;
-            if (orderA == null && orderB != null) return 1;
-            if (orderA !== null && orderB !== null && orderA !== orderB)
-                return orderA - orderB;
-
-            return (a.city || "").localeCompare(b.city || "", "de");
-        })
         .map((s) => ({
             ...s,
+            name: stripHtml(s.name),
             title: stripHtml(s.title || s.name),
-        }));
+        }))
+        .sort((a, b) =>
+            (a.city || "").localeCompare(b.city || "", apiLocale)
+        );
 
     const [activeLocation, setActiveLocation] = React.useState(null);
 
@@ -63,6 +53,19 @@ export default function LocationsGrid() {
                     content="Professionelle Gebäudereinigung in Deutschland – wählen Sie Ihren Standort"
                 />
             </Head>
+
+            {/* API Süresi Gösterimi */}
+            {durationMs && (
+                <p style={{ fontSize: 12, textAlign: "center", color: "#777" }}>
+                    ⏱ {Math.round(durationMs)} ms
+                </p>
+            )}
+
+            {error && (
+                <p style={{ textAlign: "center", color: "red" }}>
+                    ❌ {error}
+                </p>
+            )}
 
             <div className="locations-container">
                 <div className="locations-header">
@@ -79,6 +82,7 @@ export default function LocationsGrid() {
 
                 <div className="locations-grid">
                     {loading && <p>📍 Standorte werden geladen…</p>}
+
                     {!loading && !sortedItems.length && (
                         <p>⛔ Noch keine Standorte vorhanden.</p>
                     )}

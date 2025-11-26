@@ -12,12 +12,12 @@ const fetchData = async (endpoint, tenant, locale = "de") => {
 
     const url = `${API_BASE_URL}${endpoint}?${params.toString()}`;
 
-    console.log("🌍 API Request:", url);
+    
 
     const res = await fetch(url);
     const json = await res.json();
 
-    console.log("📦 API Response:", json);
+
 
     return json.data || [];
 };
