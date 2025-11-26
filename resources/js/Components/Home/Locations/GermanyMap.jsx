@@ -6,7 +6,7 @@ import {
     Marker,
 } from "react-simple-maps";
 import { useMaps } from "@/hooks/useMaps";
-import { usePage } from "@inertiajs/react";
+import { usePage, router } from "@inertiajs/react";
 
 const DE_STATES_URL =
     "https://cdn.jsdelivr.net/gh/isellsoap/deutschlandGeoJSON@master/2_bundeslaender/4_niedrig.geo.json";
@@ -21,60 +21,35 @@ const GermanyMap = ({ activeId, setActiveId }) => {
 
     const locale = props?.locale || "de";
 
-    // ✅ DOĞRU KULLANIM: Parametre Objeyle
-    const { maps, loading, error } = useMaps({
-        tenantId,
-        locale,
-    });
-
+    const { maps, loading } = useMaps({ tenantId, locale });
 
     const markers = useMemo(() => {
-        if (!maps?.length || !maps[0]?.map_data?.markers) return [];
+        const regions = maps?.[0]?.map_data?.regions || [];
 
-        return maps[0].map_data.markers
-            .filter((m) => m.latitude && m.longitude)
-            .map((m) => ({
-                id: m.id,
-                name: m.name,
-                city: m.city || m.name,
-                coords: [parseFloat(m.longitude), parseFloat(m.latitude)],
+        return regions
+            .filter((r) => r.latitude && r.longitude && r.service_slug)
+            .map((r) => ({
+                id: r.service_id,
+                name: r.city || r.name,
+                slug: r.service_slug,
+                coords: [
+                    parseFloat(r.longitude),
+                    parseFloat(r.latitude),
+                ],
             }));
     }, [maps]);
 
-    const baseFill = "#e5e7eb";
-    const stroke = "#cbd5e1";
-    const hoverFill = "#dbeafe";
-    const activeFill = "#bae6fd";
+    const goToCity = (slug) => {
+        if (!slug) return;
+        router.visit(`/${slug}`); // SEO-friendly slug redirect
+    };
 
     return (
-        <div
-            className="map-box"
-            style={{
-                position: "relative",
-                width: "100%",
-                height: "100%",
-                minHeight: "600px",
-            }}
-        >
+        <div className="map-box" style={{ minHeight: "600px" }}>
             {loading && (
-                <div
-                    style={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        zIndex: 10,
-                        color: "#64748b",
-                    }}
-                >
-                    Karte wird geladen...
-                </div>
-            )}
-
-            {error && (
-                <div style={{ color: "red", textAlign: "center" }}>
-                    ❌ Map API Fehler!
-                </div>
+                <p style={{ textAlign: "center", color: "#888" }}>
+                    Karte wird geladen…
+                </p>
             )}
 
             <ComposableMap
@@ -90,17 +65,12 @@ const GermanyMap = ({ activeId, setActiveId }) => {
                                 geography={geo}
                                 style={{
                                     default: {
-                                        fill: baseFill,
-                                        stroke: stroke,
+                                        fill: "#e5e7eb",
+                                        stroke: "#cbd5e1",
                                         strokeWidth: 0.8,
                                     },
                                     hover: {
-                                        fill: hoverFill,
-                                        stroke: stroke,
-                                    },
-                                    pressed: {
-                                        fill: activeFill,
-                                        stroke: stroke,
+                                        fill: "#dbeafe",
                                     },
                                 }}
                             />
@@ -114,12 +84,17 @@ const GermanyMap = ({ activeId, setActiveId }) => {
                         coordinates={m.coords}
                         onMouseEnter={() => setActiveId?.(m.id)}
                         onMouseLeave={() => setActiveId?.(null)}
-                        onClick={() => setActiveId?.(m.id)}
+                        onClick={() => goToCity(m.slug)}
                         style={{ cursor: "pointer" }}
                     >
-                        <circle r={10} fill="rgba(14,165,233,0.3)" />
+                        {/* Glow */}
                         <circle
-                            r={activeId === m.id ? 6 : 4}
+                            r={10}
+                            fill="rgba(14, 165, 233, 0.30)"
+                        />
+                        {/* Dot */}
+                        <circle
+                            r={activeId === m.id ? 7 : 5}
                             fill={activeId === m.id ? "#0284c7" : "#0ea5e9"}
                             stroke="#fff"
                             strokeWidth={1.5}
