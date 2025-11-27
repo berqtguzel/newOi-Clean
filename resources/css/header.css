@@ -47,7 +47,7 @@
     top: 0 !important;
     z-index: 9999 !important;
     width: 100%;
-    
+
     /* Gerekli sticky geçişleri */
     height: var(--hd-h);
     background: var(--hd-surface);
@@ -105,7 +105,7 @@
     position: relative !important;
     z-index: 999;
     /* Sticky olunca küçülme animasyonu için transition eklendi */
-    transition: height .25s ease, background .25s ease; 
+    transition: height .25s ease, background .25s ease;
 }
 .brand{ display:flex; align-items:center; gap:12px; border-radius:12px; outline:0; text-decoration:none; color:inherit; }
 /* 🚀 GÜNCELLENDİ: BÜYÜK LOGO */
@@ -124,7 +124,7 @@
 .nav__link{
   position:relative; display:inline-flex; align-items:center; gap:8px;
   /* 🚀 GÜNCELLENDİ: BÜYÜK MESAFE */
-  padding:16px 18px; border-radius:14px; 
+  padding:16px 18px; border-radius:14px;
   color: color-mix(in srgb, var(--hd-ink) 85%, #fff 15%); font-weight:600; text-decoration:none;
 }
 .nav__link:hover{ background: color-mix(in srgb, var(--hd-primary) 8%, transparent); color: var(--hd-primary); }
@@ -452,12 +452,12 @@
     top: 0 !important;
     z-index: 9999 !important;
     width: 100%;
-    
+
     /* Normal durumda: tamamen opak yüzey */
     background: var(--hd-surface);
     box-shadow: none;
     backdrop-filter: none;
-    
+
     height: var(--hd-h);
     transition: background .25s ease, box-shadow .25s ease, height .25s ease;
 }
@@ -465,7 +465,7 @@
 /* Scroll olunca aktif sticky durumu */
 .site-header.is-stuck {
     /* Scroll olunca: hafif gölge + tam opak */
-    background: var(--hd-surface) !important; 
+    background: var(--hd-surface) !important;
     box-shadow: 0 6px 24px rgba(0,0,0,0.08) !important;
     height: 84px !important; /* Scroll olunca biraz küçült */
 }
@@ -473,13 +473,13 @@
 .navwrap {
     /* NAVWRAP ARTIK STICKY OLARAK KABUL EDİLİR (HEADER'IN İÇİNDE) */
     height: var(--hd-h);
-    
+
     /* Tam opak ve çizgi ayarları */
     background: var(--hd-surface) !important;
     backdrop-filter: none !important;
     box-shadow: none !important;
     border-bottom: 1px solid var(--hd-border);
-    
+
     transition: background .25s ease, box-shadow .25s ease;
 }
 
@@ -488,7 +488,7 @@
     background: var(--hd-surface) !important;
     box-shadow: none !important;
     /* Sticky olunca navwrap yüksekliğini header'ın küçülmüş yüksekliğine eşitle */
-    height: 84px !important; 
+    height: 84px !important;
 }
 
 /* Büyük Logo */
@@ -530,12 +530,12 @@
     border-radius: 14px !important;
 }
 .drawer__head{
-    height:var(--hd-h) !important; 
-    padding:0 20px; 
+    height:var(--hd-h) !important;
+    padding:0 20px;
     border-bottom:1px solid var(--hd-border);
 }
 .drawer__body{
-    overflow:auto; 
+    overflow:auto;
     height:calc(100% - var(--hd-h)) !important;
 }
 
@@ -559,7 +559,7 @@
 }
 .dark .site-header.is-stuck {
    background: #0f172a !important;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.3) !important; 
+    box-shadow: 0 6px 24px rgba(0,0,0,0.3) !important;
 }
 .dark .navwrap,
 .dark .navwrap.is-stuck {

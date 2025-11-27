@@ -188,6 +188,7 @@ const LanguageSwitcher = ({ currentLang, languages, onChange }) => {
 
     return (
         <div className={cx("lang-switch", open && "is-open")} ref={ref}>
+                       {" "}
             <button
                 type="button"
                 className="lang-switch__btn"
@@ -195,23 +196,31 @@ const LanguageSwitcher = ({ currentLang, languages, onChange }) => {
                 aria-expanded={open}
                 onClick={() => setOpen((o) => !o)}
             >
+                               {" "}
                 <span className="lang-switch__label">
-                    {normalizeLang(activeLang?.code || "DE").toUpperCase()}
+                                       {" "}
+                    {normalizeLang(activeLang?.code || "DE").toUpperCase()}     
+                             {" "}
                 </span>
+                               {" "}
                 <FaChevronDown
                     className="lang-switch__chev"
                     aria-hidden="true"
                 />
+                           {" "}
             </button>
-
+                       {" "}
             {open && (
                 <div className="lang-switch__popover" role="menu">
+                                       {" "}
                     <ul className="lang-switch__list">
+                                               {" "}
                         {languages.map((l) => {
                             const codeNorm = normalizeLang(l.code);
                             const isActive = codeNorm === normalizedCurrent;
                             return (
                                 <li key={l.code}>
+                                                                       {" "}
                                     <button
                                         type="button"
                                         className={cx(
@@ -223,34 +232,45 @@ const LanguageSwitcher = ({ currentLang, languages, onChange }) => {
                                             setOpen(false);
                                         }}
                                     >
+                                                                               {" "}
                                         <span className="lang-switch__item-code">
-                                            {codeNorm.toUpperCase()}
+                                                                               
+                                                    {codeNorm.toUpperCase()}   
+                                                                               {" "}
                                         </span>
+                                                                               {" "}
                                         <span className="lang-switch__item-label">
-                                            {l.label || codeNorm.toUpperCase()}
+                                                                               
+                                                   {" "}
+                                            {l.label || codeNorm.toUpperCase()} 
+                                                                               
+                                             {" "}
                                         </span>
+                                                                           {" "}
                                     </button>
+                                                                   {" "}
                                 </li>
                             );
                         })}
+                                           {" "}
                     </ul>
+                                   {" "}
                 </div>
             )}
+                   {" "}
         </div>
     );
 };
 
 const Header = ({ currentRoute, settings: propSettings }) => {
     const { i18n, t } = useTranslation();
-    const { props } = usePage();
+    const { props } = usePage(); // 🔥 HYDRATION FIX – sadece client’ta true oluyor
 
-    // 🔥 HYDRATION FIX – sadece client’ta true oluyor
     const [isMounted, setIsMounted] = useState(false);
     useEffect(() => {
         setIsMounted(true);
-    }, []);
+    }, []); // 1. Mevcut Host ve Tenant Bilgilerini Al
 
-    // 1. Mevcut Host ve Tenant Bilgilerini Al
     const [currentHost, setCurrentHost] = useState("");
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -264,12 +284,10 @@ const Header = ({ currentRoute, settings: propSettings }) => {
         props?.global?.talentId ||
         "";
     const initialLocale = normalizeLang(props?.locale || "de");
-    const omrTalentId = props?.global?.talentId || "";
+    const omrTalentId = props?.global?.talentId || ""; // 2. Global Siteleri Çek
 
-    // 2. Global Siteleri Çek
-    const { websites: globalWebsites } = useGlobalWebsites();
+    const { websites: globalWebsites } = useGlobalWebsites(); // 3. Şu anki siteyi bul
 
-    // 3. Şu anki siteyi bul
     const currentSite = useMemo(() => {
         const sites =
             props?.global?.websites?.length > 0
@@ -286,17 +304,14 @@ const Header = ({ currentRoute, settings: propSettings }) => {
         currentHost,
         tenantId,
         omrTalentId,
-    ]);
+    ]); // 4. Ayarları Çek
 
-    // 4. Ayarları Çek
-    const { data: apiSettings, loading: settingsLoading } = useSettings();
+    const { data: apiSettings, loading: settingsLoading } = useSettings(); // Tüm ayarları birleştir
 
-    // Tüm ayarları birleştir
     const settings = useMemo(() => {
         return { ...propSettings, ...apiSettings };
-    }, [propSettings, apiSettings]);
+    }, [propSettings, apiSettings]); // İletişim bilgisi
 
-    // İletişim bilgisi
     const contactInfo = useMemo(() => {
         const contactInfos =
             settings?.contact_infos || settings?.contact?.contact_infos || [];
@@ -319,36 +334,40 @@ const Header = ({ currentRoute, settings: propSettings }) => {
         settings?.contact?.phone ||
         settings?.phone ||
         currentSite?.contact?.phone ||
-        "+49 (0)36874 38 55 67";
+        "+49 (0)36874 38 55 67"; // 🔥 ÖNEMLİ: tagline artık sadece backend + sabit fallback
 
-    // 🔥 ÖNEMLİ: tagline artık sadece backend + sabit fallback
     const topbarTagline =
         currentSite?.content?.topbarTagline ||
         settings?.branding?.topbar_tagline ||
         settings?.general?.topbar_tagline ||
-        "Sauberkeit, auf die Sie sich verlassen können — 24/7 Service";
+        "Sauberkeit, auf die Sie sich verlassen können — 24/7 Service"; // ==================================================================== // 💡 CTA HATA DÜZELTME BAŞLANGICI: Dili baz alarak URL oluşturuluyor // ====================================================================
 
-    // CTA – yine backend + sabit fallback (i18n defaultValue yok)
+    const ctaPathFromSettings = currentSite?.cta?.href || settings?.cta?.href;
+
+    const normalizedLocale = normalizeLang(initialLocale);
+    let defaultFallbackHref = "/kontakt"; // Varsayılan: Almanca için
+
+    if (normalizedLocale === "en") {
+        defaultFallbackHref = "/contact"; // İngilizce için
+    } else if (normalizedLocale === "tr") {
+        defaultFallbackHref = "/iletisim"; // Türkçe için
+    } // Diğer diller de (fr, es, vb.) buraya eklenebilir.
+    const ctaHref = ctaPathFromSettings || defaultFallbackHref; // CTA objesini yeni oluşturulan dinamik URL ile güncelle
+
     const cta = {
-        href: currentSite?.cta?.href || settings?.cta?.href || "/kontakt",
+        href: ctaHref,
         label:
             currentSite?.cta?.label ||
             settings?.cta?.label ||
-            "Termin vereinbaren",
-    };
-
-    // Logolar - HYDRATION FIX: Server ve client'ta aynı değerleri kullan
-    // isMounted kontrolü ile client-side'da güncelleme yapılır
+            "Termin vereinbaren", // Label için i18n kullanmak daha iyidir, ancak mevcut yapıyı koruyorum.
+    }; // ==================================================================== // 💡 CTA HATA DÜZELTME SONU // ==================================================================== // Logolar - HYDRATION FIX: Server ve client'ta aynı değerleri kullan // isMounted kontrolü ile client-side'da güncelleme yapılır
     const siteLogos = useMemo(() => {
         const getUrl = (src) =>
-            src?.url || (typeof src === "string" ? src : null);
+            src?.url || (typeof src === "string" ? src : null); // Her zaman aynı fallback değerlerini kullan (server ve client'ta aynı)
 
-        // Her zaman aynı fallback değerlerini kullan (server ve client'ta aynı)
         const defaultLight = "/images/logo/Logo.png";
-        const defaultDark = "/images/logo/darkLogo.png";
+        const defaultDark = "/images/logo/darkLogo.png"; // Server-side render için: Her zaman fallback kullan // Client-side'da isMounted olduktan sonra settings kullanılır
 
-        // Server-side render için: Her zaman fallback kullan
-        // Client-side'da isMounted olduktan sonra settings kullanılır
         if (!isMounted || !settings || settingsLoading) {
             return {
                 light: defaultLight,
@@ -363,29 +382,23 @@ const Header = ({ currentRoute, settings: propSettings }) => {
             getUrl(settings?.general?.logo) ||
             defaultLight;
 
-        const darkUrl =
-            // API'den gelen dark_logo (top-level)
-            getUrl(settings?.dark_logo) ||
-            // Bazı yerlerde logo_dark adıyla gelebilir
-            getUrl(settings?.logo_dark) ||
-            // API response data içinde olabilir
+        const darkUrl = // API'den gelen dark_logo (top-level)
+            getUrl(settings?.dark_logo) || // Bazı yerlerde logo_dark adıyla gelebilir
+            getUrl(settings?.logo_dark) || // API response data içinde olabilir
             getUrl(settings?.data?.dark_logo) ||
-            getUrl(settings?.data?.logo_dark) ||
-            // Eski / farklı config yapıları
+            getUrl(settings?.data?.logo_dark) || // Eski / farklı config yapıları
             getUrl(settings?.branding?.dark_logo) ||
             getUrl(settings?.branding?.logo_dark) ||
             getUrl(settings?.general?.dark_logo) ||
-            getUrl(settings?.general?.logo_dark) ||
-            // Hiçbiri yoksa light logoyu kullan
+            getUrl(settings?.general?.logo_dark) || // Hiçbiri yoksa light logoyu kullan
             lightUrl ||
             defaultDark;
 
         return { light: lightUrl, dark: darkUrl };
     }, [settings, isMounted, settingsLoading]);
 
-    const [currentLang, setCurrentLang] = useState(initialLocale || "de");
+    const [currentLang, setCurrentLang] = useState(initialLocale || "de"); // i18n başlangıç dilini backend ile senkron tut
 
-    // i18n başlangıç dilini backend ile senkron tut
     useEffect(() => {
         if (!initialLocale) return;
         const normInit = normalizeLang(initialLocale);
@@ -466,9 +479,8 @@ const Header = ({ currentRoute, settings: propSettings }) => {
             preserveScroll: true,
             preserveState: false,
         });
-    };
+    }; // --- SOSYAL MEDYA ---
 
-    // --- SOSYAL MEDYA ---
     const [socialLinks, setSocialLinks] = useState(null);
     useEffect(() => {
         const fetchSocials = async () => {
@@ -490,9 +502,8 @@ const Header = ({ currentRoute, settings: propSettings }) => {
         { key: "linkedin_url", icon: <FaLinkedin />, label: "LinkedIn" },
         { key: "youtube_url", icon: <FaYoutube />, label: "Youtube" },
         { key: "tiktok_url", icon: <FaTiktok />, label: "TikTok" },
-    ];
+    ]; // --- MENU ---
 
-    // --- MENU ---
     const {
         data: menusResponse,
         loading: menuLoading,
@@ -559,8 +570,7 @@ const Header = ({ currentRoute, settings: propSettings }) => {
 
     const navItems = useMemo(() => {
         if (remoteNavItems && remoteNavItems.length) return remoteNavItems;
-        if (menuLoading) return [];
-        // HYDRATION FIX: Server-side'da sabit değer kullan
+        if (menuLoading) return []; // HYDRATION FIX: Server-side'da sabit değer kullan
         const homeLabel = isMounted
             ? t("nav.home", "Startseite")
             : "Startseite";
@@ -694,25 +704,28 @@ const Header = ({ currentRoute, settings: propSettings }) => {
             router.visit(raw);
             if (close) setOpenMenu(false);
         };
+    window.addEventListener("scroll", () => {
+        const header = document.querySelector("header");
+        header.classList.toggle("shadow-md", window.scrollY > 5);
+    });
 
     const menuErrorText = menuError ? String(menuError) : "";
 
     return (
-        <header
-            ref={headerRef}
-            className="site-header"
-            // Yapışkanlık sorununun üstesinden gelmek için ek stil eklendi.
-            // Bu, CSS dosyanızdaki `position: sticky; top: 0;` kuralını
-            // üst öğelerden gelen olası kısıtlamalara karşı zorlayacaktır.
-            style={{ position: "sticky", top: 0, zIndex: 100 }}
-        >
-            <BitsBackground />
+        <header ref={headerRef} class="fixed top-0 left-0 w-full z-50">
+                        <BitsBackground />         
             <div className="topbar">
+                               {" "}
                 <div className="container">
+                                       {" "}
                     <div className="topbar__inner">
+                                               {" "}
                         <div className="topbar__left">
+                                                       {" "}
                             <span className="topbar__phone">
-                                <FaPhoneAlt aria-hidden="true" />
+                                                               {" "}
+                                <FaPhoneAlt aria-hidden="true" />               
+                                               {" "}
                                 {isMounted ? (
                                     <a
                                         href={`tel:${sitePhone.replace(
@@ -720,6 +733,7 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                             ""
                                         )}`}
                                     >
+                                                                               {" "}
                                         <DecryptedText
                                             text={sitePhone}
                                             animateOn="view"
@@ -727,6 +741,7 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                             revealDirection="center"
                                             key={currentLang}
                                         />
+                                                                           {" "}
                                     </a>
                                 ) : (
                                     <a
@@ -735,13 +750,18 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                             ""
                                         )}`}
                                     >
-                                        {sitePhone}
+                                                                               {" "}
+                                        {sitePhone}                             
+                                             {" "}
                                     </a>
                                 )}
+                                                           {" "}
                             </span>
-
+                                                       {" "}
                             <span className="topbar__tagline">
+                                                               {" "}
                                 <div style={{ marginTop: 0 }}>
+                                                                       {" "}
                                     {isMounted ? (
                                         <DecryptedText
                                             text={topbarTagline}
@@ -753,9 +773,13 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                     ) : (
                                         <span>{topbarTagline}</span>
                                     )}
+                                                                   {" "}
                                 </div>
+                                                           {" "}
                             </span>
+                                                   {" "}
                         </div>
+                                               {" "}
                         <div
                             className="topbar__right"
                             style={{
@@ -764,11 +788,13 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                 gap: "15px",
                             }}
                         >
+                                                       {" "}
                             {socialLinks && (
                                 <div
                                     className="social-icons"
                                     style={{ display: "flex", gap: "10px" }}
                                 >
+                                                                       {" "}
                                     {socialMapping.map((item) => {
                                         const link = socialLinks[item.key];
                                         if (link && link.trim() !== "") {
@@ -786,29 +812,45 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                                         alignItems: "center",
                                                     }}
                                                 >
-                                                    {item.icon}
+                                                                               
+                                                                           {" "}
+                                                    {item.icon}                 
+                                                                               
+                                                     {" "}
                                                 </a>
                                             );
                                         }
                                         return null;
                                     })}
+                                                                   {" "}
                                 </div>
                             )}
+                            {/* 🎯 HATA DÜZELTME: href="/kontakt" yerine cta.href kullanılıyor. */}
+                                                       {" "}
                             <a
                                 href={cta.href}
                                 onClick={navigate(cta.href)}
                                 className="btn btn--ghost"
                             >
-                                <SafeHtml html={cta.label} as="span" />
+                                                               {" "}
+                                <SafeHtml html={cta.label} as="span" />         
+                                                 {" "}
                             </a>
+                                                   {" "}
                         </div>
+                                           {" "}
                     </div>
+                                   {" "}
                 </div>
+                           {" "}
             </div>
-
+                       {" "}
             <div className="navwrap">
+                               {" "}
                 <div className="container">
+                                       {" "}
                     <div className="navwrap__inner">
+                                               {" "}
                         <a
                             href="/"
                             onClick={navigate("/")}
@@ -819,24 +861,29 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                     : "Startseite"
                             }
                         >
+                                                       {" "}
                             {settingsLoading && !siteLogos.light ? (
                                 <div className="w-32 h-10 bg-gray-200 animate-pulse rounded" />
                             ) : (
                                 <>
+                                                                       {" "}
                                     <img
                                         src={siteLogos.light}
                                         alt={`${siteName} Logo`}
                                         className="brand__logo brand__logo--light"
                                     />
+                                                                       {" "}
                                     <img
                                         src={siteLogos.dark}
                                         alt={`${siteName} Logo (Dark)`}
                                         className="brand__logo brand__logo--dark"
                                     />
+                                                                   {" "}
                                 </>
                             )}
+                                                   {" "}
                         </a>
-
+                                               {" "}
                         <nav
                             className="nav nav--desktop"
                             aria-label={
@@ -845,18 +892,27 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                     : "Hauptnavigation"
                             }
                         >
+                                                       {" "}
                             {menuLoading && (
                                 <div className="nav__item">
-                                    <span className="nav__link" />
+                                                                       {" "}
+                                    <span className="nav__link" />             
+                                                     {" "}
                                 </div>
                             )}
+                                                       {" "}
                             {menuErrorText && (
                                 <div className="nav__item">
+                                                                       {" "}
                                     <span className="nav__link">
-                                        {menuErrorText}
+                                                                               {" "}
+                                        {menuErrorText}                         
+                                                 {" "}
                                     </span>
+                                                                   {" "}
                                 </div>
                             )}
+                                                       {" "}
                             {navItems.map((item) => {
                                 const isActive =
                                     typeof item.isActive === "function"
@@ -881,6 +937,7 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                             hasDropdown && scheduleCloseDrop()
                                         }
                                     >
+                                                                               {" "}
                                         <a
                                             href={item.url}
                                             className={cx(
@@ -903,18 +960,25 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                             }
                                             onClick={navigate(item.url)}
                                         >
+                                                                               
+                                                   {" "}
                                             <SafeHtml
                                                 html={item.name}
                                                 as="span"
                                                 className="nav__label"
                                             />
+                                                                               
+                                                   {" "}
                                             {hasDropdown && (
                                                 <FaChevronDown
                                                     className="nav__chev"
                                                     aria-hidden="true"
                                                 />
                                             )}
+                                                                               
+                                               {" "}
                                         </a>
+                                                                               {" "}
                                         {hasDropdown && isOpen && (
                                             <div
                                                 className={cx(
@@ -926,10 +990,15 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                                 onMouseEnter={cancelClose}
                                                 onMouseLeave={scheduleCloseDrop}
                                             >
+                                                                               
+                                                               {" "}
                                                 {item.mega ? (
                                                     <div className="mega" />
                                                 ) : (
                                                     <div className="menu">
+                                                                               
+                                                                               
+                                                               {" "}
                                                         {dedupeByKey(
                                                             item.dropdown
                                                         ).map(
@@ -959,6 +1028,15 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                                                             scheduleCloseSub()
                                                                         }
                                                                     >
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               {" "}
                                                                         {hasSub ? (
                                                                             <button
                                                                                 type="button"
@@ -973,6 +1051,46 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                                                                     subOpen
                                                                                 }
                                                                             >
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 {" "}
                                                                                 <SafeHtml
                                                                                     html={
                                                                                         subItem.name
@@ -980,10 +1098,90 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                                                                     as="span"
                                                                                     className="menu__label"
                                                                                 />
+
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 {" "}
                                                                                 <FaChevronRight
                                                                                     className="menu__chev"
                                                                                     aria-hidden
                                                                                 />
+
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 {" "}
                                                                             </button>
                                                                         ) : (
                                                                             <a
@@ -1001,14 +1199,102 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                                                                     subItem.url
                                                                                 )}
                                                                             >
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 {" "}
                                                                                 <SafeHtml
                                                                                     html={
                                                                                         subItem.name
                                                                                     }
                                                                                     as="span"
                                                                                 />
+
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 
+                                                                                 {" "}
                                                                             </a>
                                                                         )}
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               {" "}
                                                                         {hasSub &&
                                                                             subOpen && (
                                                                                 <div
@@ -1021,6 +1307,48 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                                                                         scheduleCloseSub
                                                                                     }
                                                                                 >
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     {" "}
                                                                                     {subItem.submenu.map(
                                                                                         (
                                                                                             inner,
@@ -1045,48 +1373,205 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                                                                                     true
                                                                                                 )}
                                                                                             >
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 {" "}
                                                                                                 <SafeHtml
                                                                                                     html={
                                                                                                         inner.name
                                                                                                     }
                                                                                                     as="span"
                                                                                                 />
+
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 
+                                                                                                 {" "}
                                                                                             </a>
                                                                                         )
                                                                                     )}
+
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     
+                                                                                     {" "}
                                                                                 </div>
                                                                             )}
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                           {" "}
                                                                     </div>
                                                                 );
                                                             }
                                                         )}
+                                                                               
+                                                                               
+                                                           {" "}
                                                     </div>
                                                 )}
+                                                                               
+                                                           {" "}
                                             </div>
                                         )}
+                                                                           {" "}
                                     </div>
                                 );
                             })}
+                                                   {" "}
                         </nav>
-
+                                               {" "}
                         <div className="nav__cta">
-                            <ThemeToggle />
+                                                        <ThemeToggle />         
+                                             {" "}
                             <LanguageSwitcher
                                 currentLang={currentLang}
                                 languages={allLanguages}
                                 onChange={changeLanguage}
                             />
+                                                       {" "}
                             <a
                                 href="/impressum"
                                 onClick={navigate("/impressum")}
                                 className="btn bg-button btn--primary ml-4"
                             >
+                                                               {" "}
                                 {isMounted
                                     ? t("header.impressum", "Impressum")
                                     : "Impressum"}
+                                                           {" "}
                             </a>
+                                                   {" "}
                         </div>
-
+                                               {" "}
                         <button
                             className="hamburger"
                             onClick={() => setOpenMenu(true)}
@@ -1096,38 +1581,50 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                     : "Menü öffnen"
                             }
                         >
-                            <FaBars size={22} />
+                                                        <FaBars size={22} />   
+                                               {" "}
                         </button>
+                                           {" "}
                     </div>
+                                   {" "}
                 </div>
+                           {" "}
             </div>
-
+                       {" "}
             <div
                 className={cx("drawer", openMenu && "is-open")}
                 aria-hidden={!openMenu}
             >
+                               {" "}
                 <div
                     className="drawer__backdrop"
                     onClick={() => setOpenMenu(false)}
                 />
+                               {" "}
                 <aside className="drawer__panel" role="dialog" aria-modal>
+                                       {" "}
                     <div className="drawer__head">
+                                               {" "}
                         <a
                             href="/"
                             className="brand brand--sm"
                             onClick={navigate("/", true)}
                         >
+                                                       {" "}
                             <img
                                 src={siteLogos.light}
                                 alt={`${siteName} Logo`}
                                 className="brand__logo brand__logo--light"
                             />
+                                                       {" "}
                             <img
                                 src={siteLogos.dark}
                                 alt={`${siteName} Logo (Dark)`}
                                 className="brand__logo brand__logo--dark"
                             />
+                                                   {" "}
                         </a>
+                                               {" "}
                         <button
                             className="btn btn--icon"
                             onClick={() => setOpenMenu(false)}
@@ -1137,16 +1634,21 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                     : "Menü schließen"
                             }
                         >
-                            <FaTimes size={20} />
+                                                        <FaTimes size={20} />   
+                                               {" "}
                         </button>
+                                           {" "}
                     </div>
+                                       {" "}
                     <div className="drawer__body">
+                                               {" "}
                         {navItems.map((item, idx) => {
                             const key = item.dropdownKey || item.route;
                             const hasDropdown = !!item.dropdown || !!item.mega;
                             const expanded = !!mobileAccordions[key];
                             return (
                                 <div key={idx} className="acc">
+                                                                       {" "}
                                     <button
                                         className="acc__toggle"
                                         aria-expanded={expanded}
@@ -1158,15 +1660,26 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                             }
                                         }}
                                     >
+                                                                               {" "}
                                         <span className="acc__left">
+                                                                               
+                                                   {" "}
                                             <span className="acc__icon">
-                                                {item.icon}
+                                                                               
+                                                                {item.icon}     
+                                                                               
+                                                     {" "}
                                             </span>
+                                                                               
+                                                   {" "}
                                             <SafeHtml
                                                 html={item.name}
                                                 as="span"
                                             />
+                                                                               
+                                               {" "}
                                         </span>
+                                                                               {" "}
                                         {hasDropdown && (
                                             <FaChevronDown
                                                 className={cx(
@@ -1176,7 +1689,9 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                                 aria-hidden
                                             />
                                         )}
+                                                                           {" "}
                                     </button>
+                                                                       {" "}
                                     {hasDropdown && (
                                         <div
                                             className={cx(
@@ -1184,23 +1699,73 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                                 expanded && "open"
                                             )}
                                         >
+                                                                               
+                                                   {" "}
                                             <div className="acc__menu">
+                                                                               
+                                                               {" "}
                                                 {dedupeByKey(item.dropdown).map(
                                                     (subItem, i) => (
                                                         <div
                                                             key={i}
                                                             className="acc__item"
                                                         >
+                                                                               
+                                                                               
+                                                                               {" "}
                                                             {subItem.submenu ? (
                                                                 <details className="acc__details">
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                           {" "}
                                                                     <summary className="acc__summary">
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               {" "}
                                                                         <SafeHtml
                                                                             html={
                                                                                 subItem.name
                                                                             }
                                                                             as="span"
                                                                         />
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               {" "}
                                                                         <div className="acc__submenu">
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               {" "}
                                                                             {subItem.submenu.map(
                                                                                 (
                                                                                     inner,
@@ -1225,17 +1790,137 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                                                                             )
                                                                                         }
                                                                                     >
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         {" "}
                                                                                         <SafeHtml
                                                                                             html={
                                                                                                 inner.name
                                                                                             }
                                                                                             as="span"
                                                                                         />
+
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         
+                                                                                         {" "}
                                                                                     </a>
                                                                                 )
                                                                             )}
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               {" "}
                                                                         </div>
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                           {" "}
                                                                     </summary>
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                       {" "}
                                                                 </details>
                                                             ) : (
                                                                 <a
@@ -1252,33 +1937,61 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                                                         )(e)
                                                                     }
                                                                 >
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                           {" "}
                                                                     <SafeHtml
                                                                         html={
                                                                             subItem.name
                                                                         }
                                                                         as="span"
                                                                     />
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                               
+                                                                       {" "}
                                                                 </a>
                                                             )}
+                                                                               
+                                                                               
+                                                                           {" "}
                                                         </div>
                                                     )
                                                 )}
+                                                                               
+                                                           {" "}
                                             </div>
+                                                                               
+                                               {" "}
                                         </div>
                                     )}
+                                                                   {" "}
                                 </div>
                             );
                         })}
+                                               {" "}
                         <div className="drawer__theme-toggle">
-                            <ThemeToggle />
+                                                        <ThemeToggle />         
+                                         {" "}
                         </div>
+                                               {" "}
                         <div className="drawer__lang">
+                                                       {" "}
                             <span className="drawer__lang-label">
+                                                               {" "}
                                 {isMounted
                                     ? t("header.language", "Sprache")
                                     : "Sprache"}
+                                                           {" "}
                             </span>
+                                                       {" "}
                             <div className="drawer__lang-buttons">
+                                                               {" "}
                                 {allLanguages.map((l) => (
                                     <button
                                         key={l.code}
@@ -1291,14 +2004,22 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                         )}
                                         onClick={() => changeLanguage(l.code)}
                                     >
-                                        {l.label}
+                                                                               {" "}
+                                        {l.label}                               
+                                           {" "}
                                     </button>
                                 ))}
+                                                           {" "}
                             </div>
+                                                   {" "}
                         </div>
+                                           {" "}
                     </div>
+                                   {" "}
                 </aside>
+                           {" "}
             </div>
+                   {" "}
         </header>
     );
 };

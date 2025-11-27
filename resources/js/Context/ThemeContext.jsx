@@ -15,29 +15,33 @@ const ThemeContext = createContext({
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider = ({ children, initial = "system" }) => {
-    // SSR == client aynı render başlar
-    const [theme, setTheme] = useState("light");
+    // SSR: DOM'a etki etmeyen nötr initial değer ("")
+    const [theme, setTheme] = useState("");
 
-    // Client'ta theme güncellenir
     useEffect(() => {
+        let nextTheme = "light";
         const saved = localStorage.getItem("theme");
 
         if (saved === "light" || saved === "dark") {
-            setTheme(saved);
+            nextTheme = saved;
         } else if (initial === "dark") {
-            setTheme("dark");
+            nextTheme = "dark";
         } else if (
             initial === "system" &&
             window.matchMedia("(prefers-color-scheme: dark)").matches
         ) {
-            setTheme("dark");
+            nextTheme = "dark";
         }
-    }, []);
 
-    // HTML class güncelle
+        setTheme(nextTheme);
+    }, [initial]);
+
     useEffect(() => {
+        if (!theme) return; // İlk hydration’da DOM'a dokunma
+
         const root = document.documentElement;
         const isDark = theme === "dark";
+
         root.classList.toggle("dark", isDark);
         root.style.colorScheme = isDark ? "dark" : "light";
 
@@ -49,12 +53,14 @@ export const ThemeProvider = ({ children, initial = "system" }) => {
     const setThemeSafe = (next) => {
         if (next !== "light" && next !== "dark") return;
         setTheme(next);
-        localStorage.setItem("theme", next);
+        try {
+            localStorage.setItem("theme", next);
+        } catch {}
     };
 
     const value = useMemo(
         () => ({
-            theme,
+            theme: theme || "light", // Boşsa bile UI stabil kalır
             setTheme: setThemeSafe,
             toggleTheme: () =>
                 setThemeSafe(theme === "dark" ? "light" : "dark"),
