@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { usePage } from "@inertiajs/react";
@@ -6,6 +6,31 @@ import useWidgets from "@/hooks/useWidgets";
 import SafeHtml from "@/Components/Common/SafeHtml";
 import Aurora from "@/Components/ReactBits/Backgrounds/Aurora";
 import "./ServiceCategories.css";
+
+// 🌈 Aurora renklerini CSS değişkenlerinden oku
+const useAuroraColors = () => {
+    const [colors, setColors] = useState(["#0894D7", "#2967EC", "#0284C7"]);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const styles = getComputedStyle(document.documentElement);
+
+        const primary = styles.getPropertyValue("--site-primary-color").trim();
+        const accent = styles.getPropertyValue("--site-accent-color").trim();
+        const headerBg = styles
+            .getPropertyValue("--header-background-color")
+            .trim();
+
+        setColors([
+            primary || "#0894D7",
+            accent || "#2967EC",
+            headerBg || "#0284C7",
+        ]);
+    }, []);
+
+    return colors;
+};
 
 export default function ServiceCategories({ content = {} }) {
     const { t } = useTranslation();
@@ -22,6 +47,8 @@ export default function ServiceCategories({ content = {} }) {
         tenant: tenantId,
         locale,
     });
+
+    const auroraColors = useAuroraColors(); // ✨ burada
 
     const services = useMemo(() => {
         const raw = widgets?.highlights;
@@ -42,12 +69,13 @@ export default function ServiceCategories({ content = {} }) {
 
     return (
         <section className="svc-section">
+            {/* 🌌 Aurora Background with panel colors */}
             <div className="svc-aurora">
                 <Aurora
                     className="svc-aurora-canvas"
-                    colorStops={["#0894D7", "#2967EC", "#0284C7"]}
-                    amplitude={0.7}
-                    speed={0.6}
+                    colorStops={auroraColors}
+                    amplitude={2}
+                    speed={0.2}
                     blend={0}
                 />
             </div>
@@ -78,9 +106,6 @@ export default function ServiceCategories({ content = {} }) {
                     </p>
                 </motion.div>
 
-                {loading && <p className="svc-loading">⏳ {t("loading")}</p>}
-                {error && <p className="svc-error">❌ {t("error")}</p>}
-
                 <div className="svc-grid">
                     {!loading &&
                         !error &&
@@ -93,7 +118,7 @@ export default function ServiceCategories({ content = {} }) {
                                 whileHover={{ scale: 1.05 }}
                                 transition={{
                                     duration: 0.4,
-                                    delay: index * 0.1,
+                                    delay: index * 0.08,
                                 }}
                                 viewport={{ once: true }}
                             >
@@ -104,6 +129,7 @@ export default function ServiceCategories({ content = {} }) {
                                         src={svc.image}
                                         className="svc-card-img"
                                         loading="lazy"
+                                        alt={svc.name}
                                     />
                                 )}
 
@@ -111,7 +137,6 @@ export default function ServiceCategories({ content = {} }) {
                                     <h3 className="svc-card-title">
                                         <SafeHtml html={svc.name} />
                                     </h3>
-
                                     <p className="svc-card-desc">
                                         <SafeHtml html={svc.description} />
                                     </p>

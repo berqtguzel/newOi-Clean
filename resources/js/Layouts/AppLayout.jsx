@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Head, usePage } from "@inertiajs/react";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
@@ -12,84 +12,82 @@ import { useLocale } from "../hooks/useLocale";
 
 export default function AppLayout({ children }) {
     const { props } = usePage();
-    const tenantId =
-        props?.global?.tenantId ||
-        props?.global?.tenant_id ||
-        props?.tenantId ||
-        "";
 
-    const serverLocale = props?.locale || "de";
+    const layoutData = props?.layoutData || {};
+    const tenantId = layoutData?.tenantId || "";
+    const serverLocale = layoutData?.locale || "de";
     const locale = useLocale(serverLocale);
 
-    const [hydrated, setHydrated] = useState(false);
+    const [isClient, setIsClient] = useState(false);
+    useEffect(() => setIsClient(true), []);
+
     const [showCookieSettings, setShowCookieSettings] = useState(false);
-
     useEffect(() => {
-        setHydrated(true);
-
         const consent = Cookies.get("cookie_consent");
         if (!consent) setShowCookieSettings(true);
-
-        const handler = () => setShowCookieSettings(false);
-        window.addEventListener("cookie-saved", handler);
-        return () => window.removeEventListener("cookie-saved", handler);
     }, []);
 
-    const { data: asyncSettings, loading } = useSettings({
+    // SSR'da async fetch DENENMEZ - sadece tarayıcıda
+    const { data: asyncSettings } = useSettings({
         tenantId,
         locale,
+        enabled: isClient,
     });
 
-    const settings =
-        hydrated && !loading
-            ? asyncSettings || props.settings || {}
-            : props.settings || {};
+    // 🔥 SSR = layoutData.settings
+    // 🔥 CSR = API’dan asyncSettings gelirse üzerine yazar
+    const settings = isClient
+        ? asyncSettings || layoutData.settings || {}
+        : layoutData.settings || {};
 
-    const general = settings.general || {};
-    const branding = settings.branding || {};
+    // META
+    const general = settings?.general || {};
+    const branding = settings?.branding || {};
 
-    const siteTitle = general.site_name || branding.site_name || "O&I CLEAN";
+    const siteTitle =
+        general.site_name ||
+        branding.site_name ||
+        layoutData.siteName ||
+        "O&I CLEAN";
 
     const siteDescription =
-        general.site_description || "Professionelle Reinigungsdienste";
+        general.site_description ||
+        branding.site_description ||
+        "Professionelle Reinigungsdienste";
 
     const favicon =
-        branding.favicon?.url || general.favicon?.url || "/favicon.ico";
+        branding.favicon?.url ||
+        general.favicon?.url ||
+        layoutData.favicon ||
+        "/favicon.ico";
 
     return (
-        <div className="min-h-screen flex flex-col antialiased relative">
+        <>
             <Head>
                 <title>{siteTitle}</title>
                 <meta name="description" content={siteDescription} />
                 <link rel="icon" href={favicon} />
             </Head>
 
-            {/* Settings SSR + CSR */}
+            {/* 🔥 Renkler + SEO + Analytics */}
             <SettingsInjector settings={settings} />
 
-            <Header settings={settings} />
-
-            <main id="app-main" className="flex-grow relative z-10">
-                {children}
-            </main>
-
-            {hydrated ? (
+            <div className="min-h-screen flex flex-col">
+                <Header settings={settings} />
+                <main className="flex-grow relative z-10">{children}</main>
                 <Footer settings={settings} />
-            ) : (
-                <footer className="h-20 w-full bg-gray-200 opacity-20" />
-            )}
+            </div>
 
-            {hydrated && (
+            {isClient && (
                 <>
                     {!showCookieSettings && (
                         <button
-                            type="button"
                             className="fixed bottom-4 left-4 z-50 w-12 h-12 rounded-full
                             bg-white shadow-lg border flex items-center justify-center
-                            text-blue-500 dark:text-blue-400 cursor-pointer"
+                            text-blue-600 cursor-pointer"
                             onClick={() => setShowCookieSettings(true)}
                         >
-                            <FaCookieBite className="text-xl" />
+                            <FaCookieBite className="cookie-icon" />
                         </button>
                     )}
 
@@ -97,6 +95,6 @@ export default function AppLayout({ children }) {
                     <WhatsAppWidget tenant={tenantId} locale={locale} />
                 </>
             )}
-        </div>
+        </>
     );
 }

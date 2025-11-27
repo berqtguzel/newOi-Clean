@@ -135,11 +135,10 @@ const ContactSection = () => {
         setShowSuccessModal(true);
         setSuccessModalOpen(true); // Modal state'ini aç
         setData({});
-        // Hidrasyon hatasını önlemek için window.location.reload() kullanmaktan kaçının
-        // veya delay'i uzatın. Ancak bu projeye özel bir zorunluluk olabilir.
+
         setTimeout(() => {
             window.location.reload();
-        }, 3000);
+        }, 500);
     };
 
     const handleSubmit = async (e) => {

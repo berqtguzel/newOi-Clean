@@ -103,3 +103,6 @@ body { background-color: hsl(var(--background)); color: hsl(var(--foreground)); 
 html.inertia-loading body {
     visibility: hidden;
 }
+.cookie-icon{
+    color: var(--button-color);
+}

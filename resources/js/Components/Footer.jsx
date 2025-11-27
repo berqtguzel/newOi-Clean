@@ -96,8 +96,8 @@ export default function Footer({ settings }) {
 
     return (
         <footer className="footer relative overflow-hidden">
-            <div className="container mx-auto px-6 pt-20 pb-10">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+            <div className="container mx-auto px-6 pt-20 pb-10 text-center md:text-left">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 place-items-center md:place-items-start">
                     <div className="md:col-span-5">
                         <h3 className="text-2xl font-extrabold">
                             <a href="/">{siteName}</a>
@@ -107,7 +107,7 @@ export default function Footer({ settings }) {
 
                         <div>{footer?.footer_text}</div>
 
-                        <div className="mt-4 flex flex-wrap gap-3">
+                        <div className="mt-4 flex flex-wrap gap-3 justify-center md:justify-start">
                             {social.facebook_url && (
                                 <a
                                     href={social.facebook_url}
@@ -164,7 +164,7 @@ export default function Footer({ settings }) {
                             {t("footer.links_title", "Links")}
                         </h4>
 
-                        <ul className="space-y-2 text-sm">
+                        <ul className="space-y-2 text-sm md:text-left text-center">
                             {footerLinks.map((link, i) => (
                                 <li key={i}>
                                     <Link
@@ -195,7 +195,7 @@ export default function Footer({ settings }) {
                             {t("footer.contact_title", "Kontakt")}
                         </h4>
 
-                        <address className="not-italic text-sm space-y-4">
+                        <address className="not-italic text-sm space-y-4 md:text-left text-center">
                             {address && (
                                 <div className="flex items-start">
                                     <FaMapMarkerAlt className="mr-3 mt-1 text-accent shrink-0" />

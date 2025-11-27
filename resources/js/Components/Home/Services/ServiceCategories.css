@@ -118,6 +118,12 @@
   width: 100%;
   background: var(--svc-primary);
 }
+.dark .svc-card-bar{
+    background-color: #2563eb;
+}
+.dark .svc-card-title span:hover{
+    color: #2563eb !important;
+}
 
 
 .svc-card-body {
@@ -170,8 +176,8 @@
 
 .dark .svc-card:hover { border-color: color-mix(in srgb, var(--svc-ink) 40%, transparent); }
 
-.dark .svc-card-title { color: color-mix(in srgb, var(--svc-ink) 88%, #000 12%); }
-.dark .svc-card:hover .svc-card-title { color: color-mix(in srgb, var(--svc-primary) 70%, #fff 30%); }
+
+
 
 .dark .svc-card-desc { color: color-mix(in srgb, var(--svc-ink) 75%, #000 25%); }
 

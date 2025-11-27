@@ -1,60 +1,153 @@
 /* ===========================
-   GENEL & DEĞİŞKENLER (Premium Palette) - AYNEN KORUNDU
+   MODERN & PROFESSIONAL STATIC PAGE DESIGN
+   Premium Quality with Full Dark Mode Support
+   =========================== */
+
+/* ===========================
+   CSS VARIABLES - Light & Dark Mode
    =========================== */
 :root {
-  /* Renkler: Daha sofistike, modern tonlar */
-  --primary-color: #0ea5e9;    /* Sky 500 */
-  --primary-glow: rgba(14, 165, 233, 0.3);
+  /* Primary Colors */
+  --sp-primary: #0ea5e9;
+  --sp-primary-hover: #0284c7;
+  --sp-primary-light: rgba(14, 165, 233, 0.1);
+  --sp-primary-glow: rgba(14, 165, 233, 0.3);
 
-  --text-main: #0f172a;        /* Slate 900 */
-  --text-body: #334155;        /* Slate 700 */
-  --text-muted: #64748b;       /* Slate 500 */
+  /* Text Colors - Light Mode */
+  --sp-text-main: #0f172a;
+  --sp-text-body: #334155;
+  --sp-text-muted: #64748b;
+  --sp-text-inverse: #ffffff;
 
-  --bg-page: #f8fafc;          /* Çok açık gri/mavi zemin */
-  --bg-surface: rgba(255, 255, 255, 0.8); /* Glass effect için yarı saydam */
+  /* Background Colors - Light Mode */
+  --sp-bg-page: #f8fafc;
+  --sp-bg-surface: #ffffff;
+  --sp-bg-surface-glass: rgba(255, 255, 255, 0.85);
+  --sp-bg-card: #ffffff;
+  --sp-bg-overlay: rgba(0, 0, 0, 0.4);
 
-  --border-subtle: rgba(148, 163, 184, 0.2);
-  --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.08);
-  --shadow-glow: 0 20px 50px -10px rgba(14, 165, 233, 0.15);
+  /* Border & Divider */
+  --sp-border: rgba(148, 163, 184, 0.2);
+  --sp-border-strong: rgba(148, 163, 184, 0.3);
+  --sp-divider: rgba(148, 163, 184, 0.15);
 
-  --radius-xl: 24px;
-  --radius-lg: 16px;
+  /* Shadows */
+  --sp-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --sp-shadow-sm: 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+  --sp-shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --sp-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --sp-shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --sp-shadow-glow: 0 20px 50px -10px rgba(14, 165, 233, 0.15);
+  --sp-shadow-primary: 0 10px 30px rgba(14, 165, 233, 0.2);
+
+  /* Border Radius */
+  --sp-radius-xs: 8px;
+  --sp-radius-sm: 12px;
+  --sp-radius-md: 16px;
+  --sp-radius-lg: 20px;
+  --sp-radius-xl: 24px;
+  --sp-radius-2xl: 32px;
+  --sp-radius-full: 9999px;
+
+  /* Spacing */
+  --sp-space-xs: 0.5rem;
+  --sp-space-sm: 1rem;
+  --sp-space-md: 1.5rem;
+  --sp-space-lg: 2rem;
+  --sp-space-xl: 3rem;
+  --sp-space-2xl: 4rem;
+  --sp-space-3xl: 6rem;
+
+  /* Transitions */
+  --sp-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --sp-transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --sp-transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --sp-transition-bounce: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Dark Mode Variables */
+.dark {
+  /* Text Colors - Dark Mode */
+  --sp-text-main: #f8fafc;
+  --sp-text-body: #cbd5e1;
+  --sp-text-muted: #94a3b8;
+  --sp-text-inverse: #0f172a;
+
+  /* Background Colors - Dark Mode */
+  --sp-bg-page: #020617;
+  --sp-bg-surface: #0f172a;
+  --sp-bg-surface-glass: rgba(15, 23, 42, 0.85);
+  --sp-bg-card: #1e293b;
+  --sp-bg-overlay: rgba(0, 0, 0, 0.6);
+
+  /* Border & Divider - Dark Mode */
+  --sp-border: rgba(255, 255, 255, 0.1);
+  --sp-border-strong: rgba(255, 255, 255, 0.15);
+  --sp-divider: rgba(255, 255, 255, 0.08);
+
+  /* Shadows - Dark Mode (daha yumuşak) */
+  --sp-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --sp-shadow-sm: 0 2px 4px -1px rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.2);
+  --sp-shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --sp-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+  --sp-shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  --sp-shadow-glow: 0 20px 50px -10px rgba(14, 165, 233, 0.25);
+  --sp-shadow-primary: 0 10px 30px rgba(14, 165, 233, 0.3);
 }
 
 /* ===========================
-   HERO BÖLÜMÜ (Sadeleştirilmiş & Modern)
+   HERO SECTION - Premium Design
    =========================== */
-
 .sp-hero {
   position: relative;
-  padding: 4rem 0 3rem;
-  /* Sadece düz arka plan rengi kaldı */
-  background-color: var(--bg-page);
+  padding: var(--sp-space-3xl) 0 var(--sp-space-2xl);
+  background: linear-gradient(
+    to bottom,
+    var(--sp-bg-page) 0%,
+    var(--sp-bg-surface) 100%
+  );
   overflow: hidden;
-  /* isolation: isolate; -> Artık gerek yok çünkü pseudo-elementleri kaldırdık */
+  isolation: isolate;
 }
 
-/* --- İPTAL EDİLEN BÖLÜM ---
-   Arka plandaki hareketli gradient şekillerini (::before ve ::after)
-   ve animasyonlarını (spPulse) tamamen kaldırdım.
-*/
+/* Subtle background pattern */
+.sp-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(14, 165, 233, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(14, 165, 233, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
 
-/* Görsel Alanı - Sinematik Banner */
+.dark .sp-hero::before {
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(14, 165, 233, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(14, 165, 233, 0.05) 0%, transparent 50%);
+}
+
+/* Hero Media - Full Width Banner */
 .sp-hero__media {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 1100px;
-  margin: 0 auto 2.5rem;
-  border-radius: var(--radius-xl);
+  margin: 0;
+  border-radius: 0;
   overflow: hidden;
-
-  /* Modern derinlik gölgesi */
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255,255,255,0.5); /* Hafif çerçeve */
-
+  box-shadow: none;
+  border: none;
+  background: var(--sp-bg-surface);
   aspect-ratio: 21 / 9;
-  max-height: 450px;
+  min-height: 400px;
+  max-height: 600px;
+  transition: var(--sp-transition-base);
+}
+
+.sp-hero__media:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 .sp-hero__img {
@@ -63,7 +156,7 @@
   object-fit: cover;
   object-position: center;
   display: block;
-  transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform var(--sp-transition-slow);
 }
 
 .sp-hero__media:hover .sp-hero__img {
@@ -71,175 +164,380 @@
 }
 
 .sp-hero__inner {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
   text-align: center;
   position: relative;
   z-index: 2;
+  padding: 0 var(--sp-space-md);
 }
 
-/* Ekmek Kırıntısı */
+/* Breadcrumbs - Modern Pill Design */
 .sp-crumbs {
   display: inline-flex;
   justify-content: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
+  align-items: center;
+  gap: var(--sp-space-xs);
+  font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text-muted);
-  margin-bottom: 1.5rem;
+  color: var(--sp-text-muted);
+  margin-bottom: var(--sp-space-lg);
+  background: var(--sp-bg-surface-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--sp-radius-full);
+  border: 1px solid var(--sp-border);
+  box-shadow: var(--sp-shadow-sm);
+  transition: var(--sp-transition-base);
+}
 
-  /* Kapsül görünümü - Arka plan sadeleştiği için burayı da biraz sadeleştirdim */
-  background: rgba(255,255,255,0.8);
-  padding: 0.35rem 1rem;
-  border-radius: 99px;
-  border: 1px solid var(--border-subtle);
+.sp-crumbs:hover {
+  border-color: var(--sp-primary);
+  box-shadow: var(--sp-shadow-md);
+  transform: translateY(-2px);
 }
 
 .sp-crumbs ol {
-  display: flex; gap: 0.5rem; list-style: none; padding: 0; margin: 0;
+  display: flex;
+  gap: var(--sp-space-xs);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  align-items: center;
+}
+
+.sp-crumbs__separator {
+  color: var(--sp-text-muted);
+  opacity: 0.5;
+  margin: 0 var(--sp-space-xs);
 }
 
 .sp-crumbs__link {
-  color: var(--text-muted); text-decoration: none; transition: color 0.2s;
+  color: var(--sp-text-muted);
+  text-decoration: none;
+  transition: var(--sp-transition-fast);
+  position: relative;
 }
-.sp-crumbs__link:hover { color: var(--primary-color); }
 
+.sp-crumbs__link::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--sp-primary);
+  transition: width var(--sp-transition-base);
+}
+
+.sp-crumbs__link:hover {
+  color: var(--sp-primary);
+}
+
+.sp-crumbs__link:hover::after {
+  width: 100%;
+}
+
+.sp-crumbs__current {
+  color: var(--sp-text-main);
+  font-weight: 600;
+}
+
+/* Title - Modern Typography */
 .sp-title {
-  font-size: clamp(2.25rem, 5vw, 3.5rem);
-  font-weight: 800;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 900;
   line-height: 1.1;
-  letter-spacing: -0.02em;
-  color: var(--text-main);
-  margin-bottom: 1rem;
+  letter-spacing: -0.03em;
+  color: var(--sp-text-main);
+  margin-bottom: var(--sp-space-md);
+  background: linear-gradient(
+    135deg,
+    var(--sp-text-main) 0%,
+    var(--sp-text-body) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+}
 
-  /* Hafif text gölgesi */
-  text-shadow: 0 2px 10px rgba(0,0,0,0.05);
+.dark .sp-title {
+  background: linear-gradient(
+    135deg,
+    #f8fafc 0%,
+    #cbd5e1 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* ===========================
-   İÇERİK KARTI (Glassmorphism Korundu)
+   CONTENT SECTION - Glassmorphism
    =========================== */
-
 .sp-content {
-  padding: 0 0 5rem;
-  margin-top: -2rem; /* Hero görseline hafif bindirme */
+  padding: 0 0 var(--sp-space-3xl);
+  margin-top: calc(var(--sp-space-xl) * -1);
   position: relative;
   z-index: 2;
+  background: var(--sp-bg-page);
 }
 
 .sp-card {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
+  background: var(--sp-bg-surface-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--sp-border);
+  border-radius: var(--sp-radius-xl);
+  box-shadow: var(--sp-shadow-lg);
+  overflow: hidden;
+  transition: var(--sp-transition-base);
+}
 
-  /* Glass Effect (Buzlu Cam) */
-  background: var(--bg-surface);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: var(--radius-xl);
-
-  /* Yumuşak, geniş gölge */
-  box-shadow: var(--shadow-soft),
-              0 0 0 1px rgba(0,0,0,0.02);
+.sp-card:hover {
+  box-shadow: var(--sp-shadow-xl);
+  border-color: var(--sp-border-strong);
 }
 
 .sp-card__body {
-  padding: 3rem 2.5rem;
+  padding: var(--sp-space-2xl) var(--sp-space-xl);
 }
 
-/* Typography (Okuma Deneyimi) */
+/* Typography - Premium Reading Experience */
 .sp-prose {
-  line-height: 1.85;
-  color: var(--text-body);
-  font-size: 1.1rem; /* Biraz daha büyük, rahat font */
+  line-height: 1.9;
+  color: var(--sp-text-body);
+  font-size: 1.125rem;
+  font-weight: 400;
+  max-width: none;
+  letter-spacing: 0.01em;
+  word-spacing: 0.05em;
+}
+
+.sp-prose > *:first-child {
+  margin-top: 0;
+}
+
+.sp-prose > *:last-child {
+  margin-bottom: 0;
+}
+
+.sp-prose p {
+  margin-bottom: var(--sp-space-lg);
+  line-height: 1.9;
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
 }
 
 .sp-prose h2 {
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 800;
-  color: var(--text-main);
-  margin: 3rem 0 1.25rem;
+  color: var(--sp-text-main);
+  margin: var(--sp-space-2xl) 0 var(--sp-space-md);
   letter-spacing: -0.02em;
+  line-height: 1.3;
+  position: relative;
+  padding-bottom: var(--sp-space-sm);
+  text-align: left;
+}
+
+.sp-prose h2::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--sp-primary), transparent);
+  border-radius: var(--sp-radius-full);
 }
 
 .sp-prose h3 {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: var(--text-main);
-  margin: 2.5rem 0 1rem;
+  color: var(--sp-text-main);
+  margin: var(--sp-space-xl) 0 var(--sp-space-sm);
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  text-align: left;
 }
 
-.sp-prose p { margin-bottom: 1.5rem; }
+.sp-prose h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--sp-text-main);
+  margin: var(--sp-space-lg) 0 var(--sp-space-xs);
+  text-align: left;
+}
+
+.sp-prose strong {
+  font-weight: 600;
+  color: var(--sp-text-main);
+}
+
+.sp-prose em {
+  font-style: italic;
+  color: var(--sp-text-body);
+}
 
 .sp-prose a {
-  color: var(--primary-color);
+  color: var(--sp-primary);
   text-decoration: none;
-  border-bottom: 2px solid rgba(14, 165, 233, 0.2);
-  transition: all 0.2s;
+  border-bottom: 2px solid var(--sp-primary-light);
+  transition: var(--sp-transition-fast);
+  font-weight: 500;
+  position: relative;
 }
+
 .sp-prose a:hover {
-  border-bottom-color: var(--primary-color);
-  background: var(--primary-light);
+  border-bottom-color: var(--sp-primary);
+  background: var(--sp-primary-light);
+  padding: 0 2px;
+  margin: 0 -2px;
+  border-radius: 4px;
+}
+
+.sp-prose ul,
+.sp-prose ol {
+  margin: var(--sp-space-lg) 0;
+  padding-left: var(--sp-space-xl);
+  text-align: left;
+}
+
+.sp-prose li {
+  margin-bottom: var(--sp-space-sm);
+  line-height: 1.8;
+  text-align: left;
+}
+
+.sp-prose ul li::marker {
+  color: var(--sp-primary);
+}
+
+.sp-prose blockquote {
+  margin: var(--sp-space-xl) 0;
+  padding: var(--sp-space-lg) var(--sp-space-xl);
+  border-left: 4px solid var(--sp-primary);
+  background: var(--sp-primary-light);
+  border-radius: var(--sp-radius-md);
+  font-style: italic;
+  color: var(--sp-text-body);
+  text-align: left;
+}
+
+.sp-prose code {
+  background: var(--sp-primary-light);
+  color: var(--sp-primary);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--sp-radius-xs);
+  font-size: 0.9em;
+  font-family: 'Monaco', 'Courier New', monospace;
+}
+
+.sp-prose pre {
+  background: var(--sp-bg-card);
+  border: 1px solid var(--sp-border);
+  border-radius: var(--sp-radius-md);
+  padding: var(--sp-space-lg);
+  overflow-x: auto;
+  margin: var(--sp-space-lg) 0;
+}
+
+.sp-prose pre code {
+  background: transparent;
+  padding: 0;
+  color: var(--sp-text-body);
 }
 
 .sp-prose img {
-  border-radius: var(--radius-lg);
-  margin: 2.5rem 0;
+  border-radius: var(--sp-radius-lg);
+  margin: var(--sp-space-xl) 0;
   width: 100%;
   height: auto;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  box-shadow: var(--sp-shadow-lg);
+  border: 1px solid var(--sp-border);
+  transition: var(--sp-transition-base);
+}
+
+.sp-prose img:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--sp-shadow-xl);
+}
+
+.sp-prose hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--sp-border),
+    transparent
+  );
+  margin: var(--sp-space-2xl) 0;
 }
 
 /* ===========================
-   FAQ (Modern Akordeon) - AYNEN KORUNDU
+   FAQ SECTION - Modern Accordion
    =========================== */
-
 .sp-faq-section {
-  padding: 5rem 0;
-  /* Arka planı biraz daha sadeleştirdim */
-  background: var(--bg-page);
-  border-top: 1px solid var(--border-subtle);
+  padding: var(--sp-space-3xl) 0;
+  background: linear-gradient(
+    to bottom,
+    var(--sp-bg-page) 0%,
+    var(--sp-bg-surface) 100%
+  );
+  border-top: 1px solid var(--sp-divider);
+  position: relative;
 }
 
 .sp-faq {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 var(--sp-space-md);
 }
 
 .sp-faq__title {
-  font-size: 2.25rem;
-  font-weight: 800;
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-weight: 900;
   text-align: center;
-  color: var(--text-main);
-  margin-bottom: 3rem;
+  color: var(--sp-text-main);
+  margin-bottom: var(--sp-space-2xl);
   letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .sp-faq__list {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: var(--sp-space-md);
 }
 
 .sp-faq__item {
-  background: #ffffff;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
+  background: var(--sp-bg-surface);
+  border: 1px solid var(--sp-border);
+  border-radius: var(--sp-radius-lg);
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: var(--sp-transition-base);
+  box-shadow: var(--sp-shadow-sm);
 }
 
 .sp-faq__item:hover {
-  border-color: rgba(14, 165, 233, 0.4);
+  border-color: var(--sp-primary);
+  box-shadow: var(--sp-shadow-md);
   transform: translateY(-2px);
 }
 
 .sp-faq__item[open] {
-  border-color: var(--primary-color);
-  box-shadow: 0 10px 30px rgba(14, 165, 233, 0.1);
+  border-color: var(--sp-primary);
+  box-shadow: var(--sp-shadow-primary);
   transform: translateY(-4px);
+  background: var(--sp-bg-surface);
 }
 
 .sp-faq__question {
@@ -248,83 +546,351 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.25rem 1.5rem;
+  padding: var(--sp-space-lg) var(--sp-space-xl);
   font-weight: 600;
-  color: var(--text-main);
-  font-size: 1.1rem;
+  color: var(--sp-text-main);
+  font-size: 1.125rem;
   background: transparent;
+  transition: var(--sp-transition-base);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.sp-faq__question::-webkit-details-marker { display: none; }
+.sp-faq__question:hover {
+  color: var(--sp-primary);
+  background: var(--sp-primary-light);
+}
 
-/* Ok İkonu (Animasyonlu) */
+.sp-faq__item[open] .sp-faq__question {
+  color: var(--sp-primary);
+  background: var(--sp-primary-light);
+}
+
+.sp-faq__question::-webkit-details-marker {
+  display: none;
+}
+
+/* Icon Animation */
 .sp-faq__question::after {
   content: "+";
-  font-size: 1.5rem;
-  font-weight: 400;
-  color: var(--text-muted);
-  transition: transform 0.3s ease, color 0.3s ease;
+  font-size: 1.75rem;
+  font-weight: 300;
+  color: var(--sp-text-muted);
+  transition: var(--sp-transition-base);
   line-height: 1;
+  flex-shrink: 0;
+  margin-left: var(--sp-space-md);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--sp-radius-full);
+  background: var(--sp-primary-light);
 }
 
 .sp-faq__item[open] .sp-faq__question::after {
-  transform: rotate(45deg); /* Artıdan çarpıya dönüş */
-  color: var(--primary-color);
+  transform: rotate(45deg);
+  color: var(--sp-primary);
+  background: var(--sp-primary);
+  color: white;
 }
 
 .sp-faq__answer {
-  padding: 0 1.5rem 1.5rem;
-  color: var(--text-body);
+  padding: 0 var(--sp-space-xl) var(--sp-space-xl);
+  color: var(--sp-text-body);
   font-size: 1rem;
-  line-height: 1.7;
-  border-top: 1px solid transparent;
-  animation: faqSlideDown 0.3s ease;
+  line-height: 1.75;
+  animation: faqSlideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes faqSlideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ===========================
-   RESPONSIVE - AYNEN KORUNDU
+   RESPONSIVE DESIGN
    =========================== */
-
-@media (max-width: 768px) {
-  .sp-hero__media {
-      border-radius: 12px;
-      aspect-ratio: 16 / 9;
-      max-height: 300px;
+@media (max-width: 1024px) {
+  .sp-hero {
+    padding: var(--sp-space-2xl) 0 var(--sp-space-xl);
   }
 
-  .sp-card__body { padding: 2rem 1.5rem; }
+  .sp-hero__media {
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+    aspect-ratio: 16 / 9;
+    min-height: 350px;
+    max-height: 450px;
+  }
 
-  .sp-title { font-size: 2rem; }
-  .sp-faq__title { font-size: 1.75rem; }
+  .sp-card__body {
+    padding: var(--sp-space-xl) var(--sp-space-lg);
+  }
+
+  .sp-prose {
+    font-size: 1.0625rem;
+  }
+
+  .sp-prose h2 {
+    font-size: 1.75rem;
+  }
+
+  .sp-prose h3 {
+    font-size: 1.375rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .sp-hero {
+    padding: var(--sp-space-xl) 0 var(--sp-space-lg);
+  }
+
+  .sp-hero__media {
+    border-radius: 0;
+    aspect-ratio: 16 / 9;
+    min-height: 250px;
+    max-height: 350px;
+    margin-bottom: var(--sp-space-md);
+  }
+
+  .sp-hero__inner {
+    padding: 0 var(--sp-space-sm);
+  }
+
+  .sp-crumbs {
+    font-size: 0.8125rem;
+    padding: 0.4rem 1rem;
+    margin-bottom: var(--sp-space-md);
+  }
+
+  .sp-title {
+    font-size: 2rem;
+    margin-bottom: var(--sp-space-sm);
+  }
+
+  .sp-content {
+    margin-top: calc(var(--sp-space-lg) * -1);
+    padding-bottom: var(--sp-space-2xl);
+  }
+
+  .sp-card {
+    border-radius: var(--sp-radius-lg);
+    margin: 0 var(--sp-space-sm);
+  }
+
+  .sp-card__body {
+    padding: var(--sp-space-lg) var(--sp-space-md);
+  }
+
+  .sp-prose {
+    font-size: 1rem;
+  }
+
+  .sp-prose h2 {
+    font-size: 1.5rem;
+    margin: var(--sp-space-xl) 0 var(--sp-space-sm);
+  }
+
+  .sp-prose h3 {
+    font-size: 1.25rem;
+    margin: var(--sp-space-lg) 0 var(--sp-space-xs);
+  }
+
+  .sp-prose p {
+    margin-bottom: var(--sp-space-md);
+  }
+
+  .sp-prose ul,
+  .sp-prose ol {
+    padding-left: var(--sp-space-lg);
+  }
+
+  .sp-faq-section {
+    padding: var(--sp-space-2xl) 0;
+  }
+
+  .sp-faq {
+    padding: 0 var(--sp-space-sm);
+  }
+
+  .sp-faq__title {
+    font-size: 1.75rem;
+    margin-bottom: var(--sp-space-xl);
+  }
+
+  .sp-faq__list {
+    gap: var(--sp-space-sm);
+  }
+
+  .sp-faq__question {
+    padding: var(--sp-space-md) var(--sp-space-lg);
+    font-size: 1rem;
+  }
+
+  .sp-faq__answer {
+    padding: 0 var(--sp-space-lg) var(--sp-space-lg);
+    font-size: 0.9375rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sp-hero__media {
+    min-height: 200px;
+    max-height: 280px;
+    border-radius: 0;
+  }
+
+  .sp-prose {
+    text-align: left;
+  }
+
+  .sp-prose p {
+    text-align: left;
+    hyphens: none;
+    -webkit-hyphens: none;
+    -ms-hyphens: none;
+  }
+
+  .sp-card {
+    margin: 0 var(--sp-space-xs);
+    border-radius: var(--sp-radius-md);
+  }
+
+  .sp-card__body {
+    padding: var(--sp-space-md) var(--sp-space-sm);
+  }
+
+  .sp-title {
+    font-size: 1.75rem;
+  }
+
+  .sp-faq__title {
+    font-size: 1.5rem;
+  }
 }
 
 /* ===========================
-   DARK MODE UYUMU - AYNEN KORUNDU
+   DARK MODE ENHANCEMENTS
    =========================== */
-.dark .sp-hero,
+.dark .sp-hero {
+  background: linear-gradient(
+    to bottom,
+    #020617 0%,
+    #0f172a 100%
+  );
+}
+
+.dark .sp-content {
+  background: #020617;
+}
+
 .dark .sp-faq-section {
-    background-color: #020617; /* Slate 950 */
+  background: linear-gradient(
+    to bottom,
+    #0f172a 0%,
+    #020617 100%
+  );
 }
+
 .dark .sp-card {
-    background: rgba(15, 23, 42, 0.6);
-    border-color: rgba(255,255,255,0.1);
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(255, 255, 255, 0.1);
 }
-.dark .sp-title,
-.dark .sp-faq__title,
-.dark .sp-faq__question {
-    color: #f8fafc;
+
+.dark .sp-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(15, 23, 42, 0.95);
 }
-.dark .sp-prose { color: #cbd5e1; }
-.dark .sp-prose h2, .dark .sp-prose h3 { color: #f1f5f9; }
+
+.dark .sp-crumbs {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .sp-crumbs:hover {
+  border-color: var(--sp-primary);
+  background: rgba(15, 23, 42, 0.95);
+}
+
 .dark .sp-faq__item {
-    background: #0f172a;
-    border-color: rgba(255,255,255,0.05);
+  background: #1e293b;
+  border-color: rgba(255, 255, 255, 0.1);
 }
+
+.dark .sp-faq__item:hover {
+  border-color: rgba(14, 165, 233, 0.4);
+  background: #1e293b;
+}
+
 .dark .sp-faq__item[open] {
-    border-color: var(--primary-color);
+  border-color: var(--sp-primary);
+  background: #1e293b;
+  box-shadow: var(--sp-shadow-primary);
+}
+
+.dark .sp-prose blockquote {
+  background: rgba(14, 165, 233, 0.15);
+  border-left-color: var(--sp-primary);
+}
+
+.dark .sp-prose code {
+  background: rgba(14, 165, 233, 0.2);
+  color: #38bdf8;
+}
+
+.dark .sp-prose pre {
+  background: #0f172a;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .sp-prose img {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ===========================
+   ACCESSIBILITY & ANIMATIONS
+   =========================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus states for accessibility */
+.sp-crumbs__link:focus-visible,
+.sp-prose a:focus-visible,
+.sp-faq__question:focus-visible {
+  outline: 2px solid var(--sp-primary);
+  outline-offset: 2px;
+  border-radius: var(--sp-radius-xs);
+}
+
+/* Print styles */
+@media print {
+  .sp-hero__media,
+  .sp-crumbs {
+    display: none;
+  }
+
+  .sp-card {
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+
+  .sp-faq__item[open] {
+    break-inside: avoid;
+  }
 }

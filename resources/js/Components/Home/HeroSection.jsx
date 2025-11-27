@@ -1,44 +1,41 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { usePage } from "@inertiajs/react";
 import SafeHtml from "../Common/SafeHtml";
 import { useSliders } from "@/hooks/useSliders";
 import { useLocale } from "@/hooks/useLocale";
 
-const FALLBACK_POSTER_IMAGE = null;
-const FALLBACK_VIDEO_URL = null;
+const container = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: { staggerChildren: 0.15, delayChildren: 0.15 },
+    },
+};
 
-const LIVE_BASE_URL = "https://omerdogan.de";
-
-const getAbsoluteUrl = (url) => {
-    if (!url) return url;
-
-    // Eğer URL zaten tam (http/https ile) başlıyorsa dokunma
-    if (url.startsWith("http")) return url;
-
-    // Video ve görsel assetleri için her zaman canlı adresi kullan
-    const baseUrl = LIVE_BASE_URL;
-
-    // Yolu temizle: URL başındaki slash'ı kaldır
-    const cleanedUrl = url.replace(/^\/+/, "");
-
-    // Geriye kalan tek slash ile birleştir
-    return `${baseUrl}/${cleanedUrl}`;
+const item = {
+    hidden: { opacity: 0, y: 14 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
 export default function HeroSection({ content = {} }) {
     const { t, i18n } = useTranslation();
     const { props } = usePage();
+
     const [isMounted, setIsMounted] = useState(false);
-    useEffect(() => setIsMounted(true), []);
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const tenantId =
         props?.global?.tenantId ||
         props?.global?.tenant_id ||
-        props?.global?.tenantId ||
+        props?.global?.talentId ||
         "";
 
     const locale = useLocale("de");
+
     const backendLocale = props?.locale || locale || "de";
 
     useEffect(() => {
@@ -47,135 +44,136 @@ export default function HeroSection({ content = {} }) {
         }
     }, [isMounted, backendLocale, i18n]);
 
-    const { sliders, loading: slidersLoading } = useSliders({
-        tenantId,
-        locale,
-    });
+    const { sliders } = useSliders({ tenantId, locale });
+
     const primarySlide = sliders && sliders.length ? sliders[0] : null;
 
-    const heroTitleHtml =
-        primarySlide?.title ||
-        t("hero.title", "İhtiyaçlarınızı karşılayan güvenilir ortağınız");
-    const heroSubtitleHtml =
-        primarySlide?.description ||
-        t(
-            "hero.subtitle",
-            "25 yılı aşkın deneyimimizle temizlik, bakım ve bakım-onarım için size özel, entegre çözümler sunuyoruz."
-        );
+    const [useFallbackVideo, setUseFallbackVideo] = useState(false);
 
-    const primaryCtaLabel =
-        primarySlide?.button_text ||
-        t("hero.button_services", "Hizmetlerimizi keşfet");
-    const primaryCtaHref = primarySlide?.button_link || "#services";
-    const secondaryCtaLabel = t("hero.button_contact", "Şimdi iletişime geç");
-    const secondaryCtaHref = "#contact";
+    const heroTitleHtml = useMemo(() => {
+        return t("hero.title", "");
+    }, [t]);
 
-    const poster = primarySlide?.poster_image || primarySlide?.image || null;
+    const heroSubtitleHtml = useMemo(() => {
+        return t("hero.subtitle", "");
+    }, [t]);
 
-    const rawVideoUrl = primarySlide?.video_url || primarySlide?.raw?.video_url;
-    const videoUrl = rawVideoUrl ? getAbsoluteUrl(rawVideoUrl) : null;
+    const primaryCtaLabel = useMemo(() => {
+        return t("hero.button_services", "");
+    }, [t]);
 
-    const slideType = primarySlide?.raw?.type || primarySlide?.type;
-    const isVideoType = slideType === "video";
+    const secondaryCtaLabel = useMemo(() => {
+        return t("hero.button_contact", "");
+    }, [t]);
 
-    const hasSlideVideo = !!videoUrl && isVideoType;
-    const hasSlideImage = !!primarySlide?.image && !hasSlideVideo;
+    const primaryCtaHref =
+        primarySlide?.button_link ||
+        primarySlide?.buttonUrl ||
+        content.hero_primary_cta_href ||
+        "#services";
 
-    // 💡 BACKGROUND MEDIA RENDER FONKSİYONU
-    const renderBackgroundMedia = () => {
-        // API verisi yüklenene kadar Sunucunun gördüğüyle aynı kalması için:
-        if (slidersLoading) return null;
+    const secondaryCtaHref = content.hero_secondary_cta_href || "#contact";
 
-        if (hasSlideImage) {
-            return (
-                <img
-                    key="img"
-                    src={primarySlide.image}
-                    alt="Hero Background"
-                    className="absolute inset-0 w-full h-full object-cover"
-                    style={{ pointerEvents: "none" }}
-                />
-            );
-        }
-
-        if (hasSlideVideo) {
-            const handleVideoError = (e) => {
-                console.error(
-                    "❌ VİDEO YÜKLEME HATASI:",
-                    e.target.error.code,
-                    e.target.error.message
-                );
-            };
-
-            return (
-                <video
-                    key="video"
-                    autoPlay
-                    loop
-                    muted
-                    poster={poster}
-                    playsInline
-                    preload="auto"
-                    className="absolute inset-0 w-full h-full object-cover"
-                    style={{ pointerEvents: "none" }}
-                    onError={handleVideoError}
-                >
-                    <source src={videoUrl} type="video/mp4" />
-                    Tarayıcınız video etiketini desteklemiyor.
-                </video>
-            );
-        }
-
-        return null;
-    };
+    const hasSlideImage = !!primarySlide?.image && !useFallbackVideo;
+    const hasSlideVideo = !!primarySlide?.video_url && !useFallbackVideo;
 
     return (
         <section
             id="top"
-            className="relative min-h-[70svh] md:min-h-[600px] lg:min-h-[720px]
-             flex items-center justify-center text-white px-4 py-16 sm:py-20 overflow-hidden"
+            className="relative min-h-[70svh] md:min-h-[600px] lg:min-h-[720px] overflow-hidden flex items-center justify-center text-white px-4 py-16 sm:py-20"
+            aria-labelledby="hero-heading"
         >
-            {/* ⭐️ HYDRATION FIX: BACKGROUND MEDIA WRAPPER ⭐️
-               Sunucuda (SSR) her zaman render edilen ilk DIV.
-               Bu DIV, içeriğini (renderBackgroundMedia) sadece client tarafında (CSR) yüklenince gösterir.
-            */}
-            <div className="absolute inset-0 w-full h-full overflow-hidden">
-                {/* RenderBackgroundMedia, slidersLoading TRUE iken NULL döndüğü için,
-                   SSR'da bu DIV boş kalır. CSR'da veri gelince <video> veya <img> ile dolar.
-                   Bu, Section'ın ilk çocuğunun yapısını bozmaz.
-                */}
-                {renderBackgroundMedia()}
-            </div>
+            {hasSlideImage ? (
+                <motion.img
+                    src={primarySlide.image}
+                    alt={typeof heroTitleHtml === "string" ? heroTitleHtml : ""}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    style={{ pointerEvents: "none" }}
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 1.1, ease: "easeOut" }}
+                    onError={() => setUseFallbackVideo(true)}
+                />
+            ) : hasSlideVideo ? (
+                <motion.iframe
+                    src={primarySlide.video_url}
+                    title="Hero Video"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    loading="lazy"
+                    style={{ pointerEvents: "none", border: "none" }}
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 1.1, ease: "easeOut" }}
+                    onError={() => setUseFallbackVideo(true)}
+                />
+            ) : (
+                <motion.video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="metadata"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    style={{ pointerEvents: "none" }}
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 1.1, ease: "easeOut" }}
+                >
+                    <source src="/videos/headerVideo.mp4" type="video/mp4" />
+                    Ihr Browser unterstützt das Video-Tag nicht.
+                </motion.video>
+            )}
 
-            {/* Arka Plan Gradient Kaplaması (2. çocuk öğesi) */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70 md:from-black/50 md:via-black/40 md:to-black/50" />
+            <motion.div
+                className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70 md:from-black/50 md:via-black/40 md:to-black/50"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+            />
 
-            {/* İçerik (3. çocuk öğesi) */}
-            <div className="relative z-10 text-center">
-                <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold">
+            <motion.div
+                className="relative z-10 text-center"
+                variants={container}
+                initial="hidden"
+                animate="show"
+            >
+                <motion.h1
+                    id="hero-heading"
+                    className="text-3xl text-white sm:text-4xl md:text-6xl font-extrabold leading-tight"
+                    variants={item}
+                >
                     <SafeHtml html={heroTitleHtml} />
-                </h1>
+                </motion.h1>
 
-                <div className="mt-4 text-base sm:text-lg md:text-2xl max-w-3xl mx-auto">
-                    {/* ⚠️ NOTE: SafeHtml varsayılanı 'span' olarak ayarlandıysa (SafeHtml.jsx'te), burası güvenlidir. */}
+                <motion.div
+                    className="mt-3 sm:mt-4 text-base sm:text-lg md:text-2xl font-light max-w-[28rem] sm:max-w-2xl md:max-w-3xl mx-auto"
+                    variants={item}
+                >
                     <SafeHtml html={heroSubtitleHtml} />
-                </div>
+                </motion.div>
 
-                <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+                <motion.div
+                    className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4"
+                    variants={item}
+                >
                     <a
                         href={primaryCtaHref}
-                        className="px-8 py-3 bg-button text-gray-900 rounded-full font-bold"
+                        className="w-full sm:w-auto bg-button text-gray-900 font-bold py-3 px-6 sm:px-8 rounded-full hover:bg-button transition duration-300"
+                        suppressHydrationWarning={true}
                     >
                         {primaryCtaLabel}
                     </a>
+
                     <a
                         href={secondaryCtaHref}
-                        className="px-8 py-3 border-2 border-white rounded-full font-bold hover:bg-white hover:text-gray-900"
+                        className="w-full sm:w-auto bg-transparent border-2 border-white text-white font-bold py-3 px-6 sm:px-8 rounded-full hover:bg-white hover:text-gray-900 transition duration-300"
+                        suppressHydrationWarning={true}
                     >
                         {secondaryCtaLabel}
                     </a>
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
         </section>
     );
 }

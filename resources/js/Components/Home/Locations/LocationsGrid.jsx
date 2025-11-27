@@ -1,6 +1,6 @@
 import React from "react";
 import { Head, usePage } from "@inertiajs/react";
-import { motion } from "framer-motion"; // motion import'u eklendi
+import { motion } from "framer-motion";
 import "../../../../css/LocationsGrid.css";
 import { useTranslation } from "react-i18next";
 import GermanyMap from "./GermanyMap";
@@ -80,16 +80,6 @@ export default function LocationsGrid() {
                 />
             </Head>
 
-            {durationMs && (
-                <p style={{ fontSize: 12, textAlign: "center", color: "#777" }}>
-                    ⏱ {Math.round(durationMs)} ms
-                </p>
-            )}
-
-            {error && (
-                <p style={{ textAlign: "center", color: "red" }}>❌ {error}</p>
-            )}
-
             <motion.div
                 className="locations-container"
                 variants={containerVariants}
@@ -115,25 +105,32 @@ export default function LocationsGrid() {
 
                 <motion.div
                     className="locations-grid"
-                    variants={containerVariants}
                     initial="hidden"
                     animate="show"
+                    variants={containerVariants}
                 >
-                    {loading && <p>📍 Standorte werden geladen…</p>}
+                    {loading && <p></p>}
 
-                    {!loading && !sortedItems.length && (
-                        <p>⛔ Noch keine Standorte vorhanden.</p>
-                    )}
+                    {!loading && !sortedItems.length && <p></p>}
 
-                    {sortedItems.map((loc) => (
-                        <motion.div key={loc.id} variants={itemVariants}>
-                            <LocationCard
-                                location={loc}
-                                isActive={activeLocation === loc.id}
-                                onHover={() => setActiveLocation(loc.id)}
-                            />
-                        </motion.div>
-                    ))}
+                    {!loading &&
+                        sortedItems.map((loc, index) => (
+                            <motion.div
+                                key={loc.id}
+                                variants={itemVariants}
+                                custom={index > 7 ? 7 : index}
+                                transition={{
+                                    duration: 0.35,
+                                    ease: "easeOut",
+                                }}
+                            >
+                                <LocationCard
+                                    location={loc}
+                                    isActive={activeLocation === loc.id}
+                                    onHover={() => setActiveLocation(loc.id)}
+                                />
+                            </motion.div>
+                        ))}
                 </motion.div>
             </motion.div>
         </section>

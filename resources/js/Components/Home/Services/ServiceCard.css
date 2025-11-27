@@ -34,7 +34,10 @@
 /* =========================================
    SERVICE CARD - ULTRA MODERN + PANEL THEME
    ========================================= */
-
+.service-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: var(--service-card-shadow-hover);
+}
 .service-card {
   position: relative;
   display: flex;
@@ -63,10 +66,22 @@
   pointer-events: none;
   transition: opacity .35s ease;
 }
+.dark .service-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid #2563eb;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .35s ease;
+}
 
-.service-card:hover {
-  transform: translateY(-10px) scale(1.02);
-  box-shadow: var(--service-card-shadow-hover);
+
+
+.dark .service-card:hover {
+
+  box-shadow: #2563eb  !important;
 }
 
 .service-card:hover::after {
@@ -154,6 +169,10 @@
 .service-card:hover .service-card__title {
   color: var(--service-card-accent);
 }
+.dark
+.service-card:hover .service-card__title {
+  color: #2563eb;
+}
 
 /* ============ CTA BUTTON ============ */
 
@@ -180,9 +199,14 @@
   background: var(--service-card-accent-hover);
   transition: width .3s ease;
 }
-
+.dark .service-card__button{
+    color: #3b82f6!important;
+}
 .service-card:hover .service-card__button {
   color: var(--service-card-accent-hover);
+}
+.dark .service-card:hover .service-card__button {
+ color: #3b82f6!important;
 }
 
 .service-card:hover .service-card__button::after {
@@ -213,4 +237,40 @@
   .service-card__content {
     padding: 1.25rem;
   }
+}
+/* =========================================
+   PROGRESSIVE IMAGE (BLUR-UP)
+   ========================================= */
+
+.service-card__image-wrapper {
+  width: 100%;
+  aspect-ratio: 16/10;
+  position: relative;
+  overflow: hidden;
+  background: #eef1f5; /* Loading state */
+}
+
+.service-card__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.08);
+  filter: blur(14px);
+  transition: opacity .55s ease-out, filter .55s ease-out, transform .55s ease-out;
+}
+
+/* Loaded state */
+.service-card__image.is-loaded {
+  opacity: 1;
+  filter: blur(0);
+  transform: scale(1);
+}
+
+/* Hover zoom */
+.service-card:hover .service-card__image.is-loaded {
+  transform: scale(1.12);
+  filter: brightness(1.1) saturate(1.15);
 }

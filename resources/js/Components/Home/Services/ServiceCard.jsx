@@ -56,8 +56,6 @@ const ServiceCard = ({
     const effectiveSlug = slug || "";
     const href = buildHref({ link, slug: effectiveSlug });
 
-
-
     const plainTitle = useMemo(
         () =>
             stripHtml(displayTitle) ||
@@ -80,12 +78,7 @@ const ServiceCard = ({
     );
 
     return (
-        <Link
-            href={href}
-            className="service-card group"
-            aria-label={ariaLabel}
-          
-        >
+        <Link href={href} className="service-card group" aria-label={ariaLabel}>
             <div className="service-card__image-wrapper">
                 {!isLoaded && image && (
                     <div className="service-card__skeleton" aria-hidden />

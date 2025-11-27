@@ -9,6 +9,7 @@ import DOMPurify from "isomorphic-dompurify";
 import { useTranslation } from "react-i18next";
 
 import { fetchPageBySlug } from "@/services/pageService";
+import Loading from "@/Components/Common/Loading";
 
 /* -------------------------------------------------------------------------- */
 /* helpers                                                                    */
@@ -366,14 +367,7 @@ export default function StaticPage({
                 <div className="container">
                     <article className="sp-card sp-fadeup">
                         <div className="sp-card__body">
-                            {loading && (
-                                <p
-                                    className="sp-muted"
-                                    suppressHydrationWarning={true}
-                                >
-                                    Seite wird geladen…
-                                </p>
-                            )}
+                            {loading && <Loading />}
 
                             {error && !loading && (
                                 <p

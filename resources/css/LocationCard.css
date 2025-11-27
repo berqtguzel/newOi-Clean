@@ -24,11 +24,7 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-
-  background: linear-gradient(135deg, var(--service-card-accent), transparent);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box,
-                linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
+ border: 2px solid var(--service-card-accent);
   mask-composite: exclude;
   opacity: 0;
   transition: opacity .35s ease;
@@ -40,6 +36,11 @@
   transform: translateY(-12px) scale(1.02);
   box-shadow: var(--service-card-shadow-hover);
   border-color: var(--service-card-accent);
+}
+.dark .location-card:hover {
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: #2563eb;
+  border-color:#2563eb;
 }
 
 .location-card:hover::before {
@@ -141,6 +142,9 @@
 .location-card:hover .location-card-title {
   color: var(--service-card-accent);
 }
+.dark .location-card:hover .location-card-title {
+  color: #2563eb;
+}
 
 /* =====================================
    BUTTON -> IDENTICAL STYLE
@@ -161,6 +165,11 @@
   transition: all .3s cubic-bezier(.4,0,.2,1);
   position: relative;
 }
+.dark .location-card-button {
+
+  color: #2563eb;
+
+}
 
 .location-card-button::after {
   content: "";
@@ -169,6 +178,11 @@
   width:0; height:2px;
   background: var(--service-card-accent);
   transition: width .3s;
+}
+.dark .location-card-button::after {
+
+  background: #2563eb;
+
 }
 
 .location-card:hover .location-card-button {
@@ -201,4 +215,9 @@
 
 @media(prefers-reduced-motion:reduce){
   * { transition:none !important; animation:none !important; }
+}
+.dark .location-card::before {
+
+  border: 2px solid #2563eb;
+
 }

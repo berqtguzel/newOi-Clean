@@ -85,7 +85,7 @@
     height: 44px;
     border-radius: 12px;
     background: rgba(0, 0, 0, 0.04);
-    color: var(--site-primary-color, #0ea5e9);
+    color: var(--button-color, #0ea5e9);
     display: flex;
     align-items: center;
     justify-content: center;

@@ -243,17 +243,16 @@ const LanguageSwitcher = ({ currentLang, languages, onChange }) => {
 const HeaderInner = ({ currentRoute, settings: propSettings }) => {
     const { i18n, t } = useTranslation();
     const { props } = usePage();
-
-    // Bu state artık sadece client'ta anlamlı, SSR yok
-    const [isMounted, setIsMounted] = useState(false);
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
-
-    // Host
+    const [isClient, setIsClient] = useState(false);
+    // Host - SSR safe
     const [currentHost, setCurrentHost] = useState("");
     useEffect(() => {
-        setCurrentHost(window.location.hostname);
+        setIsClient(true);
+    }, []);
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            setCurrentHost(window.location.hostname);
+        }
     }, []);
 
     const tenantId =
@@ -315,9 +314,7 @@ const HeaderInner = ({ currentRoute, settings: propSettings }) => {
         "+49 (0)36874 38 55 67";
 
     const topbarTagline =
-        currentSite?.content?.topbarTagline ||
-        settings?.branding?.topbar_tagline ||
-        settings?.general?.topbar_tagline ||
+        t("header.topbar_tagline") ||
         "Sauberkeit, auf die Sie sich verlassen können — 24/7 Service";
 
     const siteLogos = useMemo(() => {
@@ -440,6 +437,7 @@ const HeaderInner = ({ currentRoute, settings: propSettings }) => {
         });
     };
 
+    // 🔥 SSR-safe: socialLinks başlangıçta null, server ve client'ta aynı
     const [socialLinks, setSocialLinks] = useState(null);
     useEffect(() => {
         const fetchSocials = async () => {
@@ -518,9 +516,13 @@ const HeaderInner = ({ currentRoute, settings: propSettings }) => {
                           dropdown: toDropdown(node.children),
                       }
                     : {}),
-                isActive: () =>
-                    window.location.pathname.replace(/\/+$/, "") ===
-                    (url || "").replace(/\/+$/, ""),
+                isActive: () => {
+                    if (typeof window === "undefined") return false;
+                    return (
+                        window.location.pathname.replace(/\/+$/, "") ===
+                        (url || "").replace(/\/+$/, "")
+                    );
+                },
             };
         });
     }, [menusResponse, currentLang]);
@@ -534,14 +536,20 @@ const HeaderInner = ({ currentRoute, settings: propSettings }) => {
                 name: homeLabel,
                 route: "home",
                 url: "/",
-                isActive: () =>
-                    window.location.pathname.replace(/\/+$/, "") === "/",
+                isActive: () => {
+                    if (typeof window === "undefined") return false;
+                    return window.location.pathname.replace(/\/+$/, "") === "/";
+                },
             },
         ];
     }, [remoteNavItems, menuLoading]);
 
-    const currentPath = window.location.pathname.replace(/\/+$/, "");
+    const currentPath =
+        typeof window !== "undefined"
+            ? window.location.pathname.replace(/\/+$/, "")
+            : "";
     const isPathActive = (urlOrList) => {
+        if (typeof window === "undefined") return false;
         const list = Array.isArray(urlOrList) ? urlOrList : [urlOrList];
         return list.some((u) => u && currentPath === u.replace(/\/+$/, ""));
     };
@@ -635,6 +643,7 @@ const HeaderInner = ({ currentRoute, settings: propSettings }) => {
                 e.preventDefault();
                 const [path, hashOnly] = raw.split("#");
                 const hash = `#${hashOnly}`;
+                if (typeof window === "undefined") return;
                 const current = window.location.pathname.replace(/\/+$/, "");
                 const target = path.replace(/\/+$/, "");
                 if (current === target) {
@@ -669,7 +678,10 @@ const HeaderInner = ({ currentRoute, settings: propSettings }) => {
 
     return (
         <>
-            <header ref={headerRef} className="fixed top-0 left-0 w-full z-50">
+            <header
+                ref={headerRef}
+                className="site-header fixed top-0 left-0 w-full z-50"
+            >
                 <div className="topbar">
                     <div className="container">
                         <div className="topbar__inner">
@@ -702,31 +714,23 @@ const HeaderInner = ({ currentRoute, settings: propSettings }) => {
                                     className="social-icons"
                                     style={{ display: "flex", gap: "10px" }}
                                 >
-                                    {socialLinks &&
-                                        socialMapping.map((item) => {
-                                            const link = socialLinks[item.key];
-                                            if (link && link.trim() !== "") {
-                                                return (
-                                                    <a
-                                                        key={item.key}
-                                                        href={link}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        aria-label={item.label}
-                                                        style={{
-                                                            color: "inherit",
-                                                            fontSize: "1.1em",
-                                                            display: "flex",
-                                                            alignItems:
-                                                                "center",
-                                                        }}
-                                                    >
-                                                        {item.icon}
-                                                    </a>
-                                                );
-                                            }
-                                            return null;
-                                        })}
+                                    {isClient && socialLinks
+                                        ? socialMapping.map((item) => {
+                                              const link =
+                                                  socialLinks[item.key];
+                                              if (!link) return null;
+                                              return (
+                                                  <a
+                                                      key={item.key}
+                                                      href={link}
+                                                      target="_blank"
+                                                      rel="noopener noreferrer"
+                                                  >
+                                                      {item.icon}
+                                                  </a>
+                                              );
+                                          })
+                                        : null}
                                 </div>
                             </div>
                         </div>
@@ -767,11 +771,15 @@ const HeaderInner = ({ currentRoute, settings: propSettings }) => {
                                     "Hauptnavigation"
                                 )}
                             >
-                                {menuLoading && (
-                                    <div className="nav__item">
-                                        <span className="nav__link" />
-                                    </div>
-                                )}
+                                {/* SSR-safe: Her zaman aynı yapıyı render et - loading ve error için boş div */}
+                                <div
+                                    style={{
+                                        display: menuLoading ? "block" : "none",
+                                    }}
+                                    className="nav__item"
+                                >
+                                    <span className="nav__link" />
+                                </div>
                                 {menuErrorText && (
                                     <div className="nav__item">
                                         <span className="nav__link">
@@ -779,226 +787,236 @@ const HeaderInner = ({ currentRoute, settings: propSettings }) => {
                                         </span>
                                     </div>
                                 )}
-                                {navItems.map((item) => {
-                                    const isActive =
-                                        typeof item.isActive === "function"
-                                            ? item.isActive()
-                                            : currentRoute === item.route;
-                                    const hasDropdown =
-                                        !!item.dropdown || !!item.mega;
-                                    const dropdownKey =
-                                        item.dropdownKey || item.route;
-                                    const isOpen = openDropdown === dropdownKey;
-                                    return (
-                                        <div
-                                            key={item.route}
-                                            className={cx(
-                                                "nav__item",
-                                                isActive && "is-active"
-                                            )}
-                                            onMouseEnter={() =>
-                                                hasDropdown &&
-                                                openDrop(dropdownKey)
-                                            }
-                                            onMouseLeave={() =>
-                                                hasDropdown &&
-                                                scheduleCloseDrop()
-                                            }
-                                        >
-                                            <a
-                                                href={item.url}
+                                <div
+                                    className="nav__placeholder"
+                                    style={{
+                                        display: !isClient ? "block" : "none",
+                                    }}
+                                />
+                                {isClient &&
+                                    navItems.map((item) => {
+                                        const isActive =
+                                            typeof item.isActive === "function"
+                                                ? item.isActive()
+                                                : currentRoute === item.route;
+                                        const hasDropdown =
+                                            !!item.dropdown || !!item.mega;
+                                        const dropdownKey =
+                                            item.dropdownKey || item.route;
+                                        const isOpen =
+                                            openDropdown === dropdownKey;
+                                        return (
+                                            <div
+                                                key={item.route}
                                                 className={cx(
-                                                    "nav__link",
-                                                    hasDropdown &&
-                                                        "has-dropdown"
+                                                    "nav__item",
+                                                    isActive && "is-active"
                                                 )}
-                                                aria-haspopup={
-                                                    hasDropdown || undefined
-                                                }
-                                                aria-expanded={
-                                                    hasDropdown
-                                                        ? isOpen
-                                                        : undefined
-                                                }
-                                                onFocus={() =>
+                                                onMouseEnter={() =>
                                                     hasDropdown &&
                                                     openDrop(dropdownKey)
                                                 }
-                                                onBlur={() =>
+                                                onMouseLeave={() =>
                                                     hasDropdown &&
                                                     scheduleCloseDrop()
                                                 }
-                                                onClick={navigate(item.url)}
                                             >
-                                                <SafeHtml
-                                                    html={item.name}
-                                                    as="span"
-                                                    className="nav__label"
-                                                />
-                                                {hasDropdown && (
-                                                    <FaChevronDown
-                                                        className="nav__chev"
-                                                        aria-hidden="true"
-                                                    />
-                                                )}
-                                            </a>
-                                            {hasDropdown && isOpen && (
-                                                <div
+                                                <a
+                                                    href={item.url}
                                                     className={cx(
-                                                        "dropdown",
-                                                        item.mega &&
-                                                            "dropdown--mega"
+                                                        "nav__link",
+                                                        hasDropdown &&
+                                                            "has-dropdown"
                                                     )}
-                                                    role="menu"
-                                                    onMouseEnter={cancelClose}
-                                                    onMouseLeave={
-                                                        scheduleCloseDrop
+                                                    aria-haspopup={
+                                                        hasDropdown || undefined
                                                     }
+                                                    aria-expanded={
+                                                        hasDropdown
+                                                            ? isOpen
+                                                            : undefined
+                                                    }
+                                                    onFocus={() =>
+                                                        hasDropdown &&
+                                                        openDrop(dropdownKey)
+                                                    }
+                                                    onBlur={() =>
+                                                        hasDropdown &&
+                                                        scheduleCloseDrop()
+                                                    }
+                                                    onClick={navigate(item.url)}
                                                 >
-                                                    {item.mega ? (
-                                                        <div className="mega" />
-                                                    ) : (
-                                                        <div className="menu">
-                                                            {dedupeByKey(
-                                                                item.dropdown
-                                                            ).map(
-                                                                (
-                                                                    subItem,
-                                                                    idx
-                                                                ) => {
-                                                                    const hasSub =
-                                                                        !!subItem.submenu;
-                                                                    const subKey =
-                                                                        subItem.submenuKey ||
-                                                                        `${dropdownKey}-sub-${idx}`;
-                                                                    const subOpen =
-                                                                        openSubmenu ===
-                                                                        subKey;
-                                                                    return (
-                                                                        <div
-                                                                            className="menu__item"
-                                                                            key={
-                                                                                idx
-                                                                            }
-                                                                            onMouseEnter={() =>
-                                                                                hasSub &&
-                                                                                openSub(
-                                                                                    subKey
-                                                                                )
-                                                                            }
-                                                                            onMouseLeave={() =>
-                                                                                hasSub &&
-                                                                                scheduleCloseSub()
-                                                                            }
-                                                                        >
-                                                                            {hasSub ? (
-                                                                                <button
-                                                                                    type="button"
-                                                                                    className="menu__link has-sub"
-                                                                                    aria-haspopup
-                                                                                    onClick={() =>
-                                                                                        openSub(
-                                                                                            subKey
-                                                                                        )
-                                                                                    }
-                                                                                    aria-expanded={
-                                                                                        subOpen
-                                                                                    }
-                                                                                >
-                                                                                    <SafeHtml
-                                                                                        html={
-                                                                                            subItem.name
+                                                    <SafeHtml
+                                                        html={item.name}
+                                                        as="span"
+                                                        className="nav__label"
+                                                    />
+                                                    {hasDropdown && (
+                                                        <FaChevronDown
+                                                            className="nav__chev"
+                                                            aria-hidden="true"
+                                                        />
+                                                    )}
+                                                </a>
+                                                {hasDropdown && isOpen && (
+                                                    <div
+                                                        className={cx(
+                                                            "dropdown",
+                                                            item.mega &&
+                                                                "dropdown--mega"
+                                                        )}
+                                                        role="menu"
+                                                        onMouseEnter={
+                                                            cancelClose
+                                                        }
+                                                        onMouseLeave={
+                                                            scheduleCloseDrop
+                                                        }
+                                                    >
+                                                        {item.mega ? (
+                                                            <div className="mega" />
+                                                        ) : (
+                                                            <div className="menu">
+                                                                {dedupeByKey(
+                                                                    item.dropdown
+                                                                ).map(
+                                                                    (
+                                                                        subItem,
+                                                                        idx
+                                                                    ) => {
+                                                                        const hasSub =
+                                                                            !!subItem.submenu;
+                                                                        const subKey =
+                                                                            subItem.submenuKey ||
+                                                                            `${dropdownKey}-sub-${idx}`;
+                                                                        const subOpen =
+                                                                            openSubmenu ===
+                                                                            subKey;
+                                                                        return (
+                                                                            <div
+                                                                                className="menu__item"
+                                                                                key={
+                                                                                    idx
+                                                                                }
+                                                                                onMouseEnter={() =>
+                                                                                    hasSub &&
+                                                                                    openSub(
+                                                                                        subKey
+                                                                                    )
+                                                                                }
+                                                                                onMouseLeave={() =>
+                                                                                    hasSub &&
+                                                                                    scheduleCloseSub()
+                                                                                }
+                                                                            >
+                                                                                {hasSub ? (
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        className="menu__link has-sub"
+                                                                                        aria-haspopup
+                                                                                        onClick={() =>
+                                                                                            openSub(
+                                                                                                subKey
+                                                                                            )
                                                                                         }
-                                                                                        as="span"
-                                                                                        className="menu__label"
-                                                                                    />
-                                                                                    <FaChevronRight
-                                                                                        className="menu__chev"
-                                                                                        aria-hidden
-                                                                                    />
-                                                                                </button>
-                                                                            ) : (
-                                                                                <a
-                                                                                    href={
-                                                                                        subItem.url
-                                                                                    }
-                                                                                    className={cx(
-                                                                                        "menu__link",
-                                                                                        isPathActive(
-                                                                                            subItem.url
-                                                                                        ) &&
-                                                                                            "is-active"
-                                                                                    )}
-                                                                                    onClick={navigate(
-                                                                                        subItem.url
-                                                                                    )}
-                                                                                >
-                                                                                    <SafeHtml
-                                                                                        html={
-                                                                                            subItem.name
-                                                                                        }
-                                                                                        as="span"
-                                                                                    />
-                                                                                </a>
-                                                                            )}
-                                                                            {hasSub &&
-                                                                                subOpen && (
-                                                                                    <div
-                                                                                        className="submenu"
-                                                                                        role="menu"
-                                                                                        onMouseEnter={
-                                                                                            cancelSubClose
-                                                                                        }
-                                                                                        onMouseLeave={
-                                                                                            scheduleCloseSub
+                                                                                        aria-expanded={
+                                                                                            subOpen
                                                                                         }
                                                                                     >
-                                                                                        {subItem.submenu.map(
-                                                                                            (
-                                                                                                inner,
-                                                                                                j
-                                                                                            ) => (
-                                                                                                <a
-                                                                                                    key={
-                                                                                                        j
-                                                                                                    }
-                                                                                                    href={
-                                                                                                        inner.url
-                                                                                                    }
-                                                                                                    className={cx(
-                                                                                                        "submenu__link",
-                                                                                                        isPathActive(
-                                                                                                            inner.url
-                                                                                                        ) &&
-                                                                                                            "is-active"
-                                                                                                    )}
-                                                                                                    onClick={navigate(
-                                                                                                        inner.url,
-                                                                                                        true
-                                                                                                    )}
-                                                                                                >
-                                                                                                    <SafeHtml
-                                                                                                        html={
-                                                                                                            inner.name
-                                                                                                        }
-                                                                                                        as="span"
-                                                                                                    />
-                                                                                                </a>
-                                                                                            )
+                                                                                        <SafeHtml
+                                                                                            html={
+                                                                                                subItem.name
+                                                                                            }
+                                                                                            as="span"
+                                                                                            className="menu__label"
+                                                                                        />
+                                                                                        <FaChevronRight
+                                                                                            className="menu__chev"
+                                                                                            aria-hidden
+                                                                                        />
+                                                                                    </button>
+                                                                                ) : (
+                                                                                    <a
+                                                                                        href={
+                                                                                            subItem.url
+                                                                                        }
+                                                                                        className={cx(
+                                                                                            "menu__link",
+                                                                                            isPathActive(
+                                                                                                subItem.url
+                                                                                            ) &&
+                                                                                                "is-active"
                                                                                         )}
-                                                                                    </div>
+                                                                                        onClick={navigate(
+                                                                                            subItem.url
+                                                                                        )}
+                                                                                    >
+                                                                                        <SafeHtml
+                                                                                            html={
+                                                                                                subItem.name
+                                                                                            }
+                                                                                            as="span"
+                                                                                        />
+                                                                                    </a>
                                                                                 )}
-                                                                        </div>
-                                                                    );
-                                                                }
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
+                                                                                {hasSub &&
+                                                                                    subOpen && (
+                                                                                        <div
+                                                                                            className="submenu"
+                                                                                            role="menu"
+                                                                                            onMouseEnter={
+                                                                                                cancelSubClose
+                                                                                            }
+                                                                                            onMouseLeave={
+                                                                                                scheduleCloseSub
+                                                                                            }
+                                                                                        >
+                                                                                            {subItem.submenu.map(
+                                                                                                (
+                                                                                                    inner,
+                                                                                                    j
+                                                                                                ) => (
+                                                                                                    <a
+                                                                                                        key={
+                                                                                                            j
+                                                                                                        }
+                                                                                                        href={
+                                                                                                            inner.url
+                                                                                                        }
+                                                                                                        className={cx(
+                                                                                                            "submenu__link",
+                                                                                                            isPathActive(
+                                                                                                                inner.url
+                                                                                                            ) &&
+                                                                                                                "is-active"
+                                                                                                        )}
+                                                                                                        onClick={navigate(
+                                                                                                            inner.url,
+                                                                                                            true
+                                                                                                        )}
+                                                                                                    >
+                                                                                                        <SafeHtml
+                                                                                                            html={
+                                                                                                                inner.name
+                                                                                                            }
+                                                                                                            as="span"
+                                                                                                        />
+                                                                                                    </a>
+                                                                                                )
+                                                                                            )}
+                                                                                        </div>
+                                                                                    )}
+                                                                            </div>
+                                                                        );
+                                                                    }
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                             </nav>
 
                             <div className="nav__cta">
@@ -1011,7 +1029,7 @@ const HeaderInner = ({ currentRoute, settings: propSettings }) => {
                                 <a
                                     href="/impressum"
                                     onClick={navigate("/impressum")}
-                                    className="btn bg-button btn--primary ml-4"
+                                    className="btn bg-button impressum-button  ml-4"
                                 >
                                     {t("header.impressum", "Impressum")}
                                 </a>
@@ -1069,135 +1087,141 @@ const HeaderInner = ({ currentRoute, settings: propSettings }) => {
                             </button>
                         </div>
                         <div className="drawer__body">
-                            {navItems.map((item, idx) => {
-                                const key = item.dropdownKey || item.route;
-                                const hasDropdown =
-                                    !!item.dropdown || !!item.mega;
-                                const expanded = !!mobileAccordions[key];
-                                return (
-                                    <div key={idx} className="acc">
-                                        <button
-                                            className="acc__toggle"
-                                            aria-expanded={expanded}
-                                            onClick={(e) => {
-                                                if (hasDropdown) {
-                                                    toggleMobileAccordion(key);
-                                                } else {
-                                                    navigate(item.url, true)(e);
-                                                }
-                                            }}
-                                        >
-                                            <span className="acc__left">
-                                                <span className="acc__icon">
-                                                    {item.icon}
-                                                </span>
-                                                <SafeHtml
-                                                    html={item.name}
-                                                    as="span"
-                                                />
-                                            </span>
-                                            {hasDropdown && (
-                                                <FaChevronDown
-                                                    className={cx(
-                                                        "acc__chev",
-                                                        expanded && "rot"
-                                                    )}
-                                                    aria-hidden
-                                                />
-                                            )}
-                                        </button>
-                                        {hasDropdown && (
-                                            <div
-                                                className={cx(
-                                                    "acc__content",
-                                                    expanded && "open"
-                                                )}
+                            {isClient &&
+                                navItems.map((item, idx) => {
+                                    const key = item.dropdownKey || item.route;
+                                    const hasDropdown =
+                                        !!item.dropdown || !!item.mega;
+                                    const expanded = !!mobileAccordions[key];
+                                    return (
+                                        <div key={idx} className="acc">
+                                            <button
+                                                className="acc__toggle"
+                                                aria-expanded={expanded}
+                                                onClick={(e) => {
+                                                    if (hasDropdown) {
+                                                        toggleMobileAccordion(
+                                                            key
+                                                        );
+                                                    } else {
+                                                        navigate(
+                                                            item.url,
+                                                            true
+                                                        )(e);
+                                                    }
+                                                }}
                                             >
-                                                <div className="acc__menu">
-                                                    {dedupeByKey(
-                                                        item.dropdown
-                                                    ).map((subItem, i) => (
-                                                        <div
-                                                            key={i}
-                                                            className="acc__item"
-                                                        >
-                                                            {subItem.submenu ? (
-                                                                <details className="acc__details">
-                                                                    <summary className="acc__summary">
+                                                <span className="acc__left">
+                                                    <span className="acc__icon">
+                                                        {item.icon}
+                                                    </span>
+                                                    <SafeHtml
+                                                        html={item.name}
+                                                        as="span"
+                                                    />
+                                                </span>
+                                                {hasDropdown && (
+                                                    <FaChevronDown
+                                                        className={cx(
+                                                            "acc__chev",
+                                                            expanded && "rot"
+                                                        )}
+                                                        aria-hidden
+                                                    />
+                                                )}
+                                            </button>
+                                            {hasDropdown && (
+                                                <div
+                                                    className={cx(
+                                                        "acc__content",
+                                                        expanded && "open"
+                                                    )}
+                                                >
+                                                    <div className="acc__menu">
+                                                        {dedupeByKey(
+                                                            item.dropdown
+                                                        ).map((subItem, i) => (
+                                                            <div
+                                                                key={i}
+                                                                className="acc__item"
+                                                            >
+                                                                {subItem.submenu ? (
+                                                                    <details className="acc__details">
+                                                                        <summary className="acc__summary">
+                                                                            <SafeHtml
+                                                                                html={
+                                                                                    subItem.name
+                                                                                }
+                                                                                as="span"
+                                                                            />
+                                                                            <div className="acc__submenu">
+                                                                                {subItem.submenu.map(
+                                                                                    (
+                                                                                        inner,
+                                                                                        j
+                                                                                    ) => (
+                                                                                        <a
+                                                                                            key={
+                                                                                                j
+                                                                                            }
+                                                                                            href={
+                                                                                                inner.url
+                                                                                            }
+                                                                                            className="acc__link"
+                                                                                            onClick={(
+                                                                                                e
+                                                                                            ) =>
+                                                                                                navigate(
+                                                                                                    inner.url,
+                                                                                                    true
+                                                                                                )(
+                                                                                                    e
+                                                                                                )
+                                                                                            }
+                                                                                        >
+                                                                                            <SafeHtml
+                                                                                                html={
+                                                                                                    inner.name
+                                                                                                }
+                                                                                                as="span"
+                                                                                            />
+                                                                                        </a>
+                                                                                    )
+                                                                                )}
+                                                                            </div>
+                                                                        </summary>
+                                                                    </details>
+                                                                ) : (
+                                                                    <a
+                                                                        href={
+                                                                            subItem.url
+                                                                        }
+                                                                        className="acc__link"
+                                                                        onClick={(
+                                                                            e
+                                                                        ) =>
+                                                                            navigate(
+                                                                                subItem.url,
+                                                                                true
+                                                                            )(e)
+                                                                        }
+                                                                    >
                                                                         <SafeHtml
                                                                             html={
                                                                                 subItem.name
                                                                             }
                                                                             as="span"
                                                                         />
-                                                                        <div className="acc__submenu">
-                                                                            {subItem.submenu.map(
-                                                                                (
-                                                                                    inner,
-                                                                                    j
-                                                                                ) => (
-                                                                                    <a
-                                                                                        key={
-                                                                                            j
-                                                                                        }
-                                                                                        href={
-                                                                                            inner.url
-                                                                                        }
-                                                                                        className="acc__link"
-                                                                                        onClick={(
-                                                                                            e
-                                                                                        ) =>
-                                                                                            navigate(
-                                                                                                inner.url,
-                                                                                                true
-                                                                                            )(
-                                                                                                e
-                                                                                            )
-                                                                                        }
-                                                                                    >
-                                                                                        <SafeHtml
-                                                                                            html={
-                                                                                                inner.name
-                                                                                            }
-                                                                                            as="span"
-                                                                                        />
-                                                                                    </a>
-                                                                                )
-                                                                            )}
-                                                                        </div>
-                                                                    </summary>
-                                                                </details>
-                                                            ) : (
-                                                                <a
-                                                                    href={
-                                                                        subItem.url
-                                                                    }
-                                                                    className="acc__link"
-                                                                    onClick={(
-                                                                        e
-                                                                    ) =>
-                                                                        navigate(
-                                                                            subItem.url,
-                                                                            true
-                                                                        )(e)
-                                                                    }
-                                                                >
-                                                                    <SafeHtml
-                                                                        html={
-                                                                            subItem.name
-                                                                        }
-                                                                        as="span"
-                                                                    />
-                                                                </a>
-                                                            )}
-                                                        </div>
-                                                    ))}
+                                                                    </a>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             <div className="drawer__theme-toggle">
                                 <ThemeToggle />
                             </div>
@@ -1235,17 +1259,18 @@ const HeaderInner = ({ currentRoute, settings: propSettings }) => {
 };
 
 const Header = (props) => {
-    const [hydrated, setHydrated] = useState(false);
+    const [isMounted, setIsMounted] = React.useState(false);
 
-    useEffect(() => {
-        setHydrated(true);
+    React.useEffect(() => {
+        setIsMounted(true);
     }, []);
 
-    return (
-        <header className="site-header w-full">
-            {hydrated && <HeaderInner {...props} />}
-        </header>
-    );
+    if (!isMounted) {
+        // SSR sırasında hiçbir HTML üretmiyoruz
+        return null;
+    }
+
+    return <HeaderInner {...props} />;
 };
 
 export default Header;

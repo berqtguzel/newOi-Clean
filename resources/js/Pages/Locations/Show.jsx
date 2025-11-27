@@ -42,7 +42,8 @@ export default function LocationShow() {
     // 🔥 Slug'ı props'tan al (backend'den geliyor) veya URL'den çıkar
     const currentUrlSlug = useMemo(() => {
         if (typeof window === "undefined") return "";
-        const raw = window.location.pathname.split("/").filter(Boolean).pop() || "";
+        const raw =
+            window.location.pathname.split("/").filter(Boolean).pop() || "";
         // URL decode et, Almanca karakterleri normalize et ve boşlukları tireye çevir
         try {
             const decoded = decodeURIComponent(raw);
@@ -65,18 +66,18 @@ export default function LocationShow() {
             slug = slug.replace(/\s+/g, "-");
             return slug;
         }
-        
+
         // Eğer props'ta yoksa, URL'den çıkar
         // Prefix'leri kaldır: gebaudereinigung-in-, gebaudereinigung-
         let slug = currentUrlSlug;
-        
+
         // Prefix'leri kaldır
         if (slug.startsWith("gebaudereinigung-in-")) {
             slug = slug.replace(/^gebaudereinigung-in-/, "");
         } else if (slug.startsWith("gebaudereinigung-")) {
             slug = slug.replace(/^gebaudereinigung-/, "");
         }
-        
+
         // Son parçayı almak yerine, tüm slug'ı kullan (bad-kruezbeerg gibi)
         return slug;
     }, [props?.citySlug, currentUrlSlug]);
@@ -113,14 +114,13 @@ export default function LocationShow() {
                     perPage: 9999,
                 });
 
-                console.log("RAW services:", services);
-
                 setRemoteServices(services);
 
                 // 🔥 Şehir slug'ına göre servisleri bul
                 // Önce tam slug eşleşmesi dene
                 let found = services.find(
-                    (s) => s.slug?.toLowerCase() === currentUrlSlug?.toLowerCase()
+                    (s) =>
+                        s.slug?.toLowerCase() === currentUrlSlug?.toLowerCase()
                 );
 
                 // Eğer bulunamazsa, gebaudereinigung-in-{citySlug} formatını dene
@@ -135,16 +135,20 @@ export default function LocationShow() {
                 if (!found && citySlug) {
                     const citySlugLower = citySlug.toLowerCase();
                     const citySlugWithSpaces = citySlugLower.replace(/-/g, " ");
-                    
+
                     found = services.find((s) => {
                         if (!s.city) return false;
                         const sCity = s.city.toLowerCase().trim();
                         const sCityNormalized = normalizeGermanChars(sCity);
                         const sCityWithDashes = sCity.replace(/\s+/g, "-");
                         const sCityWithSpaces = sCity.replace(/-/g, " ");
-                        const sCityNormalizedWithDashes = normalizeGermanChars(sCity).replace(/\s+/g, "-");
-                        const sCityNormalizedWithSpaces = normalizeGermanChars(sCity).replace(/-/g, " ");
-                        
+                        const sCityNormalizedWithDashes = normalizeGermanChars(
+                            sCity
+                        ).replace(/\s+/g, "-");
+                        const sCityNormalizedWithSpaces = normalizeGermanChars(
+                            sCity
+                        ).replace(/-/g, " ");
+
                         return (
                             sCity === citySlugLower ||
                             sCity === citySlugWithSpaces ||
@@ -157,8 +161,6 @@ export default function LocationShow() {
                         );
                     });
                 }
-
-                console.log("🎯 Matched service:", found, "for citySlug:", citySlug);
 
                 if (found) {
                     setMatchedService({ ...found, ...resolveTrans(found) });
@@ -175,23 +177,27 @@ export default function LocationShow() {
     // --- Şehirle ilgili diğer servisler ---
     const servicesToRender = useMemo(() => {
         if (!citySlug) return [];
-        
+
         const citySlugLower = citySlug.toLowerCase();
         const citySlugWithSpaces = citySlugLower.replace(/-/g, " ");
-        
+
         const filtered = remoteServices
             .filter((s) => {
                 // Mevcut servisi hariç tut
                 if (s.id === matchedService?.id) return false;
-                
+
                 // City field'ına göre eşleştir (hem boşluklu hem tireli, hem normalize edilmiş hem orijinal)
                 const sCity = s.city?.toLowerCase()?.trim() || "";
                 const sCityNormalized = normalizeGermanChars(sCity);
                 const sCityWithDashes = sCity.replace(/\s+/g, "-");
                 const sCityWithSpaces = sCity.replace(/-/g, " ");
-                const sCityNormalizedWithDashes = normalizeGermanChars(sCity).replace(/\s+/g, "-");
-                const sCityNormalizedWithSpaces = normalizeGermanChars(sCity).replace(/-/g, " ");
-                
+                const sCityNormalizedWithDashes = normalizeGermanChars(
+                    sCity
+                ).replace(/\s+/g, "-");
+                const sCityNormalizedWithSpaces = normalizeGermanChars(
+                    sCity
+                ).replace(/-/g, " ");
+
                 if (
                     sCity === citySlugLower ||
                     sCity === citySlugWithSpaces ||
@@ -204,24 +210,23 @@ export default function LocationShow() {
                 ) {
                     return true;
                 }
-                
+
                 // Slug'da şehir adı geçiyor mu kontrol et (hem normalize edilmiş hem orijinal)
                 const sSlug = s.slug?.toLowerCase() || "";
                 const sSlugNormalized = normalizeGermanChars(sSlug);
                 if (
-                    sSlug.includes(citySlugLower) || 
+                    sSlug.includes(citySlugLower) ||
                     sSlug.includes(citySlugWithSpaces) ||
                     sSlugNormalized.includes(citySlugLower) ||
                     sSlugNormalized.includes(citySlugWithSpaces)
                 ) {
                     return true;
                 }
-                
+
                 return false;
             })
             .map((s) => ({ ...s, ...resolveTrans(s) }));
 
-        console.log("Other services:", filtered);
         return filtered;
     }, [remoteServices, matchedService, citySlug, locale]);
 

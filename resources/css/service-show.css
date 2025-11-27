@@ -187,12 +187,7 @@
 }
 
 .dark .service-show__content {
-    background: linear-gradient(
-        to bottom,
-        var(--svx-surface-alt) 0%,
-        #1e293b 50%,
-        var(--svx-surface-alt) 100%
-    );
+    background: #0f172a;
 }
 
 .service-show__content::before {
@@ -242,15 +237,22 @@
 }
 
 .dark .service-show__prose {
-    background-color: #1e293b;
+    background-color: #334155;
     border-color: rgba(255, 255, 255, 0.1);
+}
+.dark   .service-show__title{
+    color: white;
 }
 
 .service-show__prose p {
-    color: var(--svx-ink-soft);
+  color: var(--svx-ink);
     margin-bottom: 1.75rem;
     line-height: 1.8;
     font-size: 1.125rem;
+}
+
+.dark .service-show__prose span h2{
+    color: white;
 }
 
 .service-show__prose p:last-child {

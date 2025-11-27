@@ -18,6 +18,15 @@
   --hd-radius: 16px;
   /* 🚀 GÜNCELLENDİ: DAHA BÜYÜK HEADER İÇİN */
   --hd-h: 100px !important; /* Navigasyon yüksekliği artırıldı */
+   --site-primary-color: var(--site-primary-color, #2563eb);
+  --site-secondary-color: var(--site-secondary-color, #6c757d);
+  --site-accent-color: var(--site-accent-color, #f59e0b);
+  --button-color: var(--button-color, #2563eb);
+  --text-color: var(--text-color, #111827);
+  --link-color: var(--link-color, #2563eb);
+  --background-color: var(--background-color, #ffffff);
+  --header-background-color: var(--header-background-color, #ffffff);
+  --footer-background-color: var(--footer-background-color, #f8f9fa);
 }
 
 :root.dark, .dark{
@@ -523,7 +532,9 @@
     padding: 12px 22px;
     font-size: .95rem;
 }
-
+.dark .nav__cta button {
+    color: white;
+}
 /* Mobile Hamburger daha net */
 .hamburger {
     padding: 14px !important;

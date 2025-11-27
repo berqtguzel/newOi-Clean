@@ -95,13 +95,13 @@ export default function LocationCard({ location, onHover, isActive }) {
 
     // 🔥 Önce location.city field'ını kullan, yoksa slug'dan çıkar
     let citySlug = location.city?.toLowerCase()?.trim() || "";
-    
+
     if (!citySlug) {
         // Slug'dan şehir bilgisini çıkar
         const parsed = getCityFromSlug(originalSlug);
         citySlug = parsed.citySlug.toLowerCase().trim();
     }
-    
+
     // Eğer hala citySlug yoksa, slug'ın tamamını kullan
     if (!citySlug) {
         citySlug = originalSlug.toLowerCase().trim();
@@ -112,10 +112,10 @@ export default function LocationCard({ location, onHover, isActive }) {
             citySlug = citySlug.replace(/^gebaudereinigung-/, "");
         }
     }
-    
+
     // 🔥 Almanca karakterleri normalize et (ß -> ss, ü -> ue, ö -> oe, ä -> ae)
     citySlug = normalizeGermanChars(citySlug);
-    
+
     // 🔥 Boşlukları tireye çevir (URL için normalize et)
     citySlug = citySlug.replace(/\s+/g, "-");
 
@@ -125,12 +125,9 @@ export default function LocationCard({ location, onHover, isActive }) {
         .filter(Boolean)
         .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
         .join(" ");
-    
+
     const cityText = cityTitle || stripHtml(titleHtml) || "dieser Stadt";
 
-    // 🔗 URL artık HER ZAMAN sadece /city
-    // Boşluklar zaten tireye çevrildi, özel karakterler Laravel tarafından handle edilecek
-    // Örn: /amberg , /hannover , /muhlhausen-thuringen , /bad-kruezbeerg , /biberach-an-der-riss
     const href = `/${citySlug}`;
 
     const hasMaps = Array.isArray(location.maps) && location.maps.length > 0;
@@ -182,13 +179,12 @@ export default function LocationCard({ location, onHover, isActive }) {
                     width={400}
                     height={300}
                 />
-
-                <div className="location-card-overlay" aria-hidden="true">
-                    <h2 className="location-card-title">{cityText}</h2>
-                </div>
             </div>
 
             <div className="location-card-content">
+                <div className="location-card-overlay" aria-hidden="true">
+                    <h3 className="location-card-title">{titleHtml}</h3>
+                </div>
                 <div className="location-card-footer">
                     <span className="location-card-button">
                         <span suppressHydrationWarning>{ctaLabel}</span>

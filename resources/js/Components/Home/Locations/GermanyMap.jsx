@@ -67,10 +67,7 @@ const GermanyMap = ({ activeId, setActiveId }) => {
                     // 3) O da yoksa fallback olarak r.name kullan
                     name: r.city || cityFromSlug || r.name,
                     slug: r.service_slug,
-                    coords: [
-                        parseFloat(r.longitude),
-                        parseFloat(r.latitude),
-                    ],
+                    coords: [parseFloat(r.longitude), parseFloat(r.latitude)],
                 };
             });
     }, [maps]);
@@ -82,11 +79,7 @@ const GermanyMap = ({ activeId, setActiveId }) => {
 
     return (
         <div className="map-box" style={{ minHeight: "600px" }}>
-            {loading && (
-                <p style={{ textAlign: "center", color: "#888" }}>
-                    Karte wird geladen…
-                </p>
-            )}
+            {loading && <p style={{ textAlign: "center", color: "#888" }}></p>}
 
             <ComposableMap
                 projection="geoMercator"
@@ -127,10 +120,7 @@ const GermanyMap = ({ activeId, setActiveId }) => {
                         style={{ cursor: "pointer" }}
                     >
                         {/* Glow */}
-                        <circle
-                            r={10}
-                            fill="rgba(14, 165, 233, 0.30)"
-                        />
+                        <circle r={10} fill="rgba(14, 165, 233, 0.30)" />
                         {/* Dot */}
                         <circle
                             r={activeId === m.id ? 7 : 5}
