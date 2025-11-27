@@ -64,14 +64,12 @@ class AppServiceProvider extends ServiceProvider
             $colors[$key] = $val;
         }
 
-
         // Meta Info
         $siteName = $seo['meta_title'] ?? $general['site_name'] ?? config('app.name');
         $siteDesc = $seo['meta_description'] ?? $general['site_description'] ?? 'Professionelle Reinigungsdienste';
         $favicon  = $branding['favicon']['url'] ?? '/favicon.ico';
 
-
-        // 🚀 SEO Category Services Fetch
+        // 🚀 Services Fetch
         try {
             $services = Http::withHeaders(['X-Tenant-ID' => $tenantId])
                 ->timeout(3)
@@ -81,6 +79,7 @@ class AppServiceProvider extends ServiceProvider
             $services = [];
         }
 
+        // SEO Category Filter
         $seoLinks = collect($services)
             ->filter(fn($s) => strtolower($s['category_name'] ?? '') === 'seo')
             ->map(fn($s) => [
@@ -88,13 +87,27 @@ class AppServiceProvider extends ServiceProvider
                 'name' => strip_tags(
                     collect($s['translations'] ?? [])
                         ->firstWhere('language_code', $locale)['name']
-                    ?? $s['name']
-                    ?? $s['slug']
+                        ?? $s['name']
+                        ?? $s['slug']
                 ),
             ])
             ->values()
             ->toArray();
 
+        // Gebäudereinigung Category Filter
+        $gebaeudeLinks = collect($services)
+            ->filter(fn($s) => strtolower($s['category_name'] ?? '') === 'gebäudereinigung')
+            ->map(fn($s) => [
+                'href' => '/' . ltrim($s['slug'] ?? '', '/'),
+                'name' => strip_tags(
+                    collect($s['translations'] ?? [])
+                        ->firstWhere('language_code', $locale)['name']
+                        ?? $s['name']
+                        ?? $s['slug']
+                ),
+            ])
+            ->values()
+            ->toArray();
 
         // 🔥 SSR Blade
         View::share([
@@ -104,6 +117,7 @@ class AppServiceProvider extends ServiceProvider
             'colors' => $colors,
             'c' => $colors,
             'seoLinks' => $seoLinks,
+            'gebaeudeLinks' => $gebaeudeLinks,
         ]);
 
         // 🔥 Inertia CSR
@@ -116,6 +130,7 @@ class AppServiceProvider extends ServiceProvider
                 'favicon' => $favicon,
                 'colors' => $colors,
                 'seoLinks' => $seoLinks,
+                'gebaeudeLinks' => $gebaeudeLinks,
             ]
         ]);
     }

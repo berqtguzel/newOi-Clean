@@ -19,16 +19,16 @@ const getTranslatedValue = (item, locale) => {
 };
 
 const animationVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: (i = 1) => ({
-        opacity: 1,
-        y: 0,
-        transition: {
-            delay: i * 0.15, // ✨ Kartlar sırayla animasyonlu
-            duration: 0.6,
-            ease: "easeOut",
-        },
-    }),
+  hidden: { opacity: 0, transform: "translateY(20px)" },
+  visible: (i = 1) => ({
+    opacity: 1,
+    transform: "translateY(0)",
+    transition: {
+      delay: i * 0.05,
+      duration: 0.35,
+      ease: "easeOut",
+    },
+  }),
 };
 
 const ServicesGrid = ({ content = {} }) => {
@@ -62,6 +62,7 @@ const ServicesGrid = ({ content = {} }) => {
 
     return (
         <section id="services" className="services-section">
+        {durationMs}
             <div className="services-container">
                 <div className="services-header">
                     <motion.h2
@@ -81,6 +82,11 @@ const ServicesGrid = ({ content = {} }) => {
                 </div>
 
                 <div className="services-grid">
+                    {loading &&
+  [...Array(42)].map((_, i) => (
+    <div key={i} className="service-card-skeleton"></div>
+  ))
+}
                     {!loading &&
                         services.map((s, index) => {
                             const { name, description } = getTranslatedValue(
@@ -107,7 +113,7 @@ const ServicesGrid = ({ content = {} }) => {
                             );
                         })}
 
-                    {loading && <div>{t("loading")}</div>}
+                   
                 </div>
 
                 <motion.div

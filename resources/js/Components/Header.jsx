@@ -675,12 +675,13 @@ const HeaderInner = ({ currentRoute, settings: propSettings }) => {
     }, []);
 
     const menuErrorText = menuError ? String(menuError) : "";
+    
 
     return (
         <>
             <header
                 ref={headerRef}
-                className="site-header fixed top-0 left-0 w-full z-50"
+                className="site-header sticky top-0 left-0 w-full z-50"
             >
                 <div className="topbar">
                     <div className="container">

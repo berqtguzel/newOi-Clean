@@ -24,6 +24,10 @@ function normLang(code) {
         .split("-")[0];
 }
 
+// 🔹 Görseli olmayanlar için kullanılacak geçici/fallback görsel
+const FALLBACK_IMAGE = "/images/Wohnungsrenovierung.jpg"; 
+// bunu kendi projendeki bir placeholder görselle değiştir
+
 const ServiceCard = ({
     title,
     image,
@@ -46,13 +50,15 @@ const ServiceCard = ({
     const imageRef = useRef(null);
     const [isLoaded, setIsLoaded] = useState(false);
 
+    // 🔹 Her zaman bir görsel kullan: gerçek image yoksa fallback
+    const finalImage = image || FALLBACK_IMAGE;
+
     useEffect(() => {
         if (imageRef.current?.complete) {
             setIsLoaded(true);
         }
-    }, []);
+    }, [finalImage]);
 
-    // 📌 Slug → olduğu gibi kullanıyoruz
     const effectiveSlug = slug || "";
     const href = buildHref({ link, slug: effectiveSlug });
 
@@ -80,13 +86,14 @@ const ServiceCard = ({
     return (
         <Link href={href} className="service-card group" aria-label={ariaLabel}>
             <div className="service-card__image-wrapper">
-                {!isLoaded && image && (
+                {!isLoaded && finalImage && (
                     <div className="service-card__skeleton" aria-hidden />
                 )}
-                {image ? (
+
+                {finalImage ? (
                     <img
                         ref={imageRef}
-                        src={image}
+                        src={finalImage}
                         alt={plainTitle}
                         className={`service-card__image ${
                             isLoaded ? "is-loaded" : ""

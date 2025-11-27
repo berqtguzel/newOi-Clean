@@ -58,7 +58,23 @@ export default function LocationsGrid() {
         locationOnly: true,
     });
 
-    const sortedItems = [...services]
+    // 🔥 Burada category_name'e göre filtremizi uyguluyoruz
+    const filteredServices = services.filter(
+        (s) =>
+            (s.category_name || "")
+                .toLowerCase()
+                .trim() === "gebäudereinigung"
+    );
+
+    // İstersen seo için de ayrı bir filtre yapabilirsin:
+    // const seoServices = services.filter(
+    //     (s) =>
+    //         (s.category_name || "")
+    //             .toLowerCase()
+    //             .trim() === "seo"
+    // );
+
+    const sortedItems = [...filteredServices]
         .map((s) => ({
             ...s,
             name: stripHtml(s.name),
@@ -72,6 +88,7 @@ export default function LocationsGrid() {
 
     return (
         <section id="location" className="locations-section">
+                {durationMs}
             <Head>
                 <title>{title}</title>
                 <meta
