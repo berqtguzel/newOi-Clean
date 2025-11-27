@@ -85,6 +85,7 @@ createInertiaApp({
         );
 
         /** Dil eşleme (SSR → Client) */
+        let rootInstance = null;
         const startApp = async () => {
             if (i18n.language !== initialLocale) {
                 await i18n.changeLanguage(initialLocale);
@@ -92,16 +93,25 @@ createInertiaApp({
 
             if (el.hasChildNodes()) {
                 try {
-                    hydrateRoot(el, reactApp);
+                    // Hydration denemesi
+                    rootInstance = hydrateRoot(el, reactApp);
                 } catch (err) {
                     console.warn(
                         "Hydration error, SPA render uygulanıyor:",
                         err
                     );
-                    createRoot(el).render(reactApp);
+                    // Hydration başarısız oldu, mevcut root'u kullan veya yeni oluştur
+                    if (!rootInstance) {
+                        rootInstance = createRoot(el);
+                    }
+                    rootInstance.render(reactApp);
                 }
             } else {
-                createRoot(el).render(reactApp);
+                // SPA modu - yeni root oluştur
+                if (!rootInstance) {
+                    rootInstance = createRoot(el);
+                }
+                rootInstance.render(reactApp);
             }
         };
 

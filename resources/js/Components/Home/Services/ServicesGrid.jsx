@@ -81,10 +81,24 @@ const ServicesGrid = ({ content = {} }) => {
                 </div>
 
                 <div className="services-grid">
+                    {loading && (
+                        <>
+                            {Array.from({ length: 6 }).map((_, i) => (
+                                <div key={i} className="service-card-skeleton">
+                                    <div className="skeleton-img"></div>
+                                    <div className="skeleton-title"></div>
+                                    <div className="skeleton-text"></div>
+                                </div>
+                            ))}
+                        </>
+                    )}
+
                     {!loading &&
                         services.map((s, index) => {
-                            const { name, description } =
-                                getTranslatedValue(s, locale);
+                            const { name, description } = getTranslatedValue(
+                                s,
+                                locale
+                            );
 
                             return (
                                 <motion.div
@@ -92,20 +106,23 @@ const ServicesGrid = ({ content = {} }) => {
                                     variants={animationVariants}
                                     initial="hidden"
                                     whileInView="visible"
-                                    viewport={{ once: true, amount: 0.2 }}
+                                    viewport={{ once: true, amount: 0.15 }}
                                     custom={index}
+                                    transition={{
+                                        duration: 0.45,
+                                        ease: "easeOut",
+                                    }}
                                 >
                                     <ServiceCard
                                         title={name}
                                         description={description}
                                         image={s.image}
                                         slug={s.slug}
+                                        lazy
                                     />
                                 </motion.div>
                             );
                         })}
-
-                    {loading && <div>{t("loading")}</div>}
                 </div>
 
                 <motion.div

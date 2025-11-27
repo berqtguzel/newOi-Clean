@@ -33,7 +33,7 @@ export default function Footer({ settings }) {
     const tenantId =
         props?.global?.tenantId ||
         props?.global?.tenant_id ||
-        props?.global?.talentId ||
+        props?.global?.tenantId ||
         "";
 
     // useMenus hook'u asenkron veri çeker

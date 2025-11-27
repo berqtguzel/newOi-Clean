@@ -8,15 +8,41 @@ use Illuminate\Support\Facades\Cache;
 
 class StaticPageController extends Controller
 {
+    /**
+     * Almanca karakterleri normalize et (ß -> ss, ü -> ue, ö -> oe, ä -> ae)
+     */
+    private function normalizeGermanChars(string $text): string
+    {
+        $replacements = [
+            'ß' => 'ss',
+            'ü' => 'ue',
+            'ö' => 'oe',
+            'ä' => 'ae',
+            'Ü' => 'ue',
+            'Ö' => 'oe',
+            'Ä' => 'ae',
+        ];
+        
+        return strtr($text, $replacements);
+    }
+
     public function show(string $slug)
     {
-        $slugLower = strtolower(trim($slug));
+        // 🔥 URL decode et (Laravel zaten decode ediyor ama emin olmak için)
+        $decoded = urldecode($slug);
+        
+        // Almanca karakterleri normalize et
+        $normalized = $this->normalizeGermanChars($decoded);
+        
+        // Boşlukları tireye çevir
+        $normalized = str_replace(' ', '-', $normalized);
+        $slugLower = strtolower(trim($normalized));
 
         // 🔹 FE ile aynı slug temizleme mantığı
         $cleanSlug = preg_replace('/^(gebaudereinigung|wohnungsrenovierung|hotelreinigung)-/i', '', $slugLower);
         $cleanSlug = preg_replace('/^in-/', '', $cleanSlug);
 
-        \Log::info("🌍 StaticPageController → Incoming: $slugLower | Normalized: $cleanSlug");
+        \Log::info("🌍 StaticPageController → Incoming: $slug | Decoded: $decoded | Normalized: $cleanSlug");
 
         // 1️⃣ Sabit sayfa kontrolü
         $staticSlugs = [
@@ -30,7 +56,7 @@ class StaticPageController extends Controller
         }
 
         // 2️⃣ API'den servisleri çek
-        $tenantId = config('services.omr.talent_id');
+        $tenantId = config('services.omr.tenant_id');
         $base     = rtrim(config('services.omr.base'), '/');
 
         $services = Cache::remember('global_services_list', 300, function () use ($tenantId, $base) {
@@ -46,14 +72,25 @@ class StaticPageController extends Controller
 
         foreach ($services as $svc) {
             $svcSlug = strtolower(trim($svc['slug'] ?? ''));
-            $citySlug = strtolower(trim($svc['city'] ?? ''));
+            $cityRaw = trim($svc['city'] ?? '');
+            
+            // 🔥 Şehir slug'ını normalize et (Almanca karakterler + boşlukları tireye çevir)
+            $cityNormalized = $this->normalizeGermanChars($cityRaw);
+            $citySlug = strtolower(str_replace(' ', '-', $cityNormalized));
+            $citySlugWithSpaces = strtolower($cityNormalized); // Boşluklu versiyon
+            $citySlugOriginal = strtolower(str_replace(' ', '-', $cityRaw)); // Orijinal (ß ile)
 
-            // 🔥 Önce şehir eşleşsin
-            if ($cleanSlug === $citySlug && !empty($svcSlug)) {
-                \Log::info("🏙 CITY MATCH → {$citySlug}");
+            // 🔥 Önce şehir eşleşsin (hem normalize edilmiş hem orijinal versiyonları kontrol et)
+            if (
+                ($cleanSlug === $citySlug || 
+                 $cleanSlug === $citySlugWithSpaces || 
+                 $cleanSlug === $citySlugOriginal) && 
+                !empty($svcSlug)
+            ) {
+                \Log::info("🏙 CITY MATCH → {$citySlug} (matched with: {$cleanSlug})");
                 return Inertia::render('Locations/Show', [
                     'slug' => $svcSlug,
-                    'citySlug' => $cleanSlug,
+                    'citySlug' => $citySlug, // Normalize edilmiş versiyonu gönder
                 ]);
             }
 

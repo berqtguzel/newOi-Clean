@@ -17,7 +17,7 @@ class ServicesController extends Controller
     {
         $slugLower = strtolower($slug);
 
-        $tenantId = config('services.omr.talent_id');
+        $tenantId = config('services.omr.tenant_id');
         $base     = rtrim(config('services.omr.base'), '/');
 
         // 🔥 1️⃣ Tüm servisleri cache ile al (ID eşleştirmek için)

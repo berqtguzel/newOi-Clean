@@ -204,3 +204,68 @@
 .dark .contactx-card__row svg{
     color: white;
 }
+
+/* --- MOBİL HARİTA GÖRÜNÜRLÜK DÜĞMESİ STİLİ --- */
+
+/* Temel Düğme Stili */
+.contactx-map-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    margin-top: 1.5rem; /* Kartın altından ayır */
+
+    /* Görsel Stil */
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-color, #0ea5e9);
+    background-color: var(--bg-light, #ffffff);
+    border: 1px solid var(--primary-color, #0ea5e9);
+    border-radius: var(--radius-md, 8px);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    gap: 0.5rem;
+    text-align: center;
+}
+
+/* Aktif Durum (Harita Açık) */
+.contactx-map-toggle-btn.is-active {
+    background-color: var(--primary-color, #0ea5e9);
+    color: #ffffff; /* Beyaz metin */
+}
+
+/* Hover/Focus Durumu */
+.contactx-map-toggle-btn:hover:not(.is-active) {
+    background-color: rgba(14, 165, 233, 0.1); /* Hafif mavi arka plan */
+}
+
+/* İkon Stili (Ok) */
+.contactx-map-toggle-icon {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.3s ease;
+    /* İkon rengi, düğme durumuna göre değişir */
+    fill: currentColor;
+}
+
+/* Yalnızca Mobil İçin Görünürlük Kontrolü */
+/* Masaüstünde (1025px ve üzeri) düğmeyi tamamen gizle */
+@media (min-width: 1025px) {
+    .contactx-map-toggle-btn {
+        display: none !important;
+    }
+}
+
+/* --- Harita Açılış Animasyonu (Opsiyonel) --- */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

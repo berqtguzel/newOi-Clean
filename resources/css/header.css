@@ -566,3 +566,24 @@
    background: #0f172a !important;
     border-bottom: 1px solid var(--hd-border);
 }
+
+.site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+}
+
+/* Drawer'ın tam olarak nereden başlayacağını hesaplamak için
+   navwrap yüksekliğini referans alacağız. */
+.navwrap {
+    position: relative;
+    z-index: 51; /* header içindeki normal nav için */
+}
+
+/* Topbar + navwrap toplam yüksekliği.
+   Tasarımına göre ayarla: 80, 96, 112 vs. */
+:root {
+    --header-total-height: 112px; /* göz kararı ayarla */
+}

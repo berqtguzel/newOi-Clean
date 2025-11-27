@@ -31,16 +31,15 @@
       "in_city": "{{city}}'de"
     }
   },
-"servicesList": {
-  "title": "Hizmetler",
-  "subtitle": "Eviniz ve işiniz için sunduğumuz kapsamlı hizmetleri keşfedin",
-  "meta_title": "Hizmetlerimiz - O&I CLEAN group GmbH",
-  "meta_description": "Profesyonel temizlik, tadilat ve bina yönetimi.",
-  "loading": "Yükleniyor…",
-  "contact_cta": "Bizimle iletişime geçin",
-  "contact_cta_aria": "Hemen iletişime geçin"
-}
-,
+  "servicesList": {
+    "title": "Hizmetler",
+    "subtitle": "Eviniz ve işiniz için sunduğumuz kapsamlı hizmetleri keşfedin",
+    "meta_title": "Hizmetlerimiz - O&I CLEAN group GmbH",
+    "meta_description": "Profesyonel temizlik, tadilat ve bina yönetimi.",
+    "loading": "Yükleniyor…",
+    "contact_cta": "Bizimle iletişime geçin",
+    "contact_cta_aria": "Hemen iletişime geçin"
+  },
   "locations": {
     "page_title": "Lokasyonlar - O&I CLEAN group GmbH",
     "page_description": "Almanya’nın farklı şehirlerinde profesyonel temizlik hizmetleri. Yerel uzmanlık, ülke çapında kalite.",
@@ -58,7 +57,7 @@
   },
   "contact": {
     "page_title": "İletişim",
-  "intro_static_text": "Ücretsiz ve bağlayıcı değildir –",
+    "intro_static_text": "Ücretsiz ve bağlayıcı değildir –",
     "intro_dynamic_text": "en kısa sürede size dönüş yapacağız",
     "title": "Bizimle iletişime geçin",
     "description": "Şirketiniz için profesyonel temizlik hizmetleri. Sizi memnuniyetle bireysel olarak bilgilendiririz.",
@@ -372,6 +371,13 @@
       "message": "İçerik yükleniyor…"
     }
   },
+  "locationShow": {
+    "services_title_prefix": "",
+    "services_title_suffix": "için diğer hizmetler",
+    "services_subtitle": "Bu şehirde sunduğumuz diğer temizlik hizmetlerini keşfedin.",
+    "loading": "Yükleniyor…",
+    "empty": "Bu şehir için başka hizmet tanımlı değil."
+  },
   "cookies": {
     "title": "Çerez Tercihleri",
     "message": "Web sitemizde en iyi deneyimi yaşamanız için çerezleri kullanıyoruz.",
@@ -389,5 +395,9 @@
     "hide_details": "Gizle",
     "privacy_policy": "Gizlilik Politikası",
     "imprint": "Künye"
+  },
+  "map": {
+    "close": "Haritayı Kapat",
+    "show": "Haritada Göster"
   }
 }

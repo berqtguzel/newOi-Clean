@@ -14,7 +14,7 @@ class TrackAnalytics
 
         if ($request->isMethod('get') && ! $request->ajax()) {
             try {
-                $tenantId = config('services.omr.talent_id');
+                $tenantId = config('services.omr.tenant_id');
 
                 Http::withHeaders([
                     'X-Tenant-ID' => $tenantId,

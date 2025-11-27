@@ -77,7 +77,7 @@ const ContactSection = () => {
     const tenantId =
         props?.global?.tenantId ||
         props?.global?.tenant_id ||
-        props?.global?.talentId ||
+        props?.global?.tenantId ||
         "";
     const locale = useLocale("de");
 
@@ -120,8 +120,7 @@ const ContactSection = () => {
             return formLabels.name;
         if (raw.includes("phone") || raw.includes("tel") || type === "tel")
             return formLabels.phone;
-        if (raw.includes("mail") || type === "email")
-            return formLabels.email;
+        if (raw.includes("mail") || type === "email") return formLabels.email;
         if (
             raw.includes("message") ||
             raw.includes("nachricht") ||
@@ -283,11 +282,7 @@ const ContactSection = () => {
         [t, i18n.language]
     );
     const successSub = useMemo(
-        () =>
-            t(
-                "contact.success_sub",
-                "Wir melden uns zeitnah bei Ihnen."
-            ),
+        () => t("contact.success_sub", "Wir melden uns zeitnah bei Ihnen."),
         [t, i18n.language]
     );
     const okButton = useMemo(() => t("common.ok", "OK"), [t, i18n.language]);
@@ -418,137 +413,153 @@ const ContactSection = () => {
                         >
                             <div className="form-grid">
                                 {fields.map((f, index) => {
-                                const fieldError = errors[f.name];
-                                const labelText = getFieldLabel(f, index);
-                                const inputId = f.name || `field-${index}`;
+                                    const fieldError = errors[f.name];
+                                    const labelText = getFieldLabel(f, index);
+                                    const inputId = f.name || `field-${index}`;
 
-                                const isPhoneField =
-                                    f.type === "tel" ||
-                                    String(f.label)
-                                        .toLowerCase()
-                                        .includes("phone") ||
-                                    String(f.label)
-                                        .toLowerCase()
-                                        .includes("telefon");
-                                const isNameField =
-                                    f.name === "name" ||
-                                    String(f.label)
-                                        .toLowerCase()
-                                        .includes("name") ||
-                                    String(f.label)
-                                        .toLowerCase()
-                                        .includes("isim") ||
-                                    String(f.label)
-                                        .toLowerCase()
-                                        .includes("ad");
+                                    const isPhoneField =
+                                        f.type === "tel" ||
+                                        String(f.label)
+                                            .toLowerCase()
+                                            .includes("phone") ||
+                                        String(f.label)
+                                            .toLowerCase()
+                                            .includes("telefon");
+                                    const isNameField =
+                                        f.name === "name" ||
+                                        String(f.label)
+                                            .toLowerCase()
+                                            .includes("name") ||
+                                        String(f.label)
+                                            .toLowerCase()
+                                            .includes("isim") ||
+                                        String(f.label)
+                                            .toLowerCase()
+                                            .includes("ad");
 
-                                return (
-                                    // Dinamik form alanlarının ana div'ini bastır
-                                    <div
-                                        key={inputId}
-                                        className={`form-group ${
-                                            f.type === "textarea"
-                                                ? "full-width"
-                                                : ""
-                                        }`}
-                                        suppressHydrationWarning={true}
-                                    >
-                                        <label htmlFor={inputId}>
-                                            {labelText} {f.required && "*"}
-                                        </label>
+                                    return (
+                                        // Dinamik form alanlarının ana div'ini bastır
+                                        <div
+                                            key={inputId}
+                                            className={`form-group ${
+                                                f.type === "textarea"
+                                                    ? "full-width"
+                                                    : ""
+                                            }`}
+                                            suppressHydrationWarning={true}
+                                        >
+                                            <label htmlFor={inputId}>
+                                                {labelText} {f.required && "*"}
+                                            </label>
 
-                                        {f.type === "textarea" ? (
-                                            <textarea
-                                                id={inputId}
-                                                name={f.name}
-                                                rows="5"
-                                                value={data[f.name] || ""}
-                                                onChange={(e) =>
-                                                    setField(
-                                                        f.name,
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className={
-                                                    fieldError ? "error" : ""
-                                                }
-                                                disabled={showSuccessModal}
-                                            />
-                                        ) : (
-                                            <input
-                                                id={inputId}
-                                                type={f.type}
-                                                name={f.name}
-                                                value={data[f.name] || ""}
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
-                                                    if (isPhoneField) {
-                                                        if (
-                                                            /^[0-9+\-()\s]*$/.test(
-                                                                val
-                                                            )
+                                            {f.type === "textarea" ? (
+                                                <textarea
+                                                    id={inputId}
+                                                    name={f.name}
+                                                    rows="5"
+                                                    value={data[f.name] || ""}
+                                                    onChange={(e) =>
+                                                        setField(
+                                                            f.name,
+                                                            e.target.value
                                                         )
-                                                            setField(
-                                                                f.name,
-                                                                val
-                                                            );
-                                                    } else if (isNameField) {
-                                                        if (
-                                                            /^[^0-9]*$/.test(
-                                                                val
-                                                            )
-                                                        )
-                                                            setField(
-                                                                f.name,
-                                                                val
-                                                            );
-                                                    } else {
-                                                        setField(f.name, val);
                                                     }
-                                                }}
-                                                className={
-                                                    fieldError ? "error" : ""
-                                                }
-                                                disabled={showSuccessModal}
-                                            />
-                                        )}
-                                        {fieldError && (
-                                            <span className="error-message">
-                                                {fieldError}
-                                            </span>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                                    className={
+                                                        fieldError
+                                                            ? "error"
+                                                            : ""
+                                                    }
+                                                    disabled={showSuccessModal}
+                                                />
+                                            ) : (
+                                                <input
+                                                    id={inputId}
+                                                    type={f.type}
+                                                    name={f.name}
+                                                    value={data[f.name] || ""}
+                                                    onChange={(e) => {
+                                                        const val =
+                                                            e.target.value;
+                                                        if (isPhoneField) {
+                                                            if (
+                                                                /^[0-9+\-()\s]*$/.test(
+                                                                    val
+                                                                )
+                                                            )
+                                                                setField(
+                                                                    f.name,
+                                                                    val
+                                                                );
+                                                        } else if (
+                                                            isNameField
+                                                        ) {
+                                                            if (
+                                                                /^[^0-9]*$/.test(
+                                                                    val
+                                                                )
+                                                            )
+                                                                setField(
+                                                                    f.name,
+                                                                    val
+                                                                );
+                                                        } else {
+                                                            setField(
+                                                                f.name,
+                                                                val
+                                                            );
+                                                        }
+                                                    }}
+                                                    className={
+                                                        fieldError
+                                                            ? "error"
+                                                            : ""
+                                                    }
+                                                    disabled={showSuccessModal}
+                                                />
+                                            )}
+                                            {fieldError && (
+                                                <span className="error-message">
+                                                    {fieldError}
+                                                </span>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
 
-                        {(errors.general ||
-                            (Object.keys(errors).length > 0 &&
-                                !fields.some((f) => errors[f.name]))) && (
-                            <div
-                                className="error-message general-error mb-4"
+                            {(errors.general ||
+                                (Object.keys(errors).length > 0 &&
+                                    !fields.some((f) => errors[f.name]))) && (
+                                <div
+                                    className="error-message general-error mb-4"
+                                    suppressHydrationWarning={true}
+                                >
+                                    {errors.general ||
+                                        "Lütfen formdaki hataları kontrol edin."}
+                                </div>
+                            )}
+
+                            <button
+                                type="submit"
+                                className="submit-button bg-button"
+                                disabled={isSubmitting || showSuccessModal}
                                 suppressHydrationWarning={true}
                             >
-                                {errors.general ||
-                                    "Lütfen formdaki hataları kontrol edin."}
-                            </div>
-                        )}
-
-                        <button
-                            type="submit"
-                            className="submit-button bg-button"
-                            disabled={isSubmitting || showSuccessModal}
+                                {isSubmitting ? (
+                                    "..."
+                                ) : (
+                                    <SafeHtml
+                                        html={submitLabelHtml}
+                                        as="span"
+                                    />
+                                )}
+                            </button>
+                        </form>
+                    ) : (
+                        <div
+                            className="py-10 text-center"
                             suppressHydrationWarning={true}
                         >
-                            {isSubmitting ? (
-                                "..."
-                            ) : (
-                                <SafeHtml html={submitLabelHtml} as="span" />
-                            )}
-                        </button>
-                    </form>
-                    ) : (
-                        <div className="py-10 text-center" suppressHydrationWarning={true}>
                             {loading && (
                                 <span suppressHydrationWarning={true}>
                                     {loadingText}

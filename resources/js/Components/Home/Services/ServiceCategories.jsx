@@ -46,7 +46,7 @@ export default function ServiceCategories({ content = {} }) {
                 <Aurora
                     className="svc-aurora-canvas"
                     colorStops={["#0894D7", "#2967EC", "#0284C7"]}
-                    amplitude={0.5}
+                    amplitude={0.7}
                     speed={0.6}
                     blend={0}
                 />

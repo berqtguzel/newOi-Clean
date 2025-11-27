@@ -115,3 +115,45 @@
 @media print {
   .services-contact-button { display: none; }
 }
+.service-card-skeleton {
+    background: #f1f1f1;
+    border-radius: 14px;
+    height: 280px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: pulse 1.2s infinite ease-in-out;
+}
+
+.skeleton-img {
+    height: 140px;
+    border-radius: 12px;
+    background: #e3e3e3;
+}
+
+.skeleton-title {
+    height: 18px;
+    width: 70%;
+    background: #dbdbdb;
+    border-radius: 8px;
+}
+
+.skeleton-text {
+    height: 14px;
+    width: 55%;
+    background: #e0e0e0;
+    border-radius: 8px;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.45;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.45;
+    }
+}

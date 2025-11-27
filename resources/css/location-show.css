@@ -1,18 +1,24 @@
 /* --- GENEL AYARLAR & DEĞİŞKENLER --- */
 :root {
-    --primary-color: #0ea5e9; /* Sky Blue */
-    --primary-hover: #0284c7;
+    --primary-color: var(--header-background-color); /* Sky Blue */
+    --primary-hover: var(--site-primary-color);
+    --primary-light: #e0f2fe;
     --text-dark: #0f172a;     /* Slate 900 */
     --text-medium: #334155;   /* Slate 700 */
     --text-light: #64748b;    /* Slate 500 */
     --bg-light: #ffffff;
     --bg-card: #ffffff;
+    --bg-gradient-start: #f8fafc;
+    --bg-gradient-end: #ffffff;
     --border-color: rgba(148, 163, 184, 0.2);
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --radius-lg: 16px;
-    --radius-md: 12px;
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --radius-lg: 20px;
+    --radius-md: 16px;
+    --radius-sm: 12px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Dark Mode Değişkenleri */
@@ -22,6 +28,8 @@
     --text-light: #94a3b8;
     --bg-light: #0f172a;
     --bg-card: #1e293b;
+    --bg-gradient-start: #0f172a;
+    --bg-gradient-end: #1e293b;
     --border-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -33,10 +41,12 @@
 }
 
 body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif; /* Modern font ailesi */
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     background-color: var(--bg-light);
     color: var(--text-medium);
     line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .container {
@@ -46,121 +56,220 @@ body {
     padding-inline: 1.5rem;
 }
 
+/* ============================================
+   HERO SECTION - Modern & Premium
+   ============================================ */
 .locx-hero {
-    padding: 2rem 0 2rem; /* Üst/alt boşluk biraz azaltıldı */
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    align-items: center; /* İçeriği ortala */
+    padding: 0;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
 }
 
 .locx-hero__media {
     width: 100%;
-    /* Görselin çok geniş ekranlarda aşırı büyümesini engeller */
-    max-width: 1100px;
     position: relative;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow-lg);
-    margin-inline: auto; /* Ortalamayı garantiye alır */
-
-    /* ÖNEMLİ: Görseli daha kısa ve yayvan yapar (Ultrawide sinema oranı) */
     aspect-ratio: 21 / 9;
-
-    /* ÖNEMLİ: Ne olursa olsun görselin yüksekliği 450px'i geçmesin */
-    max-height: 450px;
+    max-height: 800px;
+    overflow: hidden;
+    border-radius: 0;
 }
 
 .locx-hero__img {
     width: 100%;
     height: 100%;
-    /* object-fit: cover; görselin kutuya sığarken bozulmamasını,
-       gerekirse kenarlardan kırpılmasını sağlar. */
     object-fit: cover;
-    /* object-position: center; görselin ortasına odaklanır.
-       Eğer görselin üst kısmı önemliyse 'top center' yapabilirsin. */
     object-position: center center;
-    transition: transform 0.5s ease;
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
 }
 
 .locx-hero__media:hover .locx-hero__img {
-    transform: scale(1.02); /* Hafif zoom efekti devam ediyor */
+    transform: scale(1.05);
 }
 
-.locx-hero__inner {
-    max-width: 800px;
-    margin: 0 auto;
-    text-align: center;
+.locx-hero__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(15, 23, 42, 0.75) 0%,
+        rgba(15, 23, 42, 0.5) 50%,
+        rgba(14, 165, 233, 0.3) 100%
+    );
+    z-index: 1;
 }
 
+.locx-hero__content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    padding: 4rem 2rem;
+    display: flex;
+    align-items: flex-end;
+    min-height: 100%;
+}
 
+.locx-hero__content .locx-title {
+    color: #ffffff;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+    margin-bottom: 0;
+    animation: fadeInUp 0.8s ease-out;
+}
 
-/* Başlık Stili - Görseldeki gibi temiz */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Başlık Stili - Modern Typography */
 .locx-title {
-    font-size: clamp(2rem, 5vw, 3.5rem); /* Responsive font boyutu */
-    font-weight: 800;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 900;
     color: var(--text-dark);
     line-height: 1.1;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
     margin-bottom: 1rem;
 }
 
-/* Mavi vurgu efekti istenirse (Selection style) */
 .locx-title span {
     color: var(--primary-color);
+    background: linear-gradient(135deg, var(--primary-color), #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .locx-subtitle {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
     color: var(--text-medium);
     max-width: 65ch;
     margin: 0 auto;
     opacity: 0.9;
+    line-height: 1.7;
 }
 
-/* --- EKMEK KIRINTISI (Breadcrumbs) --- */
-.locx-crumbs {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    color: var(--text-light);
-    margin-bottom: 1rem;
-    font-weight: 500;
-}
-
-.locx-crumbs__link {
-    color: var(--text-light);
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-.locx-crumbs__link:hover {
-    color: var(--primary-color);
-}
-
-.locx-crumbs__current {
-    color: var(--primary-color);
-    font-weight: 600;
-}
-
-/* --- HİZMETLER GRID ALANI (Cards) --- */
-.locx-services {
-    padding: 6rem 0;
+/* ============================================
+   CONTENT SECTION - Clean & Readable
+   ============================================ */
+.locx-content {
+    padding: 5rem 0;
     background: linear-gradient(
         to bottom,
         var(--bg-light) 0%,
-        #f8fafc 50%,
-        var(--bg-light) 100%
+        var(--bg-gradient-start) 100%
+    );
+    position: relative;
+}
+
+.locx-content::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(148, 163, 184, 0.2),
+        transparent
+    );
+}
+
+.locx-city-title {
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 2rem;
+    position: relative;
+    padding-bottom: 1rem;
+    letter-spacing: -0.02em;
+}
+
+.locx-city-title::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), #06b6d4);
+    border-radius: 2px;
+}
+
+.locx-content-html {
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: var(--text-medium);
+    max-width: 900px;
+}
+
+.locx-content-html p {
+    margin-bottom: 1.5rem;
+}
+
+.locx-content-html p:last-child {
+    margin-bottom: 0;
+}
+
+.locx-content-html h2,
+.locx-content-html h3 {
+    color: var(--text-dark);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.locx-content-html h2 {
+    font-size: 1.75rem;
+}
+
+.locx-content-html h3 {
+    font-size: 1.5rem;
+}
+
+.locx-content-html ul,
+.locx-content-html ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.locx-content-html li {
+    margin-bottom: 0.5rem;
+}
+
+/* ============================================
+   SERVICES SECTION - Premium Grid
+   ============================================ */
+.locx-services {
+    padding: 7rem 0;
+    background: linear-gradient(
+        to bottom,
+        var(--bg-gradient-start) 0%,
+        var(--bg-light) 50%,
+        var(--bg-gradient-start) 100%
     );
     position: relative;
     overflow: hidden;
 }
-.dark .locx-services{
+
+.dark .locx-services {
     background: linear-gradient(
         to bottom,
         var(--bg-light) 0%,
-        #0f172a 50%,
+        #1e293b 50%,
         var(--bg-light) 100%
     );
 }
@@ -182,20 +291,21 @@ body {
 
 .locx-services__header {
     text-align: center;
-    margin-bottom: 4rem;
+    margin-bottom: 5rem;
     max-width: 900px;
     margin-left: auto;
     margin-right: auto;
     padding: 0 1rem;
+    animation: fadeInUp 0.6s ease-out;
 }
 
 .locx-services__title {
-    font-size: clamp(2.25rem, 5vw, 3.5rem);
-    font-weight: 800;
+    font-size: clamp(2.25rem, 5vw, 3.75rem);
+    font-weight: 900;
     color: var(--text-dark);
     line-height: 1.15;
     letter-spacing: -0.03em;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
     position: relative;
     display: inline-block;
 }
@@ -205,90 +315,66 @@ body {
     position: relative;
     display: inline-block;
     padding: 0 0.5rem;
-}
-
-.locx-services__city::before {
-    content: "";
-    position: absolute;
-    bottom: 0.15rem;
-    left: 0;
-    right: 0;
-    height: 0.35rem;
-    background: linear-gradient(
-        90deg,
-        var(--primary-color),
-        rgba(14, 165, 233, 0.4)
-    );
-    border-radius: 4px;
-    opacity: 0.3;
-    z-index: -1;
-}
-
-.locx-services__city::after {
-    content: "";
-    position: absolute;
-    bottom: 0.15rem;
-    left: 0;
-    right: 0;
-    height: 0.2rem;
-    background: linear-gradient(
-        90deg,
-        var(--primary-color),
-        rgba(14, 165, 233, 0.6)
-    );
-    border-radius: 4px;
-    opacity: 0.5;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .locx-services__subtitle {
-    font-size: clamp(1rem, 2vw, 1.25rem);
+    font-size: clamp(1.125rem, 2vw, 1.375rem);
     color: var(--text-medium);
     line-height: 1.7;
-    margin-top: 0.75rem;
+    margin-top: 1rem;
     font-weight: 400;
+    opacity: 0.9;
 }
 
 /* Grid Yapısı - Modern ve Responsive */
 .locx-services__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 2.5rem;
     margin-top: 3rem;
     padding: 0 0.5rem;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
 }
 
 @media (min-width: 1400px) {
     .locx-services__grid {
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
         gap: 3rem;
     }
 }
 
+/* Loading State - Modern Spinner */
 .locx-services__loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 5rem 2rem;
-    gap: 1.5rem;
+    padding: 6rem 2rem;
+    gap: 2rem;
     color: var(--text-medium);
+    min-height: 400px;
 }
 
 .locx-services__loading p {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
     font-weight: 500;
     color: var(--text-medium);
+    animation: pulse 2s ease-in-out infinite;
 }
 
 .locx-services__spinner {
-    width: 56px;
-    height: 56px;
-    border: 5px solid rgba(14, 165, 233, 0.1);
+    width: 64px;
+    height: 64px;
+    border: 4px solid rgba(14, 165, 233, 0.1);
     border-top-color: var(--primary-color);
     border-right-color: var(--primary-color);
     border-radius: 50%;
     animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-    box-shadow: 0 0 20px rgba(14, 165, 233, 0.2);
+    box-shadow: 0 0 30px rgba(14, 165, 233, 0.2);
 }
 
 @keyframes spin {
@@ -300,40 +386,51 @@ body {
     }
 }
 
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Error State */
 .locx-services__error {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 4rem 2rem;
-    gap: 1.25rem;
+    padding: 5rem 2rem;
+    gap: 1.5rem;
     color: #ef4444;
     background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
     border-radius: var(--radius-lg);
     border: 2px solid #fecaca;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+    box-shadow: var(--shadow-lg);
     max-width: 600px;
     margin: 2rem auto;
 }
 
 .locx-services__error-icon {
-    width: 56px;
-    height: 56px;
+    width: 64px;
+    height: 64px;
     opacity: 0.9;
 }
 
 .locx-services__error p {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
     font-weight: 500;
     text-align: center;
 }
 
+/* Empty State */
 .locx-services__empty {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 5rem 2rem;
+    padding: 6rem 2rem;
     gap: 1.5rem;
     color: var(--text-light);
     background: linear-gradient(
@@ -344,102 +441,30 @@ body {
     border-radius: var(--radius-lg);
     border: 2px dashed rgba(148, 163, 184, 0.3);
     max-width: 500px;
-    margin: 2rem auto;
+    margin: 3rem auto;
 }
 
 .locx-services__empty-icon {
-    width: 72px;
-    height: 72px;
+    width: 80px;
+    height: 80px;
     opacity: 0.4;
 }
 
 .locx-services__empty p {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
     font-weight: 500;
     text-align: center;
 }
 
-.locx-h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 1.5rem;
-    display: block;
-}
-
-/* Grid Yapısı */
-.services-grid-5 {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr); /* Varsayılan: 4 sütun */
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-}
-
-/* Kartların İç Yapısı (HTML'de classların card yapısına uygun olduğunu varsayıyorum) */
-/* Eğer kartların kendine has class'ı yoksa grid'in içindeki div'leri hedefleriz */
-.services-grid-5 > div {
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
-}
-
-.services-grid-5 > div:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--primary-color);
-}
-
-/* Kart Görseli */
-.services-grid-5 img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-bottom: 1px solid var(--border-color);
-}
-
-/* Kart Başlığı/Metni */
-.services-grid-5 h3,
-.services-grid-5 strong {
-    font-size: 1.1rem;
-    color: var(--text-dark);
-    margin: 1rem;
-    display: block;
-    font-weight: 700;
-}
-
-.services-grid-5 p {
-    font-size: 0.9rem;
-    color: var(--text-light);
-    padding: 0 1rem 1rem;
-    margin: 0;
-}
-
-.services-grid-5 a {
-    margin: auto 1rem 1rem; /* En alta itmek için */
-    text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--primary-color);
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.services-grid-5 a:hover {
-    text-decoration: underline;
-}
-
-
-/* --- RESPONSIVE (MOBİL UYUM) --- */
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
 
 /* Tablet ve Küçük Laptoplar (1280px altı) */
 @media (max-width: 1280px) {
-    .services-grid-5 {
-        grid-template-columns: repeat(3, 1fr);
+    .locx-services__grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 2rem;
     }
 }
 
@@ -447,88 +472,254 @@ body {
 @media (max-width: 1024px) {
     .locx-hero__media {
         aspect-ratio: 16 / 9;
+        max-height: 600px;
     }
-    .services-grid-5 {
-        grid-template-columns: repeat(2, 1fr);
+
+    .locx-hero__content {
+        padding: 3rem 1.5rem;
     }
-    .locx-services__grid {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-        gap: 1.5rem;
+
+    .locx-content {
+        padding: 4rem 0;
     }
+
     .locx-services {
-        padding: 3rem 0;
+        padding: 5rem 0;
+    }
+
+    .locx-services__grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 2rem;
     }
 }
 
-/* Mobil (640px altı) */
-@media (max-width: 640px) {
-    .locx-hero {
-        padding-top: 1.5rem;
+/* Mobil (768px altı) */
+@media (max-width: 768px) {
+    .locx-hero__media {
+        aspect-ratio: 4 / 3;
+        max-height: 500px;
     }
 
-    .locx-hero__media {
-        border-radius: 12px;
-        aspect-ratio: 4 / 3; /* Mobilde daha kareye yakın */
+    .locx-hero__content {
+        padding: 2rem 1.5rem;
     }
 
     .locx-title {
-        text-align: left; /* Mobilde sola yaslı daha iyi okunabilir */
+        font-size: clamp(2rem, 8vw, 3rem);
     }
 
-    .locx-subtitle {
-        text-align: left;
+    .locx-content {
+        padding: 3rem 0;
     }
 
-    .locx-crumbs {
-        justify-content: flex-start;
+    .locx-city-title {
+        font-size: clamp(1.75rem, 6vw, 2.25rem);
     }
 
-    .services-grid-5 {
-        grid-template-columns: 1fr; /* Tek sütun */
-    }
-
-    .locx-hero__inner {
-        text-align: left;
+    .locx-content-html {
+        font-size: 1rem;
     }
 
     .locx-services {
-        padding: 2.5rem 0;
+        padding: 4rem 0;
     }
 
     .locx-services__header {
-        margin-bottom: 2rem;
+        margin-bottom: 3rem;
     }
 
     .locx-services__grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
+        padding: 0;
     }
 }
 
-/* --- DARK MODE ÖZELLEŞTİRMELERİ --- */
-/* (Root değişkenleri yukarıda tanımlı, burası ek kurallar) */
+/* Küçük Mobil (640px altı) */
+@media (max-width: 640px) {
+    .locx-hero__media {
+        aspect-ratio: 4 / 3;
+    }
+
+    .locx-hero__content {
+        padding: 1.5rem 1rem;
+    }
+
+    .locx-content {
+        padding: 2.5rem 0;
+    }
+
+    .locx-services {
+        padding: 3rem 0;
+    }
+
+    .locx-services__header {
+        margin-bottom: 2.5rem;
+    }
+
+    .locx-services__title {
+        font-size: clamp(1.75rem, 8vw, 2.5rem);
+    }
+}
+
+/* ============================================
+   DARK MODE ÖZELLEŞTİRMELERİ
+   ============================================ */
 :root.dark body {
     background-color: var(--bg-light);
 }
 
 :root.dark .locx-title {
-    color: #fff;
+    color: #ffffff;
+}
+
+:root.dark .locx-city-title {
+    color: #ffffff;
+}
+
+:root.dark .locx-city-title::after {
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
+}
+
+:root.dark .locx-content-html {
+    color: var(--text-medium);
+}
+
+:root.dark .locx-content-html h2,
+:root.dark .locx-content-html h3 {
+    color: var(--text-dark);
+}
+
+/* ============================================
+   LEGACY SUPPORT (Eski classlar için)
+   ============================================ */
+.locx-hero__inner {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.locx-crumbs {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.locx-crumbs__link {
+    color: var(--text-light);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.locx-crumbs__link:hover {
+    color: var(--primary-color);
+}
+
+.locx-crumbs__current {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.locx-h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    display: block;
+}
+
+/* Legacy Grid Support */
+.services-grid-5 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.services-grid-5 > div {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-sm);
+}
+
+.services-grid-5 > div:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--primary-color);
+}
+
+.services-grid-5 img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    transition: var(--transition);
+}
+
+.services-grid-5 > div:hover img {
+    transform: scale(1.05);
+}
+
+.services-grid-5 h3,
+.services-grid-5 strong {
+    font-size: 1.125rem;
+    color: var(--text-dark);
+    margin: 1.25rem;
+    display: block;
+    font-weight: 700;
+}
+
+.services-grid-5 p {
+    font-size: 0.95rem;
+    color: var(--text-light);
+    padding: 0 1.25rem 1.25rem;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.services-grid-5 a {
+    margin: auto 1.25rem 1.25rem;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition);
+}
+
+.services-grid-5 a:hover {
+    color: var(--primary-hover);
+    gap: 10px;
+}
+
+@media (max-width: 1024px) {
+    .services-grid-5 {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .services-grid-5 {
+        grid-template-columns: 1fr;
+    }
 }
 
 :root.dark .services-grid-5 > div {
     background-color: var(--bg-card);
-    border-color: rgba(255,255,255,0.05);
+    border-color: rgba(255, 255, 255, 0.1);
 }
 
-:root.dark .services-grid-5 h3 {
+:root.dark .services-grid-5 h3,
+:root.dark .services-grid-5 strong {
     color: #f1f5f9;
-}
-.locx-city-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var( --text-color);
-  margin-bottom: 1.25rem;
-}
-.dark  .locx-city-title{
-    color: white;
 }

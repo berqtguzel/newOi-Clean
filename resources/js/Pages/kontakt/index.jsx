@@ -22,6 +22,7 @@ export default function ContactIndex({
     introHtml,
 }) {
     const { props, url: inertiaUrl } = usePage();
+    // t() fonksiyonunu kullanarak çoklu dil desteği
     const { t } = useTranslation();
 
     const [isMounted, setIsMounted] = useState(false);
@@ -30,6 +31,9 @@ export default function ContactIndex({
     const [loading, setLoading] = useState(true);
 
     const isMobile = typeof window !== "undefined" && window.innerWidth <= 1024;
+
+    // Yardımcı fonksiyon: Haritanın o an açık olup olmadığını kontrol eder
+    const isMapActive = (locId) => activeMapId === locId;
 
     useEffect(() => {
         setIsMounted(true);
@@ -74,12 +78,14 @@ export default function ContactIndex({
     return (
         <AppLayout currentRoute={currentRoute}>
             <Head>
-                <title>Kontakt</title>
+                <title>{t("contact.title") || "Kontakt"}</title>
             </Head>
 
             <section className="contactx-page-wrapper">
                 <section className="contactx-intro contactx-page-intro">
-                    <h1 className="contactx-title">Kontakt</h1>
+                    <h1 className="contactx-title">
+                        {t("contact.title") || "Kontakt"}
+                    </h1>
                 </section>
 
                 <ContactSection />
@@ -87,7 +93,8 @@ export default function ContactIndex({
                 <section className="contactx-locations-wrapper">
                     <div className="max-w-7xl mx-auto px-4">
                         <h2 className="contactx-section-title">
-                            Standorte & Kontakt
+                            {t("contact.locations_title") ||
+                                "Standorte & Kontakt"}
                         </h2>
 
                         {locations.length > 0 &&
@@ -99,17 +106,8 @@ export default function ContactIndex({
                                     {/* CARD */}
                                     <div
                                         className="contactx-card"
-                                        onClick={() => {
-                                            if (!isMobile) return; // 👉 Desktop’ta tıklama yok
-                                            setActiveMapId((prev) =>
-                                                prev === loc.id ? null : loc.id
-                                            );
-                                        }}
-                                        style={{
-                                            cursor: isMobile
-                                                ? "pointer"
-                                                : "auto",
-                                        }}
+                                        // Kart üzerindeki eski onClick kaldırıldı.
+                                        style={{ cursor: "auto" }}
                                     >
                                         <h3 className="contactx-card__title">
                                             {loc.title}
@@ -138,12 +136,52 @@ export default function ContactIndex({
                                                 </a>
                                             </div>
                                         )}
+
+                                        {/* 📌 MOBİL BUTON: Haritayı açıp kapar */}
+                                        {isMounted && isMobile && (
+                                            <button
+                                                className={`contactx-map-toggle-btn ${
+                                                    isMapActive(loc.id)
+                                                        ? "is-active"
+                                                        : ""
+                                                }`}
+                                                onClick={() => {
+                                                    setActiveMapId((prev) =>
+                                                        prev === loc.id
+                                                            ? null
+                                                            : loc.id
+                                                    );
+                                                }}
+                                                aria-expanded={isMapActive(
+                                                    loc.id
+                                                )}
+                                                aria-controls={`map-${loc.id}`}
+                                            >
+                                                {isMapActive(loc.id)
+                                                    ? t("map.close")
+                                                    : t("map.show")}
+                                                <svg
+                                                    className="contactx-map-toggle-icon"
+                                                    viewBox="0 0 24 24"
+                                                    style={{
+                                                        transform: isMapActive(
+                                                            loc.id
+                                                        )
+                                                            ? "rotate(180deg)"
+                                                            : "rotate(0deg)",
+                                                    }}
+                                                >
+                                                    <path
+                                                        fill="currentColor"
+                                                        d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        )}
                                     </div>
 
-                                    {/* MAP GÖSTERİM LOGİĞİ */}
-                                    {/* Desktop → her zaman açık */}
-                                    {/* Mobile → sadece seçilen açık */}
-                                    {(!isMobile || activeMapId === loc.id) && (
+                                    {/* HARİTA BÖLÜMÜ */}
+                                    {(!isMobile || isMapActive(loc.id)) && (
                                         <section
                                             id={`map-${loc.id}`}
                                             className="contactx-map-item"

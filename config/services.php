@@ -33,7 +33,7 @@ return [
     'omr' => [
     'base'      => env('OMR_API_BASE', 'https://omerdogan.de/api'),
     'timeout'   => env('OMR_API_TIMEOUT', 10),
-    'talent_id' => env('OMR_TALENT_ID', ''),
+    'tenant_id' => env('OMR_TENANT_ID', ''),
 ],
 
 ];

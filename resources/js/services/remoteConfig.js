@@ -15,7 +15,7 @@ const TIMEOUT = Number(
     import.meta?.env?.OMR_API_TIMEOUT || 10000
 );
 
-const TALENT_ID = import.meta?.env?.OMR_TALENT_ID || "";
+const TENANT_ID = import.meta?.env?.OMR_TENANT_ID || "";
 const DEFAULT_LOCALE =
     import.meta?.env?.OMR_DEFAULT_LOCALE || "de";
 
@@ -26,8 +26,8 @@ const remoteConfig = {
     apiBaseUrl: API_BASE_V1,
     menuPath: MENU_ENDPOINT,
     timeout: TIMEOUT,
-    tenant: TALENT_ID,
-    talentId: TALENT_ID,
+    tenant: TENANT_ID,
+    tenantId: TENANT_ID,
     locale: DEFAULT_LOCALE,
 };
 

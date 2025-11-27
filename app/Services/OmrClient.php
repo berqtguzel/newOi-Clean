@@ -10,13 +10,13 @@ class OmrClient
 {
     protected string $base;
     protected int $timeout;
-    protected string $talentId;
+    protected string $tenantId;
 
     public function __construct()
     {
         $this->base     = rtrim(config('services.omr.base'), '/');
         $this->timeout  = (int) config('services.omr.timeout', 10);
-        $this->talentId = (string) config('services.omr.talent_id', '');
+        $this->tenantId = (string) config('services.omr.tenant_id', '');
     }
 
     protected function http()
@@ -30,7 +30,7 @@ class OmrClient
     public function websites(array $query = []): array
     {
         $query = array_filter([
-            'talent_id' => $this->talentId,
+            'tenant_id' => $this->tenantId,
         ] + $query);
 
         $cacheKey = 'omr.websites.' . md5(json_encode($query));

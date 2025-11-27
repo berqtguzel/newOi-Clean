@@ -21,7 +21,7 @@
 
         $apiBase = env('VITE_REMOTE_API_BASE', 'https://omerdogan.de/api');
         if (!str_ends_with($apiBase, '/v1')) { $apiBase .= '/v1'; }
-        $tenantId = env('VITE_REMOTE_TALENT_ID', 'oi_cleande_690e161c3a1dd');
+        $tenantId = env('VITE_REMOTE_TENANT_ID', '');
         $locale = app()->getLocale();
 
    try {
@@ -29,7 +29,7 @@
     } catch (\Exception $e) { /* Hata varsa yoksay */ }
 
     // Ayarları API'den doğrudan çekiyoruz
-    $settings = []; 
+    $settings = [];
     foreach (['general', 'seo', 'branding', 'colors'] as $ep) {
         try {
             $res = Http::withHeaders(['X-Tenant-ID' => $tenantId])->timeout(2)->get("{$apiBase}/settings/{$ep}", ['locale' => $locale]);

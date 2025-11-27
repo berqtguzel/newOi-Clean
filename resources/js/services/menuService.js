@@ -139,7 +139,7 @@ export async function getMenus({ page = 1, perPage = 50, search, tenantId, local
 
   const headers = {};
 
-  if (remoteConfig.talentId) headers["X-Talent-Id"] = remoteConfig.talentId;
+  if (remoteConfig.tenantId) headers["X-Tenant-Id"] = remoteConfig.tenantId;
   if (tenantId) {
     headers["X-Tenant-ID"] = String(tenantId);
   }

@@ -9,7 +9,7 @@ if (! function_exists('trackConversion')) {
     function trackConversion(string $type, float $value, string $url, array $data = []): void
     {
         try {
-            $tenantId = config('services.omr.talent_id');
+            $tenantId = config('services.omr.tenant_id');
 
             Http::withHeaders([
                 'X-Tenant-ID' => $tenantId,

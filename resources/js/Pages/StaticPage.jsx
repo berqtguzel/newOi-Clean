@@ -103,7 +103,7 @@ export default function StaticPage({
     const tenantId =
         props?.global?.tenantId ||
         props?.global?.tenant_id ||
-        props?.global?.talentId ||
+        props?.global?.tenantId ||
         "";
 
     const inertiaLocale = props?.locale || props?.ziggy?.locale || "de";

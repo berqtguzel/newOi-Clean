@@ -5,20 +5,19 @@ import "../../../../css/LocationsGrid.css";
 import { useTranslation } from "react-i18next";
 import GermanyMap from "./GermanyMap";
 import LocationCard from "./LocationCard";
-import SafeHtml from "@/Components/Common/SafeHtml";
+
 import { useLocale } from "@/hooks/useLocale";
 import { useServices } from "@/hooks/useServices";
 
 const stripHtml = (s = "") => s.replace(/<[^>]*>/g, "").trim();
 
-// 💡 Yeni: Animasyon varyantları tanımlandı
 const containerVariants = {
     hidden: { opacity: 0 },
     show: {
         opacity: 1,
         transition: {
-            staggerChildren: 0.1, // Çocuk öğelerin ardışık animasyonu
-            delayChildren: 0.2,   // Çocuk animasyonlarının başlamadan önceki gecikmesi
+            staggerChildren: 0.1,
+            delayChildren: 0.2,
         },
     },
 };
@@ -27,12 +26,14 @@ const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
-// 💡 Yeni: Marker animasyon varyantları (opsiyonel, Marker'a uygulanabilir)
+
 const markerVariants = {
     hidden: { scale: 0 },
-    show: { scale: 1, transition: { type: "spring", stiffness: 200, damping: 15 } },
+    show: {
+        scale: 1,
+        transition: { type: "spring", stiffness: 200, damping: 15 },
+    },
 };
-
 
 export default function LocationsGrid() {
     const { t } = useTranslation();
@@ -45,7 +46,12 @@ export default function LocationsGrid() {
 
     const apiLocale = useLocale("de") || "de";
 
-    const { services = [], loading, durationMs, error } = useServices({
+    const {
+        services = [],
+        loading,
+        durationMs,
+        error,
+    } = useServices({
         tenantId,
         locale: apiLocale,
         perPage: 1000,
@@ -58,14 +64,11 @@ export default function LocationsGrid() {
             name: stripHtml(s.name),
             title: stripHtml(s.title || s.name),
         }))
-        .sort((a, b) =>
-            (a.city || "").localeCompare(b.city || "", apiLocale)
-        );
+        .sort((a, b) => (a.city || "").localeCompare(b.city || "", apiLocale));
 
     const [activeLocation, setActiveLocation] = React.useState(null);
 
     const title = t("locations.title", "Unsere Standorte");
-    // console.log(sortedItems) // Debugging için kaldırılabilir
 
     return (
         <section id="location" className="locations-section">
@@ -84,33 +87,25 @@ export default function LocationsGrid() {
             )}
 
             {error && (
-                <p style={{ textAlign: "center", color: "red" }}>
-                    ❌ {error}
-                </p>
+                <p style={{ textAlign: "center", color: "red" }}>❌ {error}</p>
             )}
 
-            {/* 💡 Ana konteyner için motion.div */}
-            <motion.div 
+            <motion.div
                 className="locations-container"
-                variants={containerVariants} // Kendi animasyon varyantları
+                variants={containerVariants}
                 initial="hidden"
                 animate="show"
             >
                 <div className="locations-header">
-                    {/* Başlık için de animasyon uygulayabiliriz */}
-                    <motion.h1 
+                    <motion.h1
                         className="locations-title"
-                        variants={itemVariants} // Başlık kendi animasyonu
+                        variants={itemVariants}
                     >
                         {title}
                     </motion.h1>
                 </div>
 
-                {/* Harita konteyneri için motion.div */}
-                <motion.div 
-                    className="map-container"
-                    variants={itemVariants} // Harita kendi animasyonu
-                >
+                <motion.div className="map-container" variants={itemVariants}>
                     <GermanyMap
                         locations={sortedItems}
                         activeId={activeLocation}
@@ -118,8 +113,7 @@ export default function LocationsGrid() {
                     />
                 </motion.div>
 
-              
-                <motion.div 
+                <motion.div
                     className="locations-grid"
                     variants={containerVariants}
                     initial="hidden"
@@ -132,10 +126,7 @@ export default function LocationsGrid() {
                     )}
 
                     {sortedItems.map((loc) => (
-                        <motion.div 
-                            key={loc.id} 
-                            variants={itemVariants} 
-                        >
+                        <motion.div key={loc.id} variants={itemVariants}>
                             <LocationCard
                                 location={loc}
                                 isActive={activeLocation === loc.id}

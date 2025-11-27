@@ -3,7 +3,7 @@ import axios from "axios";
 
 const BASE = (import.meta?.env?.VITE_REMOTE_API_BASE || "https://omerdogan.de/api/v1").replace(/\/$/, "");
 const TIMEOUT = Number(import.meta?.env?.VITE_REMOTE_TIMEOUT || 10000);
-const TALENT_ID = import.meta?.env?.VITE_REMOTE_TALENT_ID;
+const TENANT_ID = import.meta?.env?.VITE_REMOTE_TENANT_ID;
 
 export const http = axios.create({
   baseURL: BASE,
@@ -17,7 +17,7 @@ http.interceptors.request.use((config) => {
   config.headers = {
     Accept: "application/json",
 
-    ...(import.meta.env.VITE_REMOTE_TALENT_ID ? { "X-Tenant-ID": import.meta.env.VITE_REMOTE_TALENT_ID } : {}),
+    ...(import.meta.env.VITE_REMOTE_TENANT_ID ? { "X-Tenant-ID": import.meta.env.VITE_REMOTE_TENANT_ID } : {}),
     ...(config.data ? { "Content-Type": "application/json" } : {}),
     ...(config.headers || {}),
   };

@@ -23,7 +23,7 @@ if (! function_exists('getSiteColors')) {
         ];
 
         try {
-            $tenantId = config('services.omr.talent_id');
+            $tenantId = config('services.omr.tenant_id');
 
             $response = Http::withHeaders([
                 'X-Tenant-ID' => $tenantId,

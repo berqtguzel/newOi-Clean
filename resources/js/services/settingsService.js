@@ -14,9 +14,9 @@ function buildRequestConfig({ tenantId, locale, signal } = {}) {
 
     const effectiveTenantId =
         tenantId ||
-        remoteConfig.talentId ||
         remoteConfig.tenantId ||
-        import.meta.env.VITE_REMOTE_TALENT_ID;
+        remoteConfig.tenantId ||
+        import.meta.env.VITE_REMOTE_TENANT_ID;
 
     if (effectiveTenantId) {
         headers["X-Tenant-ID"] = String(effectiveTenantId);

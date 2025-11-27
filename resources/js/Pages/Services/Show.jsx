@@ -121,7 +121,8 @@ export default function ServiceShow() {
 
             {loading && (
                 <section className="service-show__loading">
-                    <p>{t("common.loading", "Yükleniyor...")}</p>
+                    <div className="service-show__spinner"></div>
+                    <p>{t("servicesList.loading", "Yükleniyor...")}</p>
                 </section>
             )}
 

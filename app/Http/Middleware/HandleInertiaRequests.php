@@ -65,7 +65,7 @@ class HandleInertiaRequests extends Middleware
 
             'global' => [
                 'websites' => fn () => rescue(fn () => omr_websites(), []),
-                'talentId' => fn () => (string) config('services.omr.talent_id', ''),
+                'tenantId' => fn () => (string) config('services.omr.tenant_id', ''),
                 'appName'  => config('app.name', 'O&I CLEAN group GmbH'),
             ],
 

@@ -16,7 +16,7 @@ import {
 } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import ThemeToggle from "./ThemeToggle";
-import DecryptedText from "./ReactBits/Texts/DescryptedText";
+
 import { useMenus } from "../hooks/useMenus";
 import { useSettings } from "@/hooks/useSettings";
 import { useGlobalWebsites } from "@/hooks/useGlobal";
@@ -29,8 +29,6 @@ import Cookies from "js-cookie";
 function cx(...args) {
     return args.filter(Boolean).join(" ");
 }
-
-const BitsBackground = () => <div aria-hidden className="rbits-bg" />;
 
 const getOffset = () => {
     const el = document.querySelector(".site-header");
@@ -63,7 +61,7 @@ const dedupeByKey = (items = [], keyA = "url", keyB = "name") => {
     });
 };
 
-function pickOmrSite(websites = [], { host, talentId } = {}) {
+function pickOmrSite(websites = [], { host, tenantId } = {}) {
     if (!Array.isArray(websites)) return null;
     const byHost =
         host &&
@@ -79,12 +77,12 @@ function pickOmrSite(websites = [], { host, talentId } = {}) {
             return domains.includes(String(host).toLowerCase());
         });
     if (byHost) return byHost;
-    if (talentId) {
-        const byTalent = websites.find(
+    if (tenantId) {
+        const byTenant = websites.find(
             (w) =>
-                String(w?.talentId || w?.tenant_id || "") === String(talentId)
+                String(w?.tenantId || w?.tenant_id || "") === String(tenantId)
         );
-        if (byTalent) return byTalent;
+        if (byTenant) return byTenant;
     }
     return websites[0] || null;
 }
@@ -188,7 +186,6 @@ const LanguageSwitcher = ({ currentLang, languages, onChange }) => {
 
     return (
         <div className={cx("lang-switch", open && "is-open")} ref={ref}>
-                       {" "}
             <button
                 type="button"
                 className="lang-switch__btn"
@@ -196,31 +193,22 @@ const LanguageSwitcher = ({ currentLang, languages, onChange }) => {
                 aria-expanded={open}
                 onClick={() => setOpen((o) => !o)}
             >
-                               {" "}
                 <span className="lang-switch__label">
-                                       {" "}
-                    {normalizeLang(activeLang?.code || "DE").toUpperCase()}     
-                             {" "}
+                    {normalizeLang(activeLang?.code || "DE").toUpperCase()}
                 </span>
-                               {" "}
                 <FaChevronDown
                     className="lang-switch__chev"
                     aria-hidden="true"
                 />
-                           {" "}
             </button>
-                       {" "}
             {open && (
                 <div className="lang-switch__popover" role="menu">
-                                       {" "}
                     <ul className="lang-switch__list">
-                                               {" "}
                         {languages.map((l) => {
                             const codeNorm = normalizeLang(l.code);
                             const isActive = codeNorm === normalizedCurrent;
                             return (
                                 <li key={l.code}>
-                                                                       {" "}
                                     <button
                                         type="button"
                                         className={cx(
@@ -232,61 +220,51 @@ const LanguageSwitcher = ({ currentLang, languages, onChange }) => {
                                             setOpen(false);
                                         }}
                                     >
-                                                                               {" "}
                                         <span className="lang-switch__item-code">
-                                                                               
-                                                    {codeNorm.toUpperCase()}   
-                                                                               {" "}
+                                            {codeNorm.toUpperCase()}
                                         </span>
-                                                                               {" "}
                                         <span className="lang-switch__item-label">
-                                                                               
-                                                   {" "}
-                                            {l.label || codeNorm.toUpperCase()} 
-                                                                               
-                                             {" "}
+                                            {l.label || codeNorm.toUpperCase()}
                                         </span>
-                                                                           {" "}
                                     </button>
-                                                                   {" "}
                                 </li>
                             );
                         })}
-                                           {" "}
                     </ul>
-                                   {" "}
                 </div>
             )}
-                   {" "}
         </div>
     );
 };
 
-const Header = ({ currentRoute, settings: propSettings }) => {
+// =============================================
+// asıl içeriği taşıyan bileşen (sadece client'ta çalışacak)
+// =============================================
+const HeaderInner = ({ currentRoute, settings: propSettings }) => {
     const { i18n, t } = useTranslation();
-    const { props } = usePage(); // 🔥 HYDRATION FIX – sadece client’ta true oluyor
+    const { props } = usePage();
 
+    // Bu state artık sadece client'ta anlamlı, SSR yok
     const [isMounted, setIsMounted] = useState(false);
     useEffect(() => {
         setIsMounted(true);
-    }, []); // 1. Mevcut Host ve Tenant Bilgilerini Al
+    }, []);
 
+    // Host
     const [currentHost, setCurrentHost] = useState("");
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            setCurrentHost(window.location.hostname);
-        }
+        setCurrentHost(window.location.hostname);
     }, []);
 
     const tenantId =
         props?.global?.tenantId ||
         props?.global?.tenant_id ||
-        props?.global?.talentId ||
+        props?.global?.tenantId ||
         "";
     const initialLocale = normalizeLang(props?.locale || "de");
-    const omrTalentId = props?.global?.talentId || ""; // 2. Global Siteleri Çek
+    const omrtenantId = props?.global?.tenantId || "";
 
-    const { websites: globalWebsites } = useGlobalWebsites(); // 3. Şu anki siteyi bul
+    const { websites: globalWebsites } = useGlobalWebsites();
 
     const currentSite = useMemo(() => {
         const sites =
@@ -296,21 +274,21 @@ const Header = ({ currentRoute, settings: propSettings }) => {
 
         return pickOmrSite(sites, {
             host: currentHost,
-            talentId: tenantId || omrTalentId,
+            tenantId: tenantId || omrtenantId,
         });
     }, [
         props?.global?.websites,
         globalWebsites,
         currentHost,
         tenantId,
-        omrTalentId,
-    ]); // 4. Ayarları Çek
+        omrtenantId,
+    ]);
 
-    const { data: apiSettings, loading: settingsLoading } = useSettings(); // Tüm ayarları birleştir
+    const { data: apiSettings, loading: settingsLoading } = useSettings();
 
     const settings = useMemo(() => {
         return { ...propSettings, ...apiSettings };
-    }, [propSettings, apiSettings]); // İletişim bilgisi
+    }, [propSettings, apiSettings]);
 
     const contactInfo = useMemo(() => {
         const contactInfos =
@@ -334,41 +312,22 @@ const Header = ({ currentRoute, settings: propSettings }) => {
         settings?.contact?.phone ||
         settings?.phone ||
         currentSite?.contact?.phone ||
-        "+49 (0)36874 38 55 67"; // 🔥 ÖNEMLİ: tagline artık sadece backend + sabit fallback
+        "+49 (0)36874 38 55 67";
 
     const topbarTagline =
         currentSite?.content?.topbarTagline ||
         settings?.branding?.topbar_tagline ||
         settings?.general?.topbar_tagline ||
-        "Sauberkeit, auf die Sie sich verlassen können — 24/7 Service"; // ==================================================================== // 💡 CTA HATA DÜZELTME BAŞLANGICI: Dili baz alarak URL oluşturuluyor // ====================================================================
+        "Sauberkeit, auf die Sie sich verlassen können — 24/7 Service";
 
-    const ctaPathFromSettings = currentSite?.cta?.href || settings?.cta?.href;
-
-    const normalizedLocale = normalizeLang(initialLocale);
-    let defaultFallbackHref = "/kontakt"; // Varsayılan: Almanca için
-
-    if (normalizedLocale === "en") {
-        defaultFallbackHref = "/contact"; // İngilizce için
-    } else if (normalizedLocale === "tr") {
-        defaultFallbackHref = "/iletisim"; // Türkçe için
-    } // Diğer diller de (fr, es, vb.) buraya eklenebilir.
-    const ctaHref = ctaPathFromSettings || defaultFallbackHref; // CTA objesini yeni oluşturulan dinamik URL ile güncelle
-
-    const cta = {
-        href: ctaHref,
-        label:
-            currentSite?.cta?.label ||
-            settings?.cta?.label ||
-            "Termin vereinbaren", // Label için i18n kullanmak daha iyidir, ancak mevcut yapıyı koruyorum.
-    }; // ==================================================================== // 💡 CTA HATA DÜZELTME SONU // ==================================================================== // Logolar - HYDRATION FIX: Server ve client'ta aynı değerleri kullan // isMounted kontrolü ile client-side'da güncelleme yapılır
     const siteLogos = useMemo(() => {
         const getUrl = (src) =>
-            src?.url || (typeof src === "string" ? src : null); // Her zaman aynı fallback değerlerini kullan (server ve client'ta aynı)
+            src?.url || (typeof src === "string" ? src : null);
 
         const defaultLight = "/images/logo/Logo.png";
-        const defaultDark = "/images/logo/darkLogo.png"; // Server-side render için: Her zaman fallback kullan // Client-side'da isMounted olduktan sonra settings kullanılır
+        const defaultDark = "/images/logo/darkLogo.png";
 
-        if (!isMounted || !settings || settingsLoading) {
+        if (!settings || settingsLoading) {
             return {
                 light: defaultLight,
                 dark: defaultDark,
@@ -382,22 +341,22 @@ const Header = ({ currentRoute, settings: propSettings }) => {
             getUrl(settings?.general?.logo) ||
             defaultLight;
 
-        const darkUrl = // API'den gelen dark_logo (top-level)
-            getUrl(settings?.dark_logo) || // Bazı yerlerde logo_dark adıyla gelebilir
-            getUrl(settings?.logo_dark) || // API response data içinde olabilir
+        const darkUrl =
+            getUrl(settings?.dark_logo) ||
+            getUrl(settings?.logo_dark) ||
             getUrl(settings?.data?.dark_logo) ||
-            getUrl(settings?.data?.logo_dark) || // Eski / farklı config yapıları
+            getUrl(settings?.data?.logo_dark) ||
             getUrl(settings?.branding?.dark_logo) ||
             getUrl(settings?.branding?.logo_dark) ||
             getUrl(settings?.general?.dark_logo) ||
-            getUrl(settings?.general?.logo_dark) || // Hiçbiri yoksa light logoyu kullan
+            getUrl(settings?.general?.logo_dark) ||
             lightUrl ||
             defaultDark;
 
         return { light: lightUrl, dark: darkUrl };
-    }, [settings, isMounted, settingsLoading]);
+    }, [settings, settingsLoading]);
 
-    const [currentLang, setCurrentLang] = useState(initialLocale || "de"); // i18n başlangıç dilini backend ile senkron tut
+    const [currentLang, setCurrentLang] = useState(initialLocale || "de");
 
     useEffect(() => {
         if (!initialLocale) return;
@@ -479,7 +438,7 @@ const Header = ({ currentRoute, settings: propSettings }) => {
             preserveScroll: true,
             preserveState: false,
         });
-    }; // --- SOSYAL MEDYA ---
+    };
 
     const [socialLinks, setSocialLinks] = useState(null);
     useEffect(() => {
@@ -502,7 +461,7 @@ const Header = ({ currentRoute, settings: propSettings }) => {
         { key: "linkedin_url", icon: <FaLinkedin />, label: "LinkedIn" },
         { key: "youtube_url", icon: <FaYoutube />, label: "Youtube" },
         { key: "tiktok_url", icon: <FaTiktok />, label: "TikTok" },
-    ]; // --- MENU ---
+    ];
 
     const {
         data: menusResponse,
@@ -560,37 +519,28 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                       }
                     : {}),
                 isActive: () =>
-                    typeof window !== "undefined"
-                        ? window.location.pathname.replace(/\/+$/, "") ===
-                          url.replace(/\/+$/, "")
-                        : false,
+                    window.location.pathname.replace(/\/+$/, "") ===
+                    (url || "").replace(/\/+$/, ""),
             };
         });
     }, [menusResponse, currentLang]);
 
     const navItems = useMemo(() => {
         if (remoteNavItems && remoteNavItems.length) return remoteNavItems;
-        if (menuLoading) return []; // HYDRATION FIX: Server-side'da sabit değer kullan
-        const homeLabel = isMounted
-            ? t("nav.home", "Startseite")
-            : "Startseite";
+        if (menuLoading) return [];
+        const homeLabel = "Startseite";
         return [
             {
                 name: homeLabel,
                 route: "home",
                 url: "/",
                 isActive: () =>
-                    typeof window !== "undefined"
-                        ? window.location.pathname.replace(/\/+$/, "") === "/"
-                        : false,
+                    window.location.pathname.replace(/\/+$/, "") === "/",
             },
         ];
-    }, [remoteNavItems, menuLoading, t, isMounted]);
+    }, [remoteNavItems, menuLoading]);
 
-    const currentPath =
-        typeof window !== "undefined"
-            ? window.location.pathname.replace(/\/+$/, "")
-            : "";
+    const currentPath = window.location.pathname.replace(/\/+$/, "");
     const isPathActive = (urlOrList) => {
         const list = Array.isArray(urlOrList) ? urlOrList : [urlOrList];
         return list.some((u) => u && currentPath === u.replace(/\/+$/, ""));
@@ -704,1068 +654,483 @@ const Header = ({ currentRoute, settings: propSettings }) => {
             router.visit(raw);
             if (close) setOpenMenu(false);
         };
-    window.addEventListener("scroll", () => {
-        const header = document.querySelector("header");
-        header.classList.toggle("shadow-md", window.scrollY > 5);
-    });
+
+    useEffect(() => {
+        const handler = () => {
+            const header = document.querySelector("header");
+            header?.classList.toggle("shadow-md", window.scrollY > 5);
+        };
+
+        window.addEventListener("scroll", handler);
+        return () => window.removeEventListener("scroll", handler);
+    }, []);
 
     const menuErrorText = menuError ? String(menuError) : "";
 
     return (
-        <header ref={headerRef} class="fixed top-0 left-0 w-full z-50">
-                        <BitsBackground />         
-            <div className="topbar">
-                               {" "}
-                <div className="container">
-                                       {" "}
-                    <div className="topbar__inner">
-                                               {" "}
-                        <div className="topbar__left">
-                                                       {" "}
-                            <span className="topbar__phone">
-                                                               {" "}
-                                <FaPhoneAlt aria-hidden="true" />               
-                                               {" "}
-                                {isMounted ? (
+        <>
+            <header ref={headerRef} className="fixed top-0 left-0 w-full z-50">
+                <div className="topbar">
+                    <div className="container">
+                        <div className="topbar__inner">
+                            <div className="topbar__left">
+                                <span className="topbar__phone">
+                                    <FaPhoneAlt aria-hidden="true" />
                                     <a
                                         href={`tel:${sitePhone.replace(
                                             /\s+/g,
                                             ""
                                         )}`}
                                     >
-                                                                               {" "}
-                                        <DecryptedText
-                                            text={sitePhone}
-                                            animateOn="view"
-                                            speed={100}
-                                            revealDirection="center"
-                                            key={currentLang}
-                                        />
-                                                                           {" "}
+                                        <span key={currentLang}>
+                                            {sitePhone}
+                                        </span>
                                     </a>
-                                ) : (
-                                    <a
-                                        href={`tel:${sitePhone.replace(
-                                            /\s+/g,
-                                            ""
-                                        )}`}
-                                    >
-                                                                               {" "}
-                                        {sitePhone}                             
-                                             {" "}
-                                    </a>
-                                )}
-                                                           {" "}
-                            </span>
-                                                       {" "}
-                            <span className="topbar__tagline">
-                                                               {" "}
-                                <div style={{ marginTop: 0 }}>
-                                                                       {" "}
-                                    {isMounted ? (
-                                        <DecryptedText
-                                            text={topbarTagline}
-                                            animateOn="view"
-                                            speed={100}
-                                            revealDirection="center"
-                                            key={currentLang}
-                                        />
-                                    ) : (
-                                        <span>{topbarTagline}</span>
-                                    )}
-                                                                   {" "}
-                                </div>
-                                                           {" "}
-                            </span>
-                                                   {" "}
-                        </div>
-                                               {" "}
-                        <div
-                            className="topbar__right"
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "15px",
-                            }}
-                        >
-                                                       {" "}
-                            {socialLinks && (
+                                </span>
+
+                                <span>{topbarTagline}</span>
+                            </div>
+                            <div
+                                className="topbar__right"
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "15px",
+                                }}
+                            >
                                 <div
                                     className="social-icons"
                                     style={{ display: "flex", gap: "10px" }}
                                 >
-                                                                       {" "}
-                                    {socialMapping.map((item) => {
-                                        const link = socialLinks[item.key];
-                                        if (link && link.trim() !== "") {
-                                            return (
-                                                <a
-                                                    key={item.key}
-                                                    href={link}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    aria-label={item.label}
-                                                    style={{
-                                                        color: "inherit",
-                                                        fontSize: "1.1em",
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                    }}
-                                                >
-                                                                               
-                                                                           {" "}
-                                                    {item.icon}                 
-                                                                               
-                                                     {" "}
-                                                </a>
-                                            );
-                                        }
-                                        return null;
-                                    })}
-                                                                   {" "}
+                                    {socialLinks &&
+                                        socialMapping.map((item) => {
+                                            const link = socialLinks[item.key];
+                                            if (link && link.trim() !== "") {
+                                                return (
+                                                    <a
+                                                        key={item.key}
+                                                        href={link}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        aria-label={item.label}
+                                                        style={{
+                                                            color: "inherit",
+                                                            fontSize: "1.1em",
+                                                            display: "flex",
+                                                            alignItems:
+                                                                "center",
+                                                        }}
+                                                    >
+                                                        {item.icon}
+                                                    </a>
+                                                );
+                                            }
+                                            return null;
+                                        })}
                                 </div>
-                            )}
-                            {/* 🎯 HATA DÜZELTME: href="/kontakt" yerine cta.href kullanılıyor. */}
-                                                       {" "}
-                            <a
-                                href={cta.href}
-                                onClick={navigate(cta.href)}
-                                className="btn btn--ghost"
-                            >
-                                                               {" "}
-                                <SafeHtml html={cta.label} as="span" />         
-                                                 {" "}
-                            </a>
-                                                   {" "}
+                            </div>
                         </div>
-                                           {" "}
                     </div>
-                                   {" "}
                 </div>
-                           {" "}
-            </div>
-                       {" "}
-            <div className="navwrap">
-                               {" "}
-                <div className="container">
-                                       {" "}
-                    <div className="navwrap__inner">
-                                               {" "}
-                        <a
-                            href="/"
-                            onClick={navigate("/")}
-                            className="brand"
-                            aria-label={
-                                isMounted
-                                    ? t("header.home_aria", "Startseite")
-                                    : "Startseite"
-                            }
-                        >
-                                                       {" "}
-                            {settingsLoading && !siteLogos.light ? (
-                                <div className="w-32 h-10 bg-gray-200 animate-pulse rounded" />
-                            ) : (
-                                <>
-                                                                       {" "}
-                                    <img
-                                        src={siteLogos.light}
-                                        alt={`${siteName} Logo`}
-                                        className="brand__logo brand__logo--light"
-                                    />
-                                                                       {" "}
-                                    <img
-                                        src={siteLogos.dark}
-                                        alt={`${siteName} Logo (Dark)`}
-                                        className="brand__logo brand__logo--dark"
-                                    />
-                                                                   {" "}
-                                </>
-                            )}
-                                                   {" "}
-                        </a>
-                                               {" "}
-                        <nav
-                            className="nav nav--desktop"
-                            aria-label={
-                                isMounted
-                                    ? t("header.main_nav", "Hauptnavigation")
-                                    : "Hauptnavigation"
-                            }
-                        >
-                                                       {" "}
-                            {menuLoading && (
-                                <div className="nav__item">
-                                                                       {" "}
-                                    <span className="nav__link" />             
-                                                     {" "}
-                                </div>
-                            )}
-                                                       {" "}
-                            {menuErrorText && (
-                                <div className="nav__item">
-                                                                       {" "}
-                                    <span className="nav__link">
-                                                                               {" "}
-                                        {menuErrorText}                         
-                                                 {" "}
-                                    </span>
-                                                                   {" "}
-                                </div>
-                            )}
-                                                       {" "}
-                            {navItems.map((item) => {
-                                const isActive =
-                                    typeof item.isActive === "function"
-                                        ? item.isActive()
-                                        : currentRoute === item.route;
-                                const hasDropdown =
-                                    !!item.dropdown || !!item.mega;
-                                const dropdownKey =
-                                    item.dropdownKey || item.route;
-                                const isOpen = openDropdown === dropdownKey;
-                                return (
-                                    <div
-                                        key={item.route}
-                                        className={cx(
-                                            "nav__item",
-                                            isActive && "is-active"
-                                        )}
-                                        onMouseEnter={() =>
-                                            hasDropdown && openDrop(dropdownKey)
-                                        }
-                                        onMouseLeave={() =>
-                                            hasDropdown && scheduleCloseDrop()
-                                        }
-                                    >
-                                                                               {" "}
-                                        <a
-                                            href={item.url}
+
+                <div className="navwrap">
+                    <div className="container">
+                        <div className="navwrap__inner">
+                            <a
+                                href="/"
+                                onClick={navigate("/")}
+                                className="brand"
+                                aria-label={t("header.home_aria", "Startseite")}
+                            >
+                                {settingsLoading && !siteLogos.light ? (
+                                    <div className="w-32 h-10 bg-gray-200 animate-pulse rounded" />
+                                ) : (
+                                    <>
+                                        <img
+                                            src={siteLogos.light}
+                                            alt={`${siteName} Logo`}
+                                            className="brand__logo brand__logo--light"
+                                        />
+                                        <img
+                                            src={siteLogos.dark}
+                                            alt={`${siteName} Logo (Dark)`}
+                                            className="brand__logo brand__logo--dark"
+                                        />
+                                    </>
+                                )}
+                            </a>
+
+                            <nav
+                                className="nav nav--desktop"
+                                aria-label={t(
+                                    "header.main_nav",
+                                    "Hauptnavigation"
+                                )}
+                            >
+                                {menuLoading && (
+                                    <div className="nav__item">
+                                        <span className="nav__link" />
+                                    </div>
+                                )}
+                                {menuErrorText && (
+                                    <div className="nav__item">
+                                        <span className="nav__link">
+                                            {menuErrorText}
+                                        </span>
+                                    </div>
+                                )}
+                                {navItems.map((item) => {
+                                    const isActive =
+                                        typeof item.isActive === "function"
+                                            ? item.isActive()
+                                            : currentRoute === item.route;
+                                    const hasDropdown =
+                                        !!item.dropdown || !!item.mega;
+                                    const dropdownKey =
+                                        item.dropdownKey || item.route;
+                                    const isOpen = openDropdown === dropdownKey;
+                                    return (
+                                        <div
+                                            key={item.route}
                                             className={cx(
-                                                "nav__link",
-                                                hasDropdown && "has-dropdown"
+                                                "nav__item",
+                                                isActive && "is-active"
                                             )}
-                                            aria-haspopup={
-                                                hasDropdown || undefined
-                                            }
-                                            aria-expanded={
-                                                hasDropdown ? isOpen : undefined
-                                            }
-                                            onFocus={() =>
+                                            onMouseEnter={() =>
                                                 hasDropdown &&
                                                 openDrop(dropdownKey)
                                             }
-                                            onBlur={() =>
+                                            onMouseLeave={() =>
                                                 hasDropdown &&
                                                 scheduleCloseDrop()
                                             }
-                                            onClick={navigate(item.url)}
                                         >
-                                                                               
-                                                   {" "}
-                                            <SafeHtml
-                                                html={item.name}
-                                                as="span"
-                                                className="nav__label"
-                                            />
-                                                                               
-                                                   {" "}
-                                            {hasDropdown && (
-                                                <FaChevronDown
-                                                    className="nav__chev"
-                                                    aria-hidden="true"
-                                                />
-                                            )}
-                                                                               
-                                               {" "}
-                                        </a>
-                                                                               {" "}
-                                        {hasDropdown && isOpen && (
-                                            <div
+                                            <a
+                                                href={item.url}
                                                 className={cx(
-                                                    "dropdown",
-                                                    item.mega &&
-                                                        "dropdown--mega"
+                                                    "nav__link",
+                                                    hasDropdown &&
+                                                        "has-dropdown"
                                                 )}
-                                                role="menu"
-                                                onMouseEnter={cancelClose}
-                                                onMouseLeave={scheduleCloseDrop}
+                                                aria-haspopup={
+                                                    hasDropdown || undefined
+                                                }
+                                                aria-expanded={
+                                                    hasDropdown
+                                                        ? isOpen
+                                                        : undefined
+                                                }
+                                                onFocus={() =>
+                                                    hasDropdown &&
+                                                    openDrop(dropdownKey)
+                                                }
+                                                onBlur={() =>
+                                                    hasDropdown &&
+                                                    scheduleCloseDrop()
+                                                }
+                                                onClick={navigate(item.url)}
                                             >
-                                                                               
-                                                               {" "}
-                                                {item.mega ? (
-                                                    <div className="mega" />
-                                                ) : (
-                                                    <div className="menu">
-                                                                               
-                                                                               
-                                                               {" "}
-                                                        {dedupeByKey(
-                                                            item.dropdown
-                                                        ).map(
-                                                            (subItem, idx) => {
-                                                                const hasSub =
-                                                                    !!subItem.submenu;
-                                                                const subKey =
-                                                                    subItem.submenuKey ||
-                                                                    `${dropdownKey}-sub-${idx}`;
-                                                                const subOpen =
-                                                                    openSubmenu ===
-                                                                    subKey;
-                                                                return (
-                                                                    <div
-                                                                        className="menu__item"
-                                                                        key={
-                                                                            idx
-                                                                        }
-                                                                        onMouseEnter={() =>
-                                                                            hasSub &&
-                                                                            openSub(
-                                                                                subKey
-                                                                            )
-                                                                        }
-                                                                        onMouseLeave={() =>
-                                                                            hasSub &&
-                                                                            scheduleCloseSub()
-                                                                        }
-                                                                    >
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               {" "}
-                                                                        {hasSub ? (
-                                                                            <button
-                                                                                type="button"
-                                                                                className="menu__link has-sub"
-                                                                                aria-haspopup
-                                                                                onClick={() =>
-                                                                                    openSub(
-                                                                                        subKey
-                                                                                    )
-                                                                                }
-                                                                                aria-expanded={
-                                                                                    subOpen
-                                                                                }
-                                                                            >
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 {" "}
-                                                                                <SafeHtml
-                                                                                    html={
-                                                                                        subItem.name
+                                                <SafeHtml
+                                                    html={item.name}
+                                                    as="span"
+                                                    className="nav__label"
+                                                />
+                                                {hasDropdown && (
+                                                    <FaChevronDown
+                                                        className="nav__chev"
+                                                        aria-hidden="true"
+                                                    />
+                                                )}
+                                            </a>
+                                            {hasDropdown && isOpen && (
+                                                <div
+                                                    className={cx(
+                                                        "dropdown",
+                                                        item.mega &&
+                                                            "dropdown--mega"
+                                                    )}
+                                                    role="menu"
+                                                    onMouseEnter={cancelClose}
+                                                    onMouseLeave={
+                                                        scheduleCloseDrop
+                                                    }
+                                                >
+                                                    {item.mega ? (
+                                                        <div className="mega" />
+                                                    ) : (
+                                                        <div className="menu">
+                                                            {dedupeByKey(
+                                                                item.dropdown
+                                                            ).map(
+                                                                (
+                                                                    subItem,
+                                                                    idx
+                                                                ) => {
+                                                                    const hasSub =
+                                                                        !!subItem.submenu;
+                                                                    const subKey =
+                                                                        subItem.submenuKey ||
+                                                                        `${dropdownKey}-sub-${idx}`;
+                                                                    const subOpen =
+                                                                        openSubmenu ===
+                                                                        subKey;
+                                                                    return (
+                                                                        <div
+                                                                            className="menu__item"
+                                                                            key={
+                                                                                idx
+                                                                            }
+                                                                            onMouseEnter={() =>
+                                                                                hasSub &&
+                                                                                openSub(
+                                                                                    subKey
+                                                                                )
+                                                                            }
+                                                                            onMouseLeave={() =>
+                                                                                hasSub &&
+                                                                                scheduleCloseSub()
+                                                                            }
+                                                                        >
+                                                                            {hasSub ? (
+                                                                                <button
+                                                                                    type="button"
+                                                                                    className="menu__link has-sub"
+                                                                                    aria-haspopup
+                                                                                    onClick={() =>
+                                                                                        openSub(
+                                                                                            subKey
+                                                                                        )
                                                                                     }
-                                                                                    as="span"
-                                                                                    className="menu__label"
-                                                                                />
-
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 {" "}
-                                                                                <FaChevronRight
-                                                                                    className="menu__chev"
-                                                                                    aria-hidden
-                                                                                />
-
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 {" "}
-                                                                            </button>
-                                                                        ) : (
-                                                                            <a
-                                                                                href={
-                                                                                    subItem.url
-                                                                                }
-                                                                                className={cx(
-                                                                                    "menu__link",
-                                                                                    isPathActive(
-                                                                                        subItem.url
-                                                                                    ) &&
-                                                                                        "is-active"
-                                                                                )}
-                                                                                onClick={navigate(
-                                                                                    subItem.url
-                                                                                )}
-                                                                            >
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 {" "}
-                                                                                <SafeHtml
-                                                                                    html={
-                                                                                        subItem.name
-                                                                                    }
-                                                                                    as="span"
-                                                                                />
-
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 
-                                                                                 {" "}
-                                                                            </a>
-                                                                        )}
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               {" "}
-                                                                        {hasSub &&
-                                                                            subOpen && (
-                                                                                <div
-                                                                                    className="submenu"
-                                                                                    role="menu"
-                                                                                    onMouseEnter={
-                                                                                        cancelSubClose
-                                                                                    }
-                                                                                    onMouseLeave={
-                                                                                        scheduleCloseSub
+                                                                                    aria-expanded={
+                                                                                        subOpen
                                                                                     }
                                                                                 >
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     {" "}
-                                                                                    {subItem.submenu.map(
-                                                                                        (
-                                                                                            inner,
-                                                                                            j
-                                                                                        ) => (
-                                                                                            <a
-                                                                                                key={
-                                                                                                    j
-                                                                                                }
-                                                                                                href={
-                                                                                                    inner.url
-                                                                                                }
-                                                                                                className={cx(
-                                                                                                    "submenu__link",
-                                                                                                    isPathActive(
-                                                                                                        inner.url
-                                                                                                    ) &&
-                                                                                                        "is-active"
-                                                                                                )}
-                                                                                                onClick={navigate(
-                                                                                                    inner.url,
-                                                                                                    true
-                                                                                                )}
-                                                                                            >
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 {" "}
-                                                                                                <SafeHtml
-                                                                                                    html={
-                                                                                                        inner.name
-                                                                                                    }
-                                                                                                    as="span"
-                                                                                                />
-
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 
-                                                                                                 {" "}
-                                                                                            </a>
-                                                                                        )
+                                                                                    <SafeHtml
+                                                                                        html={
+                                                                                            subItem.name
+                                                                                        }
+                                                                                        as="span"
+                                                                                        className="menu__label"
+                                                                                    />
+                                                                                    <FaChevronRight
+                                                                                        className="menu__chev"
+                                                                                        aria-hidden
+                                                                                    />
+                                                                                </button>
+                                                                            ) : (
+                                                                                <a
+                                                                                    href={
+                                                                                        subItem.url
+                                                                                    }
+                                                                                    className={cx(
+                                                                                        "menu__link",
+                                                                                        isPathActive(
+                                                                                            subItem.url
+                                                                                        ) &&
+                                                                                            "is-active"
                                                                                     )}
-
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     
-                                                                                     {" "}
-                                                                                </div>
+                                                                                    onClick={navigate(
+                                                                                        subItem.url
+                                                                                    )}
+                                                                                >
+                                                                                    <SafeHtml
+                                                                                        html={
+                                                                                            subItem.name
+                                                                                        }
+                                                                                        as="span"
+                                                                                    />
+                                                                                </a>
                                                                             )}
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                           {" "}
-                                                                    </div>
-                                                                );
-                                                            }
-                                                        )}
-                                                                               
-                                                                               
-                                                           {" "}
-                                                    </div>
-                                                )}
-                                                                               
-                                                           {" "}
-                                            </div>
-                                        )}
-                                                                           {" "}
-                                    </div>
-                                );
-                            })}
-                                                   {" "}
-                        </nav>
-                                               {" "}
-                        <div className="nav__cta">
-                                                        <ThemeToggle />         
-                                             {" "}
-                            <LanguageSwitcher
-                                currentLang={currentLang}
-                                languages={allLanguages}
-                                onChange={changeLanguage}
-                            />
-                                                       {" "}
-                            <a
-                                href="/impressum"
-                                onClick={navigate("/impressum")}
-                                className="btn bg-button btn--primary ml-4"
-                            >
-                                                               {" "}
-                                {isMounted
-                                    ? t("header.impressum", "Impressum")
-                                    : "Impressum"}
-                                                           {" "}
-                            </a>
-                                                   {" "}
-                        </div>
-                                               {" "}
-                        <button
-                            className="hamburger"
-                            onClick={() => setOpenMenu(true)}
-                            aria-label={
-                                isMounted
-                                    ? t("header.menu_open", "Menü öffnen")
-                                    : "Menü öffnen"
-                            }
-                        >
-                                                        <FaBars size={22} />   
-                                               {" "}
-                        </button>
-                                           {" "}
-                    </div>
-                                   {" "}
-                </div>
-                           {" "}
-            </div>
-                       {" "}
-            <div
-                className={cx("drawer", openMenu && "is-open")}
-                aria-hidden={!openMenu}
-            >
-                               {" "}
-                <div
-                    className="drawer__backdrop"
-                    onClick={() => setOpenMenu(false)}
-                />
-                               {" "}
-                <aside className="drawer__panel" role="dialog" aria-modal>
-                                       {" "}
-                    <div className="drawer__head">
-                                               {" "}
-                        <a
-                            href="/"
-                            className="brand brand--sm"
-                            onClick={navigate("/", true)}
-                        >
-                                                       {" "}
-                            <img
-                                src={siteLogos.light}
-                                alt={`${siteName} Logo`}
-                                className="brand__logo brand__logo--light"
-                            />
-                                                       {" "}
-                            <img
-                                src={siteLogos.dark}
-                                alt={`${siteName} Logo (Dark)`}
-                                className="brand__logo brand__logo--dark"
-                            />
-                                                   {" "}
-                        </a>
-                                               {" "}
-                        <button
-                            className="btn btn--icon"
-                            onClick={() => setOpenMenu(false)}
-                            aria-label={
-                                isMounted
-                                    ? t("header.menu_close", "Menü schließen")
-                                    : "Menü schließen"
-                            }
-                        >
-                                                        <FaTimes size={20} />   
-                                               {" "}
-                        </button>
-                                           {" "}
-                    </div>
-                                       {" "}
-                    <div className="drawer__body">
-                                               {" "}
-                        {navItems.map((item, idx) => {
-                            const key = item.dropdownKey || item.route;
-                            const hasDropdown = !!item.dropdown || !!item.mega;
-                            const expanded = !!mobileAccordions[key];
-                            return (
-                                <div key={idx} className="acc">
-                                                                       {" "}
-                                    <button
-                                        className="acc__toggle"
-                                        aria-expanded={expanded}
-                                        onClick={(e) => {
-                                            if (hasDropdown) {
-                                                toggleMobileAccordion(key);
-                                            } else {
-                                                navigate(item.url, true)(e);
-                                            }
-                                        }}
-                                    >
-                                                                               {" "}
-                                        <span className="acc__left">
-                                                                               
-                                                   {" "}
-                                            <span className="acc__icon">
-                                                                               
-                                                                {item.icon}     
-                                                                               
-                                                     {" "}
-                                            </span>
-                                                                               
-                                                   {" "}
-                                            <SafeHtml
-                                                html={item.name}
-                                                as="span"
-                                            />
-                                                                               
-                                               {" "}
-                                        </span>
-                                                                               {" "}
-                                        {hasDropdown && (
-                                            <FaChevronDown
-                                                className={cx(
-                                                    "acc__chev",
-                                                    expanded && "rot"
-                                                )}
-                                                aria-hidden
-                                            />
-                                        )}
-                                                                           {" "}
-                                    </button>
-                                                                       {" "}
-                                    {hasDropdown && (
-                                        <div
-                                            className={cx(
-                                                "acc__content",
-                                                expanded && "open"
+                                                                            {hasSub &&
+                                                                                subOpen && (
+                                                                                    <div
+                                                                                        className="submenu"
+                                                                                        role="menu"
+                                                                                        onMouseEnter={
+                                                                                            cancelSubClose
+                                                                                        }
+                                                                                        onMouseLeave={
+                                                                                            scheduleCloseSub
+                                                                                        }
+                                                                                    >
+                                                                                        {subItem.submenu.map(
+                                                                                            (
+                                                                                                inner,
+                                                                                                j
+                                                                                            ) => (
+                                                                                                <a
+                                                                                                    key={
+                                                                                                        j
+                                                                                                    }
+                                                                                                    href={
+                                                                                                        inner.url
+                                                                                                    }
+                                                                                                    className={cx(
+                                                                                                        "submenu__link",
+                                                                                                        isPathActive(
+                                                                                                            inner.url
+                                                                                                        ) &&
+                                                                                                            "is-active"
+                                                                                                    )}
+                                                                                                    onClick={navigate(
+                                                                                                        inner.url,
+                                                                                                        true
+                                                                                                    )}
+                                                                                                >
+                                                                                                    <SafeHtml
+                                                                                                        html={
+                                                                                                            inner.name
+                                                                                                        }
+                                                                                                        as="span"
+                                                                                                    />
+                                                                                                </a>
+                                                                                            )
+                                                                                        )}
+                                                                                    </div>
+                                                                                )}
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             )}
+                                        </div>
+                                    );
+                                })}
+                            </nav>
+
+                            <div className="nav__cta">
+                                <ThemeToggle />
+                                <LanguageSwitcher
+                                    currentLang={currentLang}
+                                    languages={allLanguages}
+                                    onChange={changeLanguage}
+                                />
+                                <a
+                                    href="/impressum"
+                                    onClick={navigate("/impressum")}
+                                    className="btn bg-button btn--primary ml-4"
+                                >
+                                    {t("header.impressum", "Impressum")}
+                                </a>
+                            </div>
+
+                            <button
+                                className="hamburger"
+                                onClick={() => setOpenMenu(true)}
+                                aria-label={t(
+                                    "header.menu_open",
+                                    "Menü öffnen"
+                                )}
+                            >
+                                <FaBars size={22} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    className={cx("drawer", openMenu && "is-open")}
+                    aria-hidden={!openMenu}
+                >
+                    <div
+                        className="drawer__backdrop"
+                        onClick={() => setOpenMenu(false)}
+                    />
+                    <aside className="drawer__panel" role="dialog" aria-modal>
+                        <div className="drawer__head">
+                            <a
+                                href="/"
+                                className="brand brand--sm"
+                                onClick={navigate("/", true)}
+                            >
+                                <img
+                                    src={siteLogos.light}
+                                    alt={`${siteName} Logo`}
+                                    className="brand__logo brand__logo--light"
+                                />
+                                <img
+                                    src={siteLogos.dark}
+                                    alt={`${siteName} Logo (Dark)`}
+                                    className="brand__logo brand__logo--dark"
+                                />
+                            </a>
+                            <button
+                                className="btn btn--icon"
+                                onClick={() => setOpenMenu(false)}
+                                aria-label={t(
+                                    "header.menu_close",
+                                    "Menü schließen"
+                                )}
+                            >
+                                <FaTimes size={20} />
+                            </button>
+                        </div>
+                        <div className="drawer__body">
+                            {navItems.map((item, idx) => {
+                                const key = item.dropdownKey || item.route;
+                                const hasDropdown =
+                                    !!item.dropdown || !!item.mega;
+                                const expanded = !!mobileAccordions[key];
+                                return (
+                                    <div key={idx} className="acc">
+                                        <button
+                                            className="acc__toggle"
+                                            aria-expanded={expanded}
+                                            onClick={(e) => {
+                                                if (hasDropdown) {
+                                                    toggleMobileAccordion(key);
+                                                } else {
+                                                    navigate(item.url, true)(e);
+                                                }
+                                            }}
                                         >
-                                                                               
-                                                   {" "}
-                                            <div className="acc__menu">
-                                                                               
-                                                               {" "}
-                                                {dedupeByKey(item.dropdown).map(
-                                                    (subItem, i) => (
+                                            <span className="acc__left">
+                                                <span className="acc__icon">
+                                                    {item.icon}
+                                                </span>
+                                                <SafeHtml
+                                                    html={item.name}
+                                                    as="span"
+                                                />
+                                            </span>
+                                            {hasDropdown && (
+                                                <FaChevronDown
+                                                    className={cx(
+                                                        "acc__chev",
+                                                        expanded && "rot"
+                                                    )}
+                                                    aria-hidden
+                                                />
+                                            )}
+                                        </button>
+                                        {hasDropdown && (
+                                            <div
+                                                className={cx(
+                                                    "acc__content",
+                                                    expanded && "open"
+                                                )}
+                                            >
+                                                <div className="acc__menu">
+                                                    {dedupeByKey(
+                                                        item.dropdown
+                                                    ).map((subItem, i) => (
                                                         <div
                                                             key={i}
                                                             className="acc__item"
                                                         >
-                                                                               
-                                                                               
-                                                                               {" "}
                                                             {subItem.submenu ? (
                                                                 <details className="acc__details">
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                           {" "}
                                                                     <summary className="acc__summary">
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               {" "}
                                                                         <SafeHtml
                                                                             html={
                                                                                 subItem.name
                                                                             }
                                                                             as="span"
                                                                         />
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               {" "}
                                                                         <div className="acc__submenu">
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               {" "}
                                                                             {subItem.submenu.map(
                                                                                 (
                                                                                     inner,
@@ -1790,137 +1155,17 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                                                                             )
                                                                                         }
                                                                                     >
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         {" "}
                                                                                         <SafeHtml
                                                                                             html={
                                                                                                 inner.name
                                                                                             }
                                                                                             as="span"
                                                                                         />
-
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         
-                                                                                         {" "}
                                                                                     </a>
                                                                                 )
                                                                             )}
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               {" "}
                                                                         </div>
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                           {" "}
                                                                     </summary>
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                       {" "}
                                                                 </details>
                                                             ) : (
                                                                 <a
@@ -1937,89 +1182,68 @@ const Header = ({ currentRoute, settings: propSettings }) => {
                                                                         )(e)
                                                                     }
                                                                 >
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                           {" "}
                                                                     <SafeHtml
                                                                         html={
                                                                             subItem.name
                                                                         }
                                                                         as="span"
                                                                     />
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                               
-                                                                       {" "}
                                                                 </a>
                                                             )}
-                                                                               
-                                                                               
-                                                                           {" "}
                                                         </div>
-                                                    )
-                                                )}
-                                                                               
-                                                           {" "}
+                                                    ))}
+                                                </div>
                                             </div>
-                                                                               
-                                               {" "}
-                                        </div>
-                                    )}
-                                                                   {" "}
-                                </div>
-                            );
-                        })}
-                                               {" "}
-                        <div className="drawer__theme-toggle">
-                                                        <ThemeToggle />         
-                                         {" "}
-                        </div>
-                                               {" "}
-                        <div className="drawer__lang">
-                                                       {" "}
-                            <span className="drawer__lang-label">
-                                                               {" "}
-                                {isMounted
-                                    ? t("header.language", "Sprache")
-                                    : "Sprache"}
-                                                           {" "}
-                            </span>
-                                                       {" "}
-                            <div className="drawer__lang-buttons">
-                                                               {" "}
-                                {allLanguages.map((l) => (
-                                    <button
-                                        key={l.code}
-                                        type="button"
-                                        className={cx(
-                                            "btn btn--ghost",
-                                            normalizeLang(l.code) ===
-                                                normalizeLang(currentLang) &&
-                                                "is-active"
                                         )}
-                                        onClick={() => changeLanguage(l.code)}
-                                    >
-                                                                               {" "}
-                                        {l.label}                               
-                                           {" "}
-                                    </button>
-                                ))}
-                                                           {" "}
+                                    </div>
+                                );
+                            })}
+                            <div className="drawer__theme-toggle">
+                                <ThemeToggle />
                             </div>
-                                                   {" "}
+                            <div className="drawer__lang">
+                                <span className="drawer__lang-label">
+                                    {t("header.language", "Sprache")}
+                                </span>
+                                <div className="drawer__lang-buttons">
+                                    {allLanguages.map((l) => (
+                                        <button
+                                            key={l.code}
+                                            type="button"
+                                            className={cx(
+                                                "btn btn--ghost",
+                                                normalizeLang(l.code) ===
+                                                    normalizeLang(
+                                                        currentLang
+                                                    ) && "is-active"
+                                            )}
+                                            onClick={() =>
+                                                changeLanguage(l.code)
+                                            }
+                                        >
+                                            {l.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
-                                           {" "}
-                    </div>
-                                   {" "}
-                </aside>
-                           {" "}
-            </div>
-                   {" "}
+                    </aside>
+                </div>
+            </header>
+        </>
+    );
+};
+
+const Header = (props) => {
+    const [hydrated, setHydrated] = useState(false);
+
+    useEffect(() => {
+        setHydrated(true);
+    }, []);
+
+    return (
+        <header className="site-header w-full">
+            {hydrated && <HeaderInner {...props} />}
         </header>
     );
 };

@@ -14,7 +14,7 @@ export default function QuoteModal() {
     const tenantId =
         props?.global?.tenantId ||
         props?.global?.tenant_id ||
-        props?.global?.talentId ||
+        props?.global?.tenantId ||
         "";
 
     const locale = useLocale("de");
