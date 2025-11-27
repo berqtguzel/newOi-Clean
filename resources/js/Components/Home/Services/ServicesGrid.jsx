@@ -7,6 +7,8 @@ import SafeHtml from "@/Components/Common/SafeHtml";
 import ServiceCard from "./ServiceCard";
 import "./ServicesGrid.css";
 
+import { motion } from "framer-motion"; // ✨ Ekledik
+
 const getTranslatedValue = (item, locale) => {
     const tr = item.translations?.find((t) => t.language_code === locale);
 
@@ -14,6 +16,19 @@ const getTranslatedValue = (item, locale) => {
         name: tr?.name || item.name,
         description: tr?.description || item.description,
     };
+};
+
+const animationVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: (i = 1) => ({
+        opacity: 1,
+        y: 0,
+        transition: {
+            delay: i * 0.15, // ✨ Kartlar sırayla animasyonlu
+            duration: 0.6,
+            ease: "easeOut",
+        },
+    }),
 };
 
 const ServicesGrid = ({ content = {} }) => {
@@ -25,9 +40,8 @@ const ServicesGrid = ({ content = {} }) => {
     const tenantId =
         props?.global?.tenantId ||
         props?.global?.tenant_id ||
-        "oi_cleande_690e161c3a1dd"; // ✅ doğru default
+        "oi_cleande_690e161c3a1dd";
 
-    // 🔥 categoryId: null → backend ana servisleri döndürüyor
     const {
         services: fetched,
         loading,
@@ -41,76 +55,70 @@ const ServicesGrid = ({ content = {} }) => {
         categoryId: null,
     });
 
-    // Şimdilik ekstra filtre yok – backend zaten ana servisleri veriyor
     const services = useMemo(
         () => (Array.isArray(fetched) ? fetched : []),
         [fetched]
     );
 
-    console.log("🎯 MAIN SERVICES:", services);
-
     return (
         <section id="services" className="services-section">
-            {durationMs && !loading && (
-                <div
-                    style={{
-                        color: "#777",
-                        fontSize: "12px",
-                        textAlign: "center",
-                        marginBottom: 8,
-                    }}
-                >
-                    ⏱ {Math.round(durationMs)} ms
-                </div>
-            )}
-
-            {error && (
-                <div
-                    style={{ color: "red", textAlign: "center", margin: "8px 0" }}
-                >
-                    ❌ {error}
-                </div>
-            )}
-
             <div className="services-container">
                 <div className="services-header">
-                    <h2 className="services-title">
+                    <motion.h2
+                        className="services-title"
+                        initial={{ opacity: 0, y: 40 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6 }}
+                    >
                         <SafeHtml
                             html={
                                 content.services_title ||
                                 t("servicesList.title")
                             }
                         />
-                    </h2>
+                    </motion.h2>
                 </div>
 
                 <div className="services-grid">
-                    {loading && <div>{t("loading")}</div>}
-
                     {!loading &&
-                        services.map((s) => {
-                            const { name, description } = getTranslatedValue(
-                                s,
-                                locale
-                            );
+                        services.map((s, index) => {
+                            const { name, description } =
+                                getTranslatedValue(s, locale);
 
                             return (
-                                <ServiceCard
+                                <motion.div
                                     key={s.id}
-                                    title={name}
-                                    description={description}
-                                    image={s.image}
-                                    slug={s.slug}
-                                />
+                                    variants={animationVariants}
+                                    initial="hidden"
+                                    whileInView="visible"
+                                    viewport={{ once: true, amount: 0.2 }}
+                                    custom={index}
+                                >
+                                    <ServiceCard
+                                        title={name}
+                                        description={description}
+                                        image={s.image}
+                                        slug={s.slug}
+                                    />
+                                </motion.div>
                             );
                         })}
+
+                    {loading && <div>{t("loading")}</div>}
                 </div>
 
-                <div className="services-cta">
+                <motion.div
+                    className="services-cta"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5 }}
+                >
                     <a href="/kontakt" className="services-contact-button">
                         {t("servicesList.contact_cta")}
                     </a>
-                </div>
+                </motion.div>
             </div>
         </section>
     );

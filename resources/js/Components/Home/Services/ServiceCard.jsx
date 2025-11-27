@@ -56,12 +56,7 @@ const ServiceCard = ({
     const effectiveSlug = slug || "";
     const href = buildHref({ link, slug: effectiveSlug });
 
-    // 🔥 Konsol Log
-    const handleClick = () => {
-        console.log("📌 Service Card Click");
-        console.log("   raw slug:", slug);
-        console.log("   href:", href);
-    };
+
 
     const plainTitle = useMemo(
         () =>
@@ -89,7 +84,7 @@ const ServiceCard = ({
             href={href}
             className="service-card group"
             aria-label={ariaLabel}
-            onClick={handleClick} // 👈 EKLEDİK
+          
         >
             <div className="service-card__image-wrapper">
                 {!isLoaded && image && (

@@ -82,7 +82,7 @@ const useWidgets = ({ tenant, locale = "de", enabled = true } = {}) => {
                     highlights: normalizeWidget(highlights),
                 };
 
-                console.log("📌 Widgets Fetched:", normalized);
+                
 
                 setWidgets(normalized);
                 setError(null);

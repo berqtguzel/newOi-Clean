@@ -1,102 +1,98 @@
 import React from "react";
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, usePage as useInertiaPage } from "@inertiajs/react";
 import { useTranslation } from "react-i18next";
 import "../../../css/404.css";
+import { fetchPageBySlug } from "@/services/pageService";
+
+const FALLBACK_404 = {
+    title: "404 — Seite nicht gefunden",
+    desc: "Die angeforderte Seite wurde nicht gefunden.",
+    ctaHome: "Zur Startseite",
+    ctaContact: "Kontakt aufnehmen",
+    hint: "Bitte überprüfen Sie die URL.",
+};
+
+const FALLBACK_500 = {
+    title: "500 — Serverfehler",
+    desc: "Interner Fehler, bitte später erneut versuchen.",
+    ctaHome: "Zur Startseite",
+    ctaContact: "Support kontaktieren",
+    hint: "Wir arbeiten an dem Problem.",
+};
 
 export default function NotFound() {
     const { t } = useTranslation();
+    const { props, url } = useInertiaPage();
 
-    const [hydrated, setHydrated] = React.useState(false);
+    const tenantId =
+        props?.global?.tenantId ||
+        props?.global?.tenant_id ||
+        props?.global?.talentId ||
+        "oi_cleande_690e161c3a1dd";
+
+    const locale = props?.locale || "de";
+
+    const is500 =
+        url.includes("/500") ||
+        props?.status == 500 ||
+        props?.status == 503;
+
+    const slug = is500 ? "500" : "404";
+    const fallback = is500 ? FALLBACK_500 : FALLBACK_404;
+
+    const [page, setPage] = React.useState(null);
+    const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
-        setHydrated(true);
-    }, []);
+        fetchPageBySlug(slug, { tenantId, locale })
+            .then((res) => setPage(res.page || null))
+            .finally(() => setLoading(false));
+    }, [slug, tenantId, locale]);
 
-    const serverTitle = "404 — Seite nicht gefunden";
-    const serverDesc = "Die angeforderte Seite wurde nicht gefunden.";
-    const serverCtaHome = "Zur Startseite";
-    const serverCtaContact = "Kontakt aufnehmen";
-    const serverHint =
-        "Bitte überprüfen Sie die URL oder kehren Sie zur Startseite zurück.";
+    const text = (key) =>
+        page?.[key] ||
+        t(`errors.${slug}.${key}`, fallback[key]);
 
-    const clientTitle = t("errors.notFound.title", serverTitle);
-    const clientDesc = t("errors.notFound.desc", serverDesc);
-    const clientCtaHome = t("errors.notFound.cta_home", serverCtaHome);
-    const clientCtaContact = t("errors.notFound.cta_contact", serverCtaContact);
-    const clientHint = t("errors.notFound.hint", serverHint);
+    if (loading) {
+        return (
+            <div className="oi-404-page">
+                <Head><title>Loading...</title></Head>
+                <p>Loading…</p>
+            </div>
+        );
+    }
 
-    const titleToRender = hydrated ? clientTitle : serverTitle;
-    const descToRender = hydrated ? clientDesc : serverDesc;
-    const ctaHomeToRender = hydrated ? clientCtaHome : serverCtaHome;
-    const ctaContactToRender = hydrated ? clientCtaContact : serverCtaContact;
-    const hintToRender = hydrated ? clientHint : serverHint;
+    const title = text("title");
+    const desc = page?.content || text("desc");
 
     return (
         <div className="oi-404-page min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-            <Head>
-                <title>{titleToRender}</title>
-            </Head>
+            <Head><title>{title}</title></Head>
 
             <main className="oi-404__card">
-                <div className="oi-404__illustration" aria-hidden>
-                    <svg
-                        width="220"
-                        height="160"
-                        viewBox="0 0 220 160"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                    >
-                        <rect
-                            x="0"
-                            y="0"
-                            width="220"
-                            height="160"
-                            rx="12"
-                            fill="#F1F5F9"
-                        />
-                        <g transform="translate(40,30)">
-                            <circle cx="40" cy="40" r="34" fill="#E6EEF9" />
-                            <path
-                                d="M8 48 L72 48"
-                                stroke="#93C5FD"
-                                strokeWidth="4"
-                                strokeLinecap="round"
-                            />
-                            <rect
-                                x="10"
-                                y="14"
-                                width="60"
-                                height="6"
-                                rx="3"
-                                fill="#BFDBFE"
-                            />
-                            <rect
-                                x="10"
-                                y="26"
-                                width="40"
-                                height="6"
-                                rx="3"
-                                fill="#BFDBFE"
-                            />
-                        </g>
-                    </svg>
-                </div>
-
                 <div className="oi-404__content">
-                    <h1 className="oi-404__title">{titleToRender}</h1>
-
-                    <p className="oi-404__desc">{descToRender}</p>
+                    <h1 className="oi-404__title">{title}</h1>
+                    <p className="oi-404__desc">{desc}</p>
 
                     <div className="oi-404__actions">
                         <Link href="/" className="oi-btn oi-btn--primary">
-                            {ctaHomeToRender}
+                            {text("ctaHome")}
                         </Link>
-                        <Link href="/kontakt" className="oi-btn oi-btn--ghost">
-                            {ctaContactToRender}
-                        </Link>
+
+                        {!is500 && (
+                            <Link href="/kontakt" className="oi-btn oi-btn--ghost">
+                                {text("ctaContact")}
+                            </Link>
+                        )}
+
+                        {is500 && (
+                            <button className="oi-btn oi-btn--ghost" onClick={() => location.reload()}>
+                                Seite neu laden
+                            </button>
+                        )}
                     </div>
 
-                    <small className="oi-404__hint">{hintToRender}</small>
+                    <small className="oi-404__hint">{text("hint")}</small>
                 </div>
             </main>
         </div>

@@ -16,7 +16,8 @@
   --hd-btn-icon-border: #e2e8f0; /* İkon buton kenarlığı */
 
   --hd-radius: 16px;
-  --hd-h: 80px; /* Navigasyon yüksekliği */
+  /* 🚀 GÜNCELLENDİ: DAHA BÜYÜK HEADER İÇİN */
+  --hd-h: 100px !important; /* Navigasyon yüksekliği artırıldı */
 }
 
 :root.dark, .dark{
@@ -41,11 +42,18 @@
 
 
 .site-header {
+    /* STICKY AYARLARI */
     position: sticky !important;
     top: 0 !important;
     z-index: 9999 !important;
     width: 100%;
-    background: transparent;
+    
+    /* Gerekli sticky geçişleri */
+    height: var(--hd-h);
+    background: var(--hd-surface);
+    box-shadow: none;
+    backdrop-filter: none;
+    transition: background .25s ease, box-shadow .25s ease, height .25s ease;
 }
 
 .rbits-bg{
@@ -86,20 +94,22 @@
 
 /* --- NAV WRAP (Ana Navigasyon Alanı) --- */
 .navwrap{
-  backdrop-filter: saturate(1.1) blur(8px); /* Blur/cam efekti */
-  background: var(--hd-glass);
+  /* Navwrap'ten şeffaflık/blur kaldırıldı, sticky'lik için tam opaklık ve transition eklendi */
+  background: var(--hd-surface); /* Dark temada doğru rengi alabilmesi için !important kaldırıldı */
   box-shadow: 0 1px 0 var(--hd-border);
 }
 .navwrap__inner{
   display:flex; align-items:center; justify-content:space-between; height: var(--hd-h);
-
 }
 .navwrap {
     position: relative !important;
     z-index: 999;
+    /* Sticky olunca küçülme animasyonu için transition eklendi */
+    transition: height .25s ease, background .25s ease; 
 }
 .brand{ display:flex; align-items:center; gap:12px; border-radius:12px; outline:0; text-decoration:none; color:inherit; }
-.brand__logo{ height:48px; width:auto; max-width:180px; object-fit:contain; }
+/* 🚀 GÜNCELLENDİ: BÜYÜK LOGO */
+.brand__logo{ height:70px !important; width:auto; max-width:240px !important; object-fit:contain; transition: height .25s ease; }
 .brand__logo--dark{ display:none; }
 .brand__logo--light{ display:block; }
 .dark .brand__logo--light{ display:none; }
@@ -113,7 +123,8 @@
 .nav__item{ position:relative; }
 .nav__link{
   position:relative; display:inline-flex; align-items:center; gap:8px;
-  padding:12px 14px; border-radius:14px;
+  /* 🚀 GÜNCELLENDİ: BÜYÜK MESAFE */
+  padding:16px 18px; border-radius:14px; 
   color: color-mix(in srgb, var(--hd-ink) 85%, #fff 15%); font-weight:600; text-decoration:none;
 }
 .nav__link:hover{ background: color-mix(in srgb, var(--hd-primary) 8%, transparent); color: var(--hd-primary); }
@@ -199,8 +210,9 @@
 
 /* --- MOBİL MENÜ (Hamburger ve Drawer) --- */
 .hamburger{
+  /* 🚀 GÜNCELLENDİ: BÜYÜK HAMBURGER */
   display:inline-flex; align-items:center; justify-content:center;
-  padding:10px; border-radius:12px; border:1px solid var(--hd-btn-icon-border);
+  padding:14px !important; border-radius:14px !important; border:1px solid var(--hd-btn-icon-border);
   background: var(--background-color, #fff); color: color-mix(in srgb, var(--hd-ink) 75%, #fff 25%);
 }
 @media (min-width:1024px){ .hamburger{ display:none; } } /* Masaüstünde gizle */
@@ -219,11 +231,12 @@
 .drawer.is-open .drawer__panel{ transform: translateX(0); } /* Açıkken sağdan içeri kaydır */
 .drawer__head{
   display:flex; align-items:center; justify-content:space-between;
-  height:80px; padding:0 20px; border-bottom:1px solid var(--hd-border);
+  /* 🚀 GÜNCELLENDİ: MOBİL MENÜ BAŞLIĞI */
+  height:var(--hd-h) !important; padding:0 20px; border-bottom:1px solid var(--hd-border);
 }
 .drawer__body{
   padding:16px; display:flex; flex-direction:column; gap:12px;
-  overflow:auto; height:calc(100% - 80px);
+  overflow:auto; height:calc(100% - var(--hd-h));
 }
 
 .dark .drawer__head{ border-color:#1e293b; }
@@ -232,7 +245,7 @@
     background: #1e293b;
 }
 .dark .acc{
-     background: #1e293b;
+      background: #1e293b;
 }
 .dark .hamburger{
     background: #1e293b;
@@ -269,7 +282,7 @@
 
 .acc__link{
   display:block; padding:10px 12px; border-radius:10px;
-  text-decoration:none; color: var(--hd-ink);
+  color: var(--hd-ink); text-decoration:none;
 }
 .acc__link:hover{ background: color-mix(in srgb, var(--hd-primary) 10%, transparent); color: var(--hd-primary); }
 
@@ -423,4 +436,133 @@
 .lang-switch__btn:focus-visible {
     outline: 2px solid #2563eb;
     outline-offset: 2px;
+}
+/* ================================================
+    🔥 Premium Sticky Header Add-ons — FINAL FULL
+    ================================================ */
+
+/* Yüksek Header */
+:root {
+  --hd-h: 100px !important;
+}
+
+.site-header {
+    /* STICKY AYARLARI */
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 9999 !important;
+    width: 100%;
+    
+    /* Normal durumda: tamamen opak yüzey */
+    background: var(--hd-surface);
+    box-shadow: none;
+    backdrop-filter: none;
+    
+    height: var(--hd-h);
+    transition: background .25s ease, box-shadow .25s ease, height .25s ease;
+}
+
+/* Scroll olunca aktif sticky durumu */
+.site-header.is-stuck {
+    /* Scroll olunca: hafif gölge + tam opak */
+    background: var(--hd-surface) !important; 
+    box-shadow: 0 6px 24px rgba(0,0,0,0.08) !important;
+    height: 84px !important; /* Scroll olunca biraz küçült */
+}
+
+.navwrap {
+    /* NAVWRAP ARTIK STICKY OLARAK KABUL EDİLİR (HEADER'IN İÇİNDE) */
+    height: var(--hd-h);
+    
+    /* Tam opak ve çizgi ayarları */
+    background: var(--hd-surface) !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    border-bottom: 1px solid var(--hd-border);
+    
+    transition: background .25s ease, box-shadow .25s ease;
+}
+
+.navwrap.is-stuck {
+    /* Nav wrap de tam opak olsun */
+    background: var(--hd-surface) !important;
+    box-shadow: none !important;
+    /* Sticky olunca navwrap yüksekliğini header'ın küçülmüş yüksekliğine eşitle */
+    height: 84px !important; 
+}
+
+/* Büyük Logo */
+.brand__logo {
+    height: 70px !important;
+    max-width: 240px !important;
+    width: auto;
+    transition: height .25s ease;
+}
+
+/* Scroll olunca küçülme animasyonu */
+.site-header.is-stuck .brand__logo {
+    height: 58px !important; /* Scroll olunca logoyu küçült */
+}
+
+/* Desktop Menü Mesafesi */
+.nav--desktop {
+    gap: 14px;
+}
+
+.nav__link {
+    padding: 16px 18px;
+    font-size: 1rem;
+}
+
+.nav__link:hover {
+    color: var(--hd-primary);
+}
+
+/* CTA daha belirgin */
+.nav__cta .btn--primary {
+    padding: 12px 22px;
+    font-size: .95rem;
+}
+
+/* Mobile Hamburger daha net */
+.hamburger {
+    padding: 14px !important;
+    border-radius: 14px !important;
+}
+.drawer__head{
+    height:var(--hd-h) !important; 
+    padding:0 20px; 
+    border-bottom:1px solid var(--hd-border);
+}
+.drawer__body{
+    overflow:auto; 
+    height:calc(100% - var(--hd-h)) !important;
+}
+
+/* Scroll gölge kapatmaları */
+@media (prefers-reduced-motion: reduce) {
+    .site-header,
+    .brand__logo,
+    .navwrap {
+        transition: none !important;
+    }
+}
+
+/* İç elemanlara soft transition */
+.site-header * {
+    transition: background-color .2s, color .2s, border-color .2s;
+}
+
+/* 🎨 KOYU TEMA DÜZELTMESİ */
+.dark .site-header {
+    background: #0f172a !important;
+}
+.dark .site-header.is-stuck {
+   background: #0f172a !important;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.3) !important; 
+}
+.dark .navwrap,
+.dark .navwrap.is-stuck {
+   background: #0f172a !important;
+    border-bottom: 1px solid var(--hd-border);
 }

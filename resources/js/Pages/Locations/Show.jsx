@@ -48,7 +48,7 @@ export default function LocationShow() {
                 const list = data.services || [];
                 setRemoteServices(list);
 
-                console.log("📦 Services Loaded:", list.length);
+               
 
                 // 👇 Slug eşleşmesi → en doğru sonuç
                 let found = list.find((s) => s.slug === currentUrlSlug);

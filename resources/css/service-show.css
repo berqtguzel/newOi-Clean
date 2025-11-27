@@ -132,6 +132,9 @@
   border: 1px solid var(--svx-border);
   box-shadow: var(--shadow-lg);
 }
+.dark .service-show__prose{
+  background-color: #1e293b;
+}
 
 .service-show__prose p {
   color: var(--svx-ink-soft);

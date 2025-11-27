@@ -1,5 +1,6 @@
 import React from "react";
 import { Head, usePage } from "@inertiajs/react";
+import { motion } from "framer-motion"; // motion import'u eklendi
 import "../../../../css/LocationsGrid.css";
 import { useTranslation } from "react-i18next";
 import GermanyMap from "./GermanyMap";
@@ -9,6 +10,29 @@ import { useLocale } from "@/hooks/useLocale";
 import { useServices } from "@/hooks/useServices";
 
 const stripHtml = (s = "") => s.replace(/<[^>]*>/g, "").trim();
+
+// 💡 Yeni: Animasyon varyantları tanımlandı
+const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1, // Çocuk öğelerin ardışık animasyonu
+            delayChildren: 0.2,   // Çocuk animasyonlarının başlamadan önceki gecikmesi
+        },
+    },
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+};
+// 💡 Yeni: Marker animasyon varyantları (opsiyonel, Marker'a uygulanabilir)
+const markerVariants = {
+    hidden: { scale: 0 },
+    show: { scale: 1, transition: { type: "spring", stiffness: 200, damping: 15 } },
+};
+
 
 export default function LocationsGrid() {
     const { t } = useTranslation();
@@ -21,7 +45,6 @@ export default function LocationsGrid() {
 
     const apiLocale = useLocale("de") || "de";
 
-    // 🔥 YENİ: Sadece Gebäudereinigung şehir sayfalarını al!
     const { services = [], loading, durationMs, error } = useServices({
         tenantId,
         locale: apiLocale,
@@ -29,7 +52,6 @@ export default function LocationsGrid() {
         locationOnly: true,
     });
 
-    // Backend zaten filtreledi ama title temizleyelim
     const sortedItems = [...services]
         .map((s) => ({
             ...s,
@@ -43,6 +65,7 @@ export default function LocationsGrid() {
     const [activeLocation, setActiveLocation] = React.useState(null);
 
     const title = t("locations.title", "Unsere Standorte");
+    // console.log(sortedItems) // Debugging için kaldırılabilir
 
     return (
         <section id="location" className="locations-section">
@@ -54,7 +77,6 @@ export default function LocationsGrid() {
                 />
             </Head>
 
-            {/* API Süresi Gösterimi */}
             {durationMs && (
                 <p style={{ fontSize: 12, textAlign: "center", color: "#777" }}>
                     ⏱ {Math.round(durationMs)} ms
@@ -67,20 +89,42 @@ export default function LocationsGrid() {
                 </p>
             )}
 
-            <div className="locations-container">
+            {/* 💡 Ana konteyner için motion.div */}
+            <motion.div 
+                className="locations-container"
+                variants={containerVariants} // Kendi animasyon varyantları
+                initial="hidden"
+                animate="show"
+            >
                 <div className="locations-header">
-                    <h1 className="locations-title">{title}</h1>
+                    {/* Başlık için de animasyon uygulayabiliriz */}
+                    <motion.h1 
+                        className="locations-title"
+                        variants={itemVariants} // Başlık kendi animasyonu
+                    >
+                        {title}
+                    </motion.h1>
                 </div>
 
-                <div className="map-container">
+                {/* Harita konteyneri için motion.div */}
+                <motion.div 
+                    className="map-container"
+                    variants={itemVariants} // Harita kendi animasyonu
+                >
                     <GermanyMap
                         locations={sortedItems}
                         activeId={activeLocation}
                         setActiveId={setActiveLocation}
                     />
-                </div>
+                </motion.div>
 
-                <div className="locations-grid">
+              
+                <motion.div 
+                    className="locations-grid"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="show"
+                >
                     {loading && <p>📍 Standorte werden geladen…</p>}
 
                     {!loading && !sortedItems.length && (
@@ -88,15 +132,19 @@ export default function LocationsGrid() {
                     )}
 
                     {sortedItems.map((loc) => (
-                        <LocationCard
-                            key={loc.id}
-                            location={loc}
-                            isActive={activeLocation === loc.id}
-                            onHover={() => setActiveLocation(loc.id)}
-                        />
+                        <motion.div 
+                            key={loc.id} 
+                            variants={itemVariants} 
+                        >
+                            <LocationCard
+                                location={loc}
+                                isActive={activeLocation === loc.id}
+                                onHover={() => setActiveLocation(loc.id)}
+                            />
+                        </motion.div>
                     ))}
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
         </section>
     );
 }

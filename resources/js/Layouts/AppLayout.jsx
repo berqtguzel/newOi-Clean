@@ -57,8 +57,7 @@ export default function AppLayout({ children }) {
     if (settingsLoading && !Object.keys(settings).length) {
         return <></>;
     }
-console.log("TENANT:", tenantId);
-console.log("LOCALE:", locale);
+
     return (
         <div className="min-h-screen flex flex-col antialiased relative">
             <Head>

@@ -11,7 +11,7 @@ export default function WhatsAppWidget({ tenant, locale = "de" }) {
 
     const config = widgets?.whatsapp?.[0];
 
-    console.log("💬 WhatsApp Config:", config);
+    
 
     if (loading || !config || !config.is_active) return null;
 

@@ -24,17 +24,18 @@
         $tenantId = env('VITE_REMOTE_TALENT_ID', 'oi_cleande_690e161c3a1dd');
         $locale = app()->getLocale();
 
-        // Tüm ayarları tek seferde ve cache ile çek
-        $settings = Cache::remember("app_settings_{$tenantId}_{$locale}", 0, function () use ($apiBase, $tenantId, $locale) {
-            $data = [];
-            foreach (['general', 'seo', 'branding', 'colors'] as $ep) {
-                try {
-                    $res = Http::withHeaders(['X-Tenant-ID' => $tenantId])->timeout(2)->get("{$apiBase}/settings/{$ep}", ['locale' => $locale]);
-                    if ($res->successful()) $data[$ep] = $res->json()['data'] ?? $res->json();
-                } catch (\Exception $e) { $data[$ep] = []; }
-            }
-            return $data;
-        });
+   try {
+        Cache::forget("app_settings_{$tenantId}_{$locale}");
+    } catch (\Exception $e) { /* Hata varsa yoksay */ }
+
+    // Ayarları API'den doğrudan çekiyoruz
+    $settings = []; 
+    foreach (['general', 'seo', 'branding', 'colors'] as $ep) {
+        try {
+            $res = Http::withHeaders(['X-Tenant-ID' => $tenantId])->timeout(2)->get("{$apiBase}/settings/{$ep}", ['locale' => $locale]);
+            if ($res->successful()) $settings[$ep] = $res->json()['data'] ?? $res->json();
+        } catch (\Exception $e) { $settings[$ep] = []; }
+    }
 
         // Değişken atamaları
         $gen = $settings['general'] ?? [];

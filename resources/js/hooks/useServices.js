@@ -3,13 +3,36 @@ import { useEffect, useState } from "react";
 
 const API_BASE = "https://omerdogan.de/api/v1/services";
 
+async function fetchAllPages(url, tenantId, page = 1, perPage = 1000, accumulator = []) {
+    const params = new URLSearchParams(url);
+    params.set("page", page);
+    params.set("per_page", perPage);
+
+    const res = await fetch(`${API_BASE}?${params.toString()}`, {
+        headers: {
+            Accept: "application/json",
+            "X-Tenant-ID": tenantId,
+        },
+    });
+
+    const json = await res.json();
+    const data = json?.data || [];
+    const pagination = json?.pagination || {};
+
+    const merged = [...accumulator, ...data];
+
+    if (pagination.current_page < pagination.last_page) {
+        return fetchAllPages(url, tenantId, page + 1, perPage, merged);
+    }
+
+    return merged;
+}
+
 export function useServices({
     tenantId,
     locale = "de",
-    page = 1,
-    perPage = 50,
-    categoryId = undefined, // null → ana servis, undefined → gönderme
-    locationOnly = false, // Standorte (şehir lokasyon) mod
+    categoryId = undefined,
+    locationOnly = false,
 } = {}) {
 
     const [services, setServices] = useState([]);
@@ -28,58 +51,35 @@ export function useServices({
             try {
                 setLoading(true);
                 setError(null);
-
                 const start = performance.now();
-                const params = new URLSearchParams();
 
+                const params = new URLSearchParams();
                 params.append("tenant", tenantId);
-                params.append("per_page", String(perPage));
-                params.append("page", String(page));
                 params.append("locale", locale);
 
-                // Backend logic:
-                // category_id = (empty string) → Ana servisler
-                // category_id = number → belirli kategori
-                if (categoryId === null) {
-                    params.append("category_id", "");
-                } else if (categoryId !== undefined) {
-                    params.append("category_id", String(categoryId));
+                if (categoryId !== undefined) {
+                    categoryId === null
+                        ? params.append("category_id", "")
+                        : params.append("category_id", String(categoryId));
                 }
 
-                const url = `${API_BASE}?${params.toString()}`;
-                console.log("🌍 API Request:", url);
+                // 🔥 TÜM SAYFALARI ÇEK 🔥
+                let list = await fetchAllPages(params, tenantId);
 
-                const res = await fetch(url, {
-                    headers: {
-                        Accept: "application/json",
-                        "X-Tenant-ID": tenantId, // Güvenli fallback
-                    },
-                });
-
-                const json = await res.json();
-                console.log("📌 RAW Response:", json);
-
-                let list = json?.data || [];
-
-                // 🔥 STANDORTE (şehir sayfalarını çek)
+                // 📌 SONRA locationOnly filtre uygula
                 if (locationOnly) {
                     list = list.filter((s) => {
                         const cityOk = !!s.city;
-                        const mapsOk = !!s.has_maps;
                         const catOk =
-                            String(s.category_name || "")
-                                .toLowerCase() === "gebäudereinigung".toLowerCase() ||
-                            String(s.category_name || "")
-                                .toLowerCase() === "gebaudereinigung".toLowerCase();
-
-                        return cityOk && mapsOk && catOk;
+                            (s.category_name || "").toLowerCase() === "gebäudereinigung" ||
+                            (s.category_name || "").toLowerCase() === "gebaudereinigung";
+                        return cityOk && catOk;
                     });
-
-                    console.log("📌 Filtered Standorte:", list);
                 }
 
                 setServices(list);
                 setDurationMs(performance.now() - start);
+
             } catch (err) {
                 console.error("❌ API ERROR:", err);
                 setError(err.message || "API hatası");
@@ -90,7 +90,7 @@ export function useServices({
         };
 
         fetchData();
-    }, [tenantId, locale, page, perPage, categoryId, locationOnly]);
+    }, [tenantId, locale, categoryId, locationOnly]);
 
     return { services, loading, error, durationMs };
 }

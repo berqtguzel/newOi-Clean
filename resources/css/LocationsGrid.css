@@ -1,153 +1,4 @@
-
-.locations-section{
-  padding: 4rem 1rem;
-  min-height: 100vh;
-  background: var(--surface);
-}
-
-.dark .locations-section{
-    background:#0f172a;
-
-}
-
-.locations-container{
-  max-width: 80rem;
-  margin-inline: auto;
-}
-
-.locations-header{
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.locations-title{
-  font-size: 2.25rem;
-  line-height: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-color, #111827);
-}
-.dark .locations-title{
-    color: white;
-}
-.dark .locations-subtitle{
-    color: white;
-}
-@media (min-width: 768px){
-  .locations-title{
-    font-size: 3rem;
-    line-height: 1;
-  }
-}
-
-.locations-subtitle{
-  font-size: 1.25rem;
-  line-height: 1.75rem;
-  max-width: 42rem;
-  margin-inline: auto;
-  color: color-mix(in srgb, var(--text-color, #111827) 70%, #ffffff 30%);
-}
-
-
-.locations-cta{
-  text-align: center;
-  margin-top: 4rem;
-}
-
-.locations-contact-button{
-  --btn-bg: var(--button-color, var(--site-primary-color, #2563eb));
-  --btn-bg-hover: color-mix(in srgb, var(--btn-bg) 88%, #000 12%);
-
-  display: inline-flex;
-  align-items: center;
-  gap: .5rem;
-  padding: .75rem 2rem;
-  border-radius: 9999px;
-  background: var(--btn-bg);
-  color: #fff;
-  font-weight: 700;
-  text-decoration: none;
-  transition: background-color .2s ease-in-out, transform .06s ease;
-  border: 1px solid color-mix(in srgb, var(--btn-bg) 35%, #fff 65%);
-  box-shadow: 0 10px 22px color-mix(in srgb, var(--btn-bg) 26%, rgba(0,0,0,0) 74%);
-}
-.locations-contact-button:hover{
-  background: var(--btn-bg-hover);
-  transform: translateY(-1px);
-}
-.locations-arrow-icon{
-  width: 1.25rem; height: 1.25rem;
-  transition: transform .2s ease-in-out;
-}
-.locations-contact-button:hover .locations-arrow-icon{
-  transform: translateX(.25rem);
-}
-
-
-.locations-grid{
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-}
-@media (min-width: 640px){
-  .locations-grid{
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.75rem;
-  }
-}
-@media (min-width: 1024px){
-  .locations-grid{
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 2rem;
-  }
-}
-
-
-.map-container{
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto 24px;
-}
-
-.map-box{
-  width: 100%;
-  height: 740px;
-  max-width: 1200px;
-  margin: 0 auto 24px;
-  border-radius: 16px;
-  overflow: hidden;
-
-}
-@media (max-width: 1024px){ .map-box{ height: 460px; } }
-@media (max-width: 640px){  .map-box{ height: 360px; } }
-
-
-.germany-map-svg svg{
-  width: 100%;
-  height: auto;
-  aspect-ratio: 4 / 5;
-  display: block;
-}
-
-
-.germany-map{
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-
-.liquid-ether-bg{ opacity: .6; }
-
-.dark .map-box{
-  background: color-mix(in srgb, var(--surface, #0f172a) 92%, #fff 8%);
-  border-color: color-mix(in srgb, var(--text-color, #f8fafc) 18%, #000 82%);
-  box-shadow: 0 12px 26px rgba(0,0,0,.24);
-}
-/* resources/js/css/ContactLocations.css */
-
-/* --- Genel Bölüm Ayarları --- */
+/* --- SECTION --- */
 .locations-section {
   padding: 5rem 1.5rem;
   min-height: 100vh;
@@ -156,177 +7,138 @@
   overflow: hidden;
 }
 
-.locations-container {
-  max-width: 1280px;
-  margin-inline: auto;
-  position: relative;
-  z-index: 2;
+.dark .locations-section {
+  background: #0f172a;
 }
 
-/* --- Başlık Alanı --- */
+/* --- CONTAINER --- */
+.locations-container {
+  max-width: 1400px;
+  margin-inline: auto;
+}
+
+/* --- HEADER --- */
 .locations-header {
   text-align: center;
   margin-bottom: 4rem;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .locations-title {
-  font-size: 2.5rem;
-  line-height: 1.1;
+  font-size: clamp(2rem, 4vw, 3.5rem);
   font-weight: 800;
-  margin-bottom: 1rem;
+  line-height: 1.1;
   color: var(--text-color, #111827);
-  letter-spacing: -0.02em;
+}
+
+.dark .locations-title {
+  color: #ffffff;
 }
 
 .locations-subtitle {
-  font-size: 1.125rem;
-  line-height: 1.6;
-  color: #64748b; /* Slate-500 */
+  font-size: 1.2rem;
+  max-width: 700px;
+  margin: 12px auto 0;
+  color: #64748b;
 }
 
-/* Dark Mode Başlıklar */
-.dark .locations-title { color: #ffffff; }
-.dark .locations-subtitle { color: #94a3b8; }
-
-@media (min-width: 768px) {
-  .locations-title { font-size: 3.5rem; }
-  .locations-subtitle { font-size: 1.25rem; }
+.dark .locations-subtitle {
+  color: #94a3b8;
 }
 
-/* --- Harita Alanı (DÜZELTİLDİ) --- */
+/* --- MAP WRAPPER --- */
 .map-container {
   width: 100%;
-  max-width: 100%; /* Sınırlamayı kaldırdık, ferah olsun */
-  margin: 0 auto 3rem;
-  position: relative;
+  max-width: 1100px;
+  margin: 0 auto 3.5rem;
 }
 
 .map-box {
   width: 100%;
-  /* Sabit yükseklik yerine esnek yapı */
   height: auto;
-  min-height: 600px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  /* Haritanın taşmasını veya kesilmesini önlemek için */
+  min-height: 520px;
   overflow: visible;
   position: relative;
 }
 
-/* Mobilde Harita Yüksekliği */
 @media (max-width: 1024px) {
-  .map-box { min-height: 500px; }
-}
-@media (max-width: 640px) {
-  .map-box { min-height: 350px; }
+  .map-box { min-height: 420px; }
 }
 
-/* SVG Ayarları (Kesilmeyi Önler) */
-.rsm-svg,
-.germany-map-svg svg {
+@media (max-width: 640px) {
+  .map-box { min-height: 360px; }
+}
+
+.rsm-svg {
   width: 100%;
   height: auto;
-  max-height: 85vh; /* Ekranın %85'ini geçmesin */
   display: block;
-  /* Aspect ratio zorlamasını kaldırdık */
-  filter: drop-shadow(0 10px 30px rgba(0,0,0,0.08)); /* Haritaya derinlik katar */
+  max-height: 80vh;
+  filter: drop-shadow(0 10px 25px rgba(0,0,0,0.1));
 }
 
-.dark .rsm-svg,
-.dark .germany-map-svg svg {
-    filter: drop-shadow(0 10px 30px rgba(0,0,0,0.3));
+.dark .rsm-svg {
+  filter: drop-shadow(0 10px 30px rgba(0,0,0,0.4));
 }
 
-/* --- Lokasyon Kartları (Grid) --- */
+/* --- LOCATION GRID --- */
 .locations-grid {
   display: grid;
-  /* Otomatik sığdırma: Kartlar en az 260px olacak, sığdığı kadar yan yana gelecek */
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 2rem;
-  margin-bottom: 4rem;
+  grid-template-columns: repeat(5, minmax(220px, 1fr));
+  gap: 1.75rem;
+  margin-top: 3rem;
 }
 
-/* --- Kart Tasarımı (Location Card) --- */
-.location-card { /* Eğer ayrı class kullanıyorsan */
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 1.25rem;
-    padding: 1.5rem;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.location-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+@media (max-width: 1280px) {
+  .locations-grid {
+    grid-template-columns: repeat(4, minmax(200px, 1fr));
+  }
 }
 
-/* --- CTA Butonu (DÜZENLENDİ) --- */
+@media (max-width: 992px) {
+  .locations-grid {
+    grid-template-columns: repeat(3, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .locations-grid {
+    grid-template-columns: repeat(2, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .locations-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+
+
+/* --- CTA BUTTON --- */
 .locations-cta {
+  margin-top: 3rem;
   text-align: center;
-  margin-top: 2rem;
-  padding-bottom: 4rem;
 }
 
 .locations-contact-button {
-  --btn-bg: var(--button-color, #2563eb);
-
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 2.5rem;
-  border-radius: 9999px;
-  background-color: var(--btn-bg);
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 1.1rem;
+  padding: 1rem 2.25rem;
+  border-radius: 50px;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 700;
   text-decoration: none;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-
-  /* Modern Gölge */
-  box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4);
-  /* Not: Gölge rengini dinamik yapmak zor, o yüzden hafif mavi/gri tonu */
+  transition: .25s;
 }
 
 .locations-contact-button:hover {
   transform: translateY(-3px);
-  filter: brightness(110%);
-  box-shadow: 0 20px 30px -10px rgba(37, 99, 235, 0.5);
-  gap: 1rem; /* Hoverda ok işareti biraz uzaklaşsın */
+  filter: brightness(108%);
 }
 
-.locations-arrow-icon {
-  width: 1.25rem;
-  height: 1.25rem;
-  transition: transform 0.3s ease;
-}
-
-/* --- Dark Mode Genel Ayarlar --- */
-.dark .locations-section {
-    background:  #0f172a;
-}
-
-/* Harita Arka Planı (Opsiyonel: Haritanın arkasına hafif bir glow ekler) */
-.germany-map::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 80%;
-    height: 80%;
-    background: var(--site-primary-color, #3b82f6);
-    opacity: 0.05;
-    filter: blur(100px);
-    border-radius: 50%;
-    z-index: -1;
-    pointer-events: none;
-}
-.liquid-ether-bg,
-.liquid-ether-inner {
-    pointer-events: none !important;
-    z-index: 0 !important;
+.dark .locations-contact-button {
+  background: #3b82f6;
 }

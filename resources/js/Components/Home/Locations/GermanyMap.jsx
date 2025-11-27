@@ -11,6 +11,35 @@ import { usePage, router } from "@inertiajs/react";
 const DE_STATES_URL =
     "https://cdn.jsdelivr.net/gh/isellsoap/deutschlandGeoJSON@master/2_bundeslaender/4_niedrig.geo.json";
 
+// slug: "gebaudereinigung-in-neustadt-am-rubenberge"
+// ➜ "Neustadt Am Rubenberge"
+const slugToCityName = (slug = "") => {
+    if (!slug) return "";
+
+    let s = slug;
+
+    // Önde gelen sabit kısımları temizle
+    const prefixes = [
+        "gebaudereinigung-in-",
+        "gebäudereinigung-in-",
+        "gebaeudereinigung-in-",
+    ];
+
+    for (const p of prefixes) {
+        if (s.startsWith(p)) {
+            s = s.slice(p.length);
+            break;
+        }
+    }
+
+    // "neustadt-am-rubenberge" ➜ ["neustadt","am","rubenberge"] ➜ "Neustadt Am Rubenberge"
+    return s
+        .split("-")
+        .filter(Boolean)
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ");
+};
+
 const GermanyMap = ({ activeId, setActiveId }) => {
     const { props } = usePage();
 
@@ -28,20 +57,27 @@ const GermanyMap = ({ activeId, setActiveId }) => {
 
         return regions
             .filter((r) => r.latitude && r.longitude && r.service_slug)
-            .map((r) => ({
-                id: r.service_id,
-                name: r.city || r.name,
-                slug: r.service_slug,
-                coords: [
-                    parseFloat(r.longitude),
-                    parseFloat(r.latitude),
-                ],
-            }));
+            .map((r) => {
+                const cityFromSlug = slugToCityName(r.service_slug);
+
+                return {
+                    id: r.service_id,
+                    // 1) API'den city varsa onu kullan
+                    // 2) Yoksa slug'tan ürettiğimiz şehir adını kullan
+                    // 3) O da yoksa fallback olarak r.name kullan
+                    name: r.city || cityFromSlug || r.name,
+                    slug: r.service_slug,
+                    coords: [
+                        parseFloat(r.longitude),
+                        parseFloat(r.latitude),
+                    ],
+                };
+            });
     }, [maps]);
 
     const goToCity = (slug) => {
         if (!slug) return;
-        router.visit(`/${slug}`); // SEO-friendly slug redirect
+        router.visit(`/${slug}`); // SEO-friendly slug redirect (bunu bozmadım)
     };
 
     return (
@@ -54,7 +90,10 @@ const GermanyMap = ({ activeId, setActiveId }) => {
 
             <ComposableMap
                 projection="geoMercator"
-                projectionConfig={{ center: [10.4, 51.2], scale: 3200 }}
+                projectionConfig={{
+                    center: [9.5, 51.5],
+                    scale: 2400,
+                }}
                 style={{ width: "100%", height: "100%" }}
             >
                 <Geographies geography={DE_STATES_URL}>
