@@ -2,6 +2,28 @@
 import { httpRequest } from "../lib/http";
 import { remoteConfig } from "./remoteConfig";
 
+// Cache mekanizması
+const cache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 dakika
+
+function getCacheKey(options) {
+    return JSON.stringify(options);
+}
+
+function getCached(key) {
+    const cached = cache.get(key);
+    if (!cached) return null;
+    if (Date.now() - cached.timestamp > CACHE_TTL) {
+        cache.delete(key);
+        return null;
+    }
+    return cached.data;
+}
+
+function setCache(key, data) {
+    cache.set(key, { data, timestamp: Date.now() });
+}
+
 function pickImage(it) {
     return (
         it?.image_url ||
@@ -84,6 +106,13 @@ export async function fetchServices(options = {}) {
         categoryId,
     } = options;
 
+    // Cache kontrolü - search varsa cache'leme
+    const cacheKey = search ? null : getCacheKey({ page, perPage, tenantId, locale, city, district, locationSlug, locationId, categoryId });
+    if (cacheKey) {
+        const cached = getCached(cacheKey);
+        if (cached) return cached;
+    }
+
     const headers = {};
     if (tenantId) headers["X-Tenant-ID"] = String(tenantId);
 
@@ -115,7 +144,14 @@ export async function fetchServices(options = {}) {
         })
     );
 
-    return { services, meta: meta || {}, pagination: res?.pagination || null };
+    const result = { services, meta: meta || {}, pagination: res?.pagination || null };
+    
+    // Cache'e kaydet
+    if (cacheKey) {
+        setCache(cacheKey, result);
+    }
+
+    return result;
 }
 
 export async function fetchAllServices(options = {}) {
@@ -156,6 +192,11 @@ function buildApiSlug(identifier) {
 export async function fetchServiceBySlug(slug, opts = {}) {
     const { tenantId, locale } = opts;
 
+    // Cache kontrolü
+    const cacheKey = getCacheKey({ type: 'serviceBySlug', slug, tenantId, locale });
+    const cached = getCached(cacheKey);
+    if (cached) return cached;
+
     const headers = {};
     if (tenantId) headers["X-Tenant-ID"] = String(tenantId);
 
@@ -171,13 +212,17 @@ export async function fetchServiceBySlug(slug, opts = {}) {
     });
 
     const raw = res?.data || res;
-    return {
+    const result = {
         service: normalizeService(raw, 0, {
             locale,
             fallbackLocale: locale,
         }),
         raw,
     };
+
+    // Cache'e kaydet
+    setCache(cacheKey, result);
+    return result;
 }
 
 export async function fetchServiceByIdOrSlug(identifier, opts = {}) {

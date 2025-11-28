@@ -7,29 +7,7 @@ import SafeHtml from "@/Components/Common/SafeHtml";
 import ServiceCard from "./ServiceCard";
 import "./ServicesGrid.css";
 
-import { motion } from "framer-motion"; // ✨ Ekledik
-
-const getTranslatedValue = (item, locale) => {
-    const tr = item.translations?.find((t) => t.language_code === locale);
-
-    return {
-        name: tr?.name || item.name,
-        description: tr?.description || item.description,
-    };
-};
-
-const animationVariants = {
-  hidden: { opacity: 0, transform: "translateY(20px)" },
-  visible: (i = 1) => ({
-    opacity: 1,
-    transform: "translateY(0)",
-    transition: {
-      delay: i * 0.05,
-      duration: 0.35,
-      ease: "easeOut",
-    },
-  }),
-};
+import { motion } from "framer-motion";
 
 const ServicesGrid = ({ content = {} }) => {
     const { t } = useTranslation();
@@ -42,12 +20,7 @@ const ServicesGrid = ({ content = {} }) => {
         props?.global?.tenant_id ||
         "oi_cleande_690e161c3a1dd";
 
-    const {
-        services: fetched,
-        loading,
-        durationMs,
-        error,
-    } = useServices({
+    const { services: fetched, loading } = useServices({
         tenantId,
         locale,
         perPage: 50,
@@ -62,60 +35,60 @@ const ServicesGrid = ({ content = {} }) => {
 
     return (
         <section id="services" className="services-section">
-        {durationMs}
             <div className="services-container">
-                <div className="services-header">
-                    <motion.h2
-                        className="services-title"
-                        initial={{ opacity: 0, y: 40 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6 }}
-                    >
-                        <SafeHtml
-                            html={
-                                content.services_title ||
-                                t("servicesList.title")
-                            }
-                        />
-                    </motion.h2>
-                </div>
+                {/* Title */}
+                <motion.h2
+                    className="services-title"
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6 }}
+                >
+                    <SafeHtml
+                        html={content.services_title || t("servicesList.title")}
+                    />
+                </motion.h2>
 
-                <div className="services-grid">
+                {/* Grid Wrapper with single animation */}
+                <motion.div
+                    className="services-grid"
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                >
+                    {/* Skeleton Loading */}
                     {loading &&
-  [...Array(42)].map((_, i) => (
-    <div key={i} className="service-card-skeleton"></div>
-  ))
-}
+                        [...Array(42)].map((_, i) => (
+                            <div
+                                key={i}
+                                className="service-card-skeleton"
+                            ></div>
+                        ))}
+
+                    {/* Service Cards */}
                     {!loading &&
-                        services.map((s, index) => {
-                            const { name, description } = getTranslatedValue(
-                                s,
-                                locale
+                        services.map((s) => {
+                            const tr = s.translations?.find(
+                                (t) => t.language_code === locale
                             );
+                            const name = tr?.name || s.name;
+                            const description =
+                                tr?.description || s.description;
 
                             return (
-                                <motion.div
+                                <ServiceCard
                                     key={s.id}
-                                    variants={animationVariants}
-                                    initial="hidden"
-                                    whileInView="visible"
-                                    viewport={{ once: true, amount: 0.2 }}
-                                    custom={index}
-                                >
-                                    <ServiceCard
-                                        title={name}
-                                        description={description}
-                                        image={s.image}
-                                        slug={s.slug}
-                                    />
-                                </motion.div>
+                                    title={name}
+                                    description={description}
+                                    image={s.image}
+                                    slug={s.slug}
+                                />
                             );
                         })}
+                </motion.div>
 
-                   
-                </div>
-
+                {/* CTA Button */}
                 <motion.div
                     className="services-cta"
                     initial={{ opacity: 0, scale: 0.8 }}

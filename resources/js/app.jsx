@@ -36,5 +36,13 @@ createInertiaApp({
     progress: {
         color: "var(--site-primary-color)",
         delay: 80,
+        showSpinner: false, // Spinner'ı kapat, sadece progress bar göster
+    },
+
+    // Performans optimizasyonları
+    swapOptions: {
+        preserveState: true, // State'i koru
+        preserveScroll: true, // Scroll pozisyonunu koru
+        resetScroll: false, // Scroll'u resetleme
     },
 });

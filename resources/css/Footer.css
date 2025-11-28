@@ -1,5 +1,4 @@
 :root{
-
   --ft-surface: var(--footer-background-color, var(--background-color, #f8f9fa));
   --ft-ink: var(--text-color, #111827);
   --ft-link: var(--link-color, var(--site-primary-color, #2563eb));

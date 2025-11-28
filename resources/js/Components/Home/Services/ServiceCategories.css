@@ -6,7 +6,8 @@
   --svc-primary-700: color-mix(in srgb, var(--svc-primary) 80%, #000 20%);
   --svc-link: var(--site-primary-color, #2563eb);
   --svc-link-hover: color-mix(in srgb, var(--svc-link) 75%, #000 25%);
-  --svc-title: var(--text-color, #111827);
+  --svc-title: var(--h1-color, #111827);
+
   --svc-subtitle: color-mix(in srgb, var(--svc-ink) 55%, #ffffff 45%);
   --svc-card-border: color-mix(in srgb, var(--svc-ink) 10%, #ffffff 90%);
   --svc-card-title: var(--svc-ink);
@@ -58,15 +59,16 @@
 .svc-title {
   font-size: clamp(1.875rem, 3.5vw, 2.25rem);
   font-weight: 800;
-  color: white;
+  color: var(--svc-title);
   margin: 0;
   display: inline-block;
 }
 
 .svc-subtitle {
   margin: 1rem auto 0;
+  font-weight: 500;
   font-size: clamp(1.1rem, 2vw, 1.25rem);
-  color: white;
+  color: var(--svc-ink);
   max-width: 48rem;
 }
 
@@ -150,13 +152,13 @@
   font-size: 1.35rem;
   font-weight: 700;
   margin: 0 0 .75rem;
-  color: var(--svc-card-title);
+  color: var(--h2_color);
   transition: color .2s ease;
 }
 .svc-card:hover .svc-card-title { color: var(--svc-primary-700); }
 
 .svc-card-desc {
-  color: var(--svc-card-desc);
+  color: var(--svc-ink);
   margin: 0 0 1.5rem;
   line-height: 1.65;
   flex-grow: 1;

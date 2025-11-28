@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useState } from "react";
 import { Head, Link, usePage as useInertiaPage } from "@inertiajs/react";
 import { useTranslation } from "react-i18next";
 import "../../../css/404.css";
@@ -7,7 +7,7 @@ import AppLayout from "@/Layouts/AppLayout";
 
 const DEFAULT_404_TITLE = "404 — Seite nicht gefunden";
 const DEFAULT_404_DESC =
-    "Entschuldigung, die gesuchte Seite wurde nicht gefunden. Bitte überprüfen Sie die URL oder kehren Sie zur Startseite zurück.";
+    "Die von Ihnen gesuchte Seite konnte nicht gefunden werden oder wurde verschoben. Bitte versuchen Sie, zur Startseite zurückzukehren oder die interne Suche zu verwenden.";
 
 const DEFAULT_500_TITLE = "500 — Serverfehler";
 const DEFAULT_500_DESC =
@@ -15,13 +15,13 @@ const DEFAULT_500_DESC =
 
 export default function NotFound() {
     const { t } = useTranslation();
-    const { props, url } = useInertiaPage();
+    const { props } = useInertiaPage();
 
     const status = props?.status || 404;
     const is500 = status >= 500;
     const slug = is500 ? "500" : "404";
 
-    const [page, setPage] = useState(null);
+    const [page, setPage] = useState();
 
     const tenantId =
         props?.global?.tenantId ||
@@ -46,43 +46,36 @@ export default function NotFound() {
                 );
                 setPage(null);
             });
-    }, [slug, tenantId, locale, is500]);
+    }, [slug, tenantId, locale, is500, page]);
 
-    const text = (key) => {
-        const i18nKey = `errors.${slug}.${key}`;
+    // 404 için: errors.notFound.*
+    // 500 için: errors.serverError.* (yoksa fallback metinler kullanılır)
+    const title =
+        page?.title ||
+        (is500
+            ? t("errors.serverError.title", DEFAULT_500_TITLE)
+            : t("errors.notFound.title", DEFAULT_404_TITLE));
 
-        let defaultText = DEFAULT_404_TITLE;
-        if (slug === "500") {
-            defaultText = DEFAULT_500_TITLE;
-        }
+    const desc =
+        page?.content ||
+        (is500
+            ? t("errors.serverError.desc", DEFAULT_500_DESC)
+            : t("errors.notFound.desc", DEFAULT_404_DESC));
 
-        if (key === "desc") {
-            defaultText = slug === "500" ? DEFAULT_500_DESC : DEFAULT_404_DESC;
-        } else if (key === "ctaHome") {
-            defaultText = t("errors.ctaHome", "Ana Sayfaya Dön");
-        } else if (key === "ctaContact") {
-            defaultText =
-                slug === "500"
-                    ? t("errors.ctaSupport", "Destek ile İletişim")
-                    : t("errors.ctaContact", "İletişime Geç");
-        } else if (key === "hint") {
-            defaultText =
-                slug === "500"
-                    ? t("errors.hint500", "Biz sorun üzerinde çalışıyoruz.")
-                    : t(
-                          "errors.hint404",
-                          "İpucu: Lütfen URL'yi gözden geçirin."
-                      );
-        }
+    const ctaHome = is500
+        ? t("errors.serverError.cta_home", "Zur Startseite")
+        : t("errors.notFound.cta_home", "Zur Startseite");
 
-        return page?.[key] || t(i18nKey, defaultText);
-    };
+    const ctaContact = is500
+        ? t("errors.serverError.cta_support", "Kontakt aufnehmen")
+        : t("errors.notFound.cta_contact", "Kontakt aufnehmen");
 
-    const title = text("title");
-    const desc = page?.content || text("desc");
-    const ctaHome = text("ctaHome");
-    const ctaContact = text("ctaContact");
-    const hint = text("hint");
+    const hint = is500
+        ? t("errors.serverError.hint", "Biz sorun üzerinde çalışıyoruz.")
+        : t(
+              "errors.notFound.hint",
+              "Falls das Problem weiterhin besteht, kontaktieren Sie uns bitte."
+          );
 
     const content = (
         <div className="oi-404-page min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">

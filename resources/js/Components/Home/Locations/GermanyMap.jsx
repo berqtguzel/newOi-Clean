@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from "react";
+import React, { memo, useMemo, useState } from "react";
 import {
     ComposableMap,
     Geographies,
@@ -11,62 +11,49 @@ import { usePage, router } from "@inertiajs/react";
 const DE_STATES_URL =
     "https://cdn.jsdelivr.net/gh/isellsoap/deutschlandGeoJSON@master/2_bundeslaender/4_niedrig.geo.json";
 
-// slug: "gebaudereinigung-in-neustadt-am-rubenberge"
-// ➜ "Neustadt Am Rubenberge"
-const slugToCityName = (slug = "") => {
-    if (!slug) return "";
-
-    let s = slug;
-
-    // Önde gelen sabit kısımları temizle
-    const prefixes = [
-        "gebaudereinigung-in-",
-        "gebäudereinigung-in-",
-        "gebaeudereinigung-in-",
-    ];
-
-    for (const p of prefixes) {
-        if (s.startsWith(p)) {
-            s = s.slice(p.length);
-            break;
-        }
-    }
-
-    // "neustadt-am-rubenberge" ➜ ["neustadt","am","rubenberge"] ➜ "Neustadt Am Rubenberge"
-    return s
+// 🔹 Gösterim için: slug → City Title
+const slugToCityTitle = (slug = "") =>
+    String(slug)
         .split("-")
         .filter(Boolean)
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
         .join(" ");
+
+// 🔹 URL yönlendirme için: Prefix temizleme
+const servicePrefixes = [
+    "gebaudereinigung-in-",
+    "gebäudereinigung-in-",
+    "gebaeudereinigung-in-",
+];
+
+const stripSlugPrefix = (slug = "") => {
+    const lowerSlug = String(slug).toLowerCase().trim();
+    const prefix = servicePrefixes.find((p) => lowerSlug.startsWith(p));
+    return prefix ? lowerSlug.slice(prefix.length) : lowerSlug;
 };
 
 const GermanyMap = ({ activeId, setActiveId }) => {
     const { props } = usePage();
-
     const tenantId =
         props?.global?.tenantId ||
         props?.global?.tenant_id ||
         "oi_cleande_690e161c3a1dd";
-
     const locale = props?.locale || "de";
 
     const { maps, loading } = useMaps({ tenantId, locale });
 
+    const [hoveredMarker, setHoveredMarker] = useState(null);
+
     const markers = useMemo(() => {
         const regions = maps?.[0]?.map_data?.regions || [];
-
         return regions
             .filter((r) => r.latitude && r.longitude && r.service_slug)
             .map((r) => {
-                const cityFromSlug = slugToCityName(r.service_slug);
-
+                const cleanSlug = stripSlugPrefix(r.service_slug);
                 return {
                     id: r.service_id,
-                    // 1) API'den city varsa onu kullan
-                    // 2) Yoksa slug'tan ürettiğimiz şehir adını kullan
-                    // 3) O da yoksa fallback olarak r.name kullan
-                    name: r.city || cityFromSlug || r.name,
-                    slug: r.service_slug,
+                    name: r.city || slugToCityTitle(cleanSlug),
+                    slug: cleanSlug,
                     coords: [parseFloat(r.longitude), parseFloat(r.latitude)],
                 };
             });
@@ -74,19 +61,16 @@ const GermanyMap = ({ activeId, setActiveId }) => {
 
     const goToCity = (slug) => {
         if (!slug) return;
-        router.visit(`/${slug}`); // SEO-friendly slug redirect (bunu bozmadım)
+        router.visit(`/${slug}`);
     };
 
     return (
         <div className="map-box" style={{ minHeight: "600px" }}>
-            {loading && <p style={{ textAlign: "center", color: "#888" }}></p>}
+            {loading && <p style={{ textAlign: "center" }}></p>}
 
             <ComposableMap
                 projection="geoMercator"
-                projectionConfig={{
-                    center: [9.5, 51.5],
-                    scale: 2400,
-                }}
+                projectionConfig={{ center: [9.5, 51.5], scale: 2400 }}
                 style={{ width: "100%", height: "100%" }}
             >
                 <Geographies geography={DE_STATES_URL}>
@@ -101,9 +85,7 @@ const GermanyMap = ({ activeId, setActiveId }) => {
                                         stroke: "#cbd5e1",
                                         strokeWidth: 0.8,
                                     },
-                                    hover: {
-                                        fill: "#dbeafe",
-                                    },
+                                    hover: { fill: "#dbeafe" },
                                 }}
                             />
                         ))
@@ -114,20 +96,63 @@ const GermanyMap = ({ activeId, setActiveId }) => {
                     <Marker
                         key={m.id}
                         coordinates={m.coords}
-                        onMouseEnter={() => setActiveId?.(m.id)}
-                        onMouseLeave={() => setActiveId?.(null)}
+                        onMouseEnter={() => {
+                            setActiveId?.(m.id);
+                            setHoveredMarker(m);
+                        }}
+                        onMouseLeave={() => {
+                            setActiveId?.(null);
+                            setHoveredMarker(null);
+                        }}
                         onClick={() => goToCity(m.slug)}
                         style={{ cursor: "pointer" }}
                     >
                         {/* Glow */}
-                        <circle r={10} fill="rgba(14, 165, 233, 0.30)" />
+                        <circle
+                            r={activeId === m.id ? 12 : 10}
+                            style={{
+                                fill: "var(--site-primary-color)",
+                                opacity: 0.25,
+                                transition:
+                                    "r 0.2s ease-out, opacity 0.2s ease-out",
+                            }}
+                        />
+
                         {/* Dot */}
                         <circle
-                            r={activeId === m.id ? 7 : 5}
-                            fill={activeId === m.id ? "#0284c7" : "#0ea5e9"}
-                            stroke="#fff"
-                            strokeWidth={1.5}
+                            r={activeId === m.id ? 8 : 6}
+                            style={{
+                                fill: "var(--site-primary-color)",
+                                stroke: "#fff",
+                                strokeWidth: 1.4,
+                                transition: "r 0.2s ease-out",
+                            }}
                         />
+
+                        {/* Tooltip */}
+                        {hoveredMarker?.id === m.id && (
+                            <g transform="translate(12, -10)">
+                                <rect
+                                    rx="4"
+                                    width={m.name.length * 8 + 12}
+                                    height="22"
+                                    fill="#1e293b"
+                                    opacity="0.9"
+                                />
+                                <text
+                                    x="6"
+                                    y="15"
+                                    style={{
+                                        fill: "#fff",
+                                        fontSize: "12px",
+                                        pointerEvents: "none",
+                                        fontWeight: 600,
+                                    }}
+                                >
+                                    {m.name}
+                                </text>
+                            </g>
+                        )}
                     </Marker>
                 ))}
             </ComposableMap>

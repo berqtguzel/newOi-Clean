@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, memo } from "react";
 import { Link, usePage } from "@inertiajs/react";
 import {
     FaMapMarkerAlt,
@@ -23,7 +23,7 @@ import {
 
 import "../../css/Footer.css";
 
-export default function Footer({ settings }) {
+const Footer = memo(function Footer({ settings }) {
     const { t } = useTranslation();
     const { props } = usePage();
 
@@ -246,4 +246,6 @@ export default function Footer({ settings }) {
             </a>
         </footer>
     );
-}
+});
+
+export default Footer;

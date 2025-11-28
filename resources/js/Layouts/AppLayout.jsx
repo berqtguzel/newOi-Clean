@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, memo } from "react";
 import { Head, usePage } from "@inertiajs/react";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
@@ -7,10 +7,11 @@ import CookieBanner from "../Components/CookieBanner";
 import Cookies from "js-cookie";
 import { FaCookieBite } from "react-icons/fa";
 import WhatsAppWidget from "@/Components/WhatsAppWidget";
+import Loading from "@/Components/Common/Loading";
 import { useSettings } from "../hooks/useSettings";
 import { useLocale } from "../hooks/useLocale";
 
-export default function AppLayout({ children }) {
+const AppLayout = memo(function AppLayout({ children }) {
     const { props } = usePage();
 
     const layoutData = props?.layoutData || {};
@@ -27,49 +28,53 @@ export default function AppLayout({ children }) {
         if (!consent) setShowCookieSettings(true);
     }, []);
 
-    // SSR'da async fetch DENENMEZ - sadece tarayıcıda
     const { data: asyncSettings } = useSettings({
         tenantId,
         locale,
         enabled: isClient,
     });
 
-    // 🔥 SSR = layoutData.settings
-    // 🔥 CSR = API’dan asyncSettings gelirse üzerine yazar
-    const settings = isClient
-        ? asyncSettings || layoutData.settings || {}
-        : layoutData.settings || {};
+    // Memoize settings to prevent unnecessary re-renders
+    const settings = useMemo(() => {
+        return isClient
+            ? asyncSettings || layoutData.settings || {}
+            : layoutData.settings || {};
+    }, [isClient, asyncSettings, layoutData.settings]);
 
-    // META
-    const general = settings?.general || {};
-    const branding = settings?.branding || {};
+    const general = useMemo(() => settings?.general || {}, [settings]);
+    const branding = useMemo(() => settings?.branding || {}, [settings]);
 
-    const siteTitle =
-        general.site_name ||
-        branding.site_name ||
-        layoutData.siteName ||
-        "O&I CLEAN";
+    const siteTitle = useMemo(
+        () =>
+            general.site_name ||
+            branding.site_name ||
+            layoutData.siteName ||
+            "O&I CLEAN",
+        [general.site_name, branding.site_name, layoutData.siteName]
+    );
 
-    const siteDescription =
-        general.site_description ||
-        branding.site_description ||
-        "Professionelle Reinigungsdienste";
+    const siteDescription = useMemo(
+        () => general.site_description || branding.site_description || "",
+        [general.site_description, branding.site_description]
+    );
 
-    const favicon =
-        branding.favicon?.url ||
-        general.favicon?.url ||
-        layoutData.favicon ||
-        "/favicon.ico";
+    const favicon = useMemo(
+        () =>
+            branding.favicon?.url ||
+            general.favicon?.url ||
+            layoutData.favicon ||
+            "/favicon.ico",
+        [branding.favicon?.url, general.favicon?.url, layoutData.favicon]
+    );
+
+    // Memoize callbacks
+    const handleCookieClick = useMemo(
+        () => () => setShowCookieSettings(true),
+        []
+    );
 
     return (
         <>
-            <Head>
-                <title>{siteTitle}</title>
-                <meta name="description" content={siteDescription} />
-                <link rel="icon" href={favicon} />
-            </Head>
-
-            {/* 🔥 Renkler + SEO + Analytics */}
             <SettingsInjector settings={settings} />
 
             <div className="min-h-screen flex flex-col">
@@ -80,12 +85,13 @@ export default function AppLayout({ children }) {
 
             {isClient && (
                 <>
+                    <Loading />
                     {!showCookieSettings && (
                         <button
                             className="fixed bottom-4 left-4 z-50 w-12 h-12 rounded-full
                             bg-white shadow-lg border flex items-center justify-center
                             text-blue-600 cursor-pointer"
-                            onClick={() => setShowCookieSettings(true)}
+                            onClick={handleCookieClick}
                         >
                             <FaCookieBite className="cookie-icon" />
                         </button>
@@ -97,4 +103,6 @@ export default function AppLayout({ children }) {
             )}
         </>
     );
-}
+});
+
+export default AppLayout;

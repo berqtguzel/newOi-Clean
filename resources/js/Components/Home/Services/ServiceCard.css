@@ -161,7 +161,7 @@
 .service-card__title {
   font-size: 1.05rem;
   font-weight: 700;
-  color: var(--service-card-text-primary);
+  color: var(--h2-color);
   transition: color .25s ease;
   line-height: 1.35;
 }

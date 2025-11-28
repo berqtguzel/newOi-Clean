@@ -3,7 +3,17 @@ import { useEffect, useState } from "react";
 
 const API_BASE = "https://omerdogan.de/api/v1/services";
 
-async function fetchAllPages(url, tenantId, page = 1, perPage = 1000, accumulator = []) {
+// Cache ayarları
+const CACHE_KEY = "services_cache_v1";
+const CACHE_EXPIRE_MS = 30 * 60 * 1000; // 30 dakika
+
+async function fetchAllPages(
+    url,
+    tenantId,
+    page = 1,
+    perPage = 1000,
+    accumulator = []
+) {
     const params = new URLSearchParams(url);
     params.set("page", page);
     params.set("per_page", perPage);
@@ -34,7 +44,6 @@ export function useServices({
     categoryId = undefined,
     locationOnly = false,
 } = {}) {
-
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -45,6 +54,28 @@ export function useServices({
             setError("Tenant ID yok!");
             setLoading(false);
             return;
+        }
+
+        // 🔥 Cache anahtarı (tenant + dil + kategori + locationOnly)
+        const cacheKey = `${CACHE_KEY}_${tenantId}_${locale}_${categoryId}_${locationOnly}`;
+
+        // 🔥 localStorage güvenli erişim
+        let cachedData = null;
+        if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+            try {
+                const raw = localStorage.getItem(cacheKey);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    const { data, timestamp } = parsed || {};
+                    if (data && timestamp && Date.now() - timestamp < CACHE_EXPIRE_MS) {
+                        setServices(data);
+                        setLoading(false);
+                        return; // ✅ Cache geçerli, API'ye gitme
+                    }
+                }
+            } catch (e) {
+                console.warn("Services cache okunamadı:", e);
+            }
         }
 
         const fetchData = async () => {
@@ -63,16 +94,17 @@ export function useServices({
                         : params.append("category_id", String(categoryId));
                 }
 
-                // 🔥 TÜM SAYFALARI ÇEK 🔥
+                // 🔥 TÜM SAYFALARI ÇEK
                 let list = await fetchAllPages(params, tenantId);
 
-                // 📌 SONRA locationOnly filtre uygula
+                // 🔥 locationOnly filtre
                 if (locationOnly) {
                     list = list.filter((s) => {
                         const cityOk = !!s.city;
+                        const cat = (s.category_name || "").toLowerCase();
                         const catOk =
-                            (s.category_name || "").toLowerCase() === "gebäudereinigung" ||
-                            (s.category_name || "").toLowerCase() === "gebaudereinigung";
+                            cat === "gebäudereinigung" ||
+                            cat === "gebaudereinigung";
                         return cityOk && catOk;
                     });
                 }
@@ -80,6 +112,20 @@ export function useServices({
                 setServices(list);
                 setDurationMs(performance.now() - start);
 
+                // 🔥 Cache’e kaydet
+                if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+                    try {
+                        localStorage.setItem(
+                            cacheKey,
+                            JSON.stringify({
+                                data: list,
+                                timestamp: Date.now(),
+                            })
+                        );
+                    } catch (e) {
+                        console.warn("Services cache yazılamadı:", e);
+                    }
+                }
             } catch (err) {
                 console.error("❌ API ERROR:", err);
                 setError(err.message || "API hatası");

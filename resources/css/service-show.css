@@ -245,12 +245,14 @@
 }
 
 .service-show__prose p {
-  color: var(--svx-ink);
+  color: var(--text-color);
     margin-bottom: 1.75rem;
     line-height: 1.8;
     font-size: 1.125rem;
 }
-
+.service-show__prose span h2{
+    color: var(--h2-color);
+}
 .dark .service-show__prose span h2{
     color: white;
 }

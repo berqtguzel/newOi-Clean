@@ -66,7 +66,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Meta Info
         $siteName = $seo['meta_title'] ?? $general['site_name'] ?? config('app.name');
-        $siteDesc = $seo['meta_description'] ?? $general['site_description'] ?? 'Professionelle Reinigungsdienste';
+        $siteDesc = $seo['meta_description'] ?? $general['site_description'] ?? '';
         $favicon  = $branding['favicon']['url'] ?? '/favicon.ico';
 
         // 🚀 Services Fetch

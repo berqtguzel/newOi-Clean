@@ -88,6 +88,17 @@ export default function LocationShow() {
             .replace(/\b\w/g, (c) => c.toUpperCase());
     }, [citySlug]);
 
+    // 🔍 Hangi şehir geliyor? Logla
+    useEffect(() => {
+        console.log("📍 LocationShow city debug:", {
+            propsCitySlug: props?.citySlug,
+            currentUrlSlug,
+            citySlug,
+            city,
+            matchedServiceCity: matchedService?.city,
+        });
+    }, [props?.citySlug, currentUrlSlug, citySlug, city, matchedService]);
+
     // API çevirilerini çöz
     const resolveTrans = (service) => {
         const tr = service?.translations || [];
@@ -111,19 +122,16 @@ export default function LocationShow() {
                 const { services = [] } = await fetchServices({
                     tenantId,
                     locale,
-                    perPage: 9999,
+                    perPage: 100, // Optimize: Gerektiğinde pagination
                 });
 
                 setRemoteServices(services);
 
-                // 🔥 Şehir slug'ına göre servisleri bul
-                // Önce tam slug eşleşmesi dene
                 let found = services.find(
                     (s) =>
                         s.slug?.toLowerCase() === currentUrlSlug?.toLowerCase()
                 );
 
-                // Eğer bulunamazsa, gebaudereinigung-in-{citySlug} formatını dene
                 if (!found && citySlug) {
                     const gebSlug = `gebaudereinigung-in-${citySlug.toLowerCase()}`;
                     found = services.find(
@@ -131,7 +139,6 @@ export default function LocationShow() {
                     );
                 }
 
-                // Eğer hala bulunamazsa, city field'ına göre ara (hem boşluklu hem tireli, hem normalize edilmiş hem orijinal)
                 if (!found && citySlug) {
                     const citySlugLower = citySlug.toLowerCase();
                     const citySlugWithSpaces = citySlugLower.replace(/-/g, " ");
@@ -174,60 +181,25 @@ export default function LocationShow() {
         loadData();
     }, [currentUrlSlug, tenantId, citySlug, locale]);
 
-    // --- Şehirle ilgili diğer servisler ---
     const servicesToRender = useMemo(() => {
-        if (!citySlug) return [];
+        if (!citySlug || !matchedService?.city) return [];
 
-        const citySlugLower = citySlug.toLowerCase();
-        const citySlugWithSpaces = citySlugLower.replace(/-/g, " ");
+        const currentCity = matchedService.city.toLowerCase().trim();
+        const currentCityNormalized = normalizeGermanChars(currentCity);
 
-        const filtered = remoteServices
+        return remoteServices
             .filter((s) => {
-                // Mevcut servisi hariç tut
-                if (s.id === matchedService?.id) return false;
+                if (!s.city) return false;
 
-                // City field'ına göre eşleştir (hem boşluklu hem tireli, hem normalize edilmiş hem orijinal)
-                const sCity = s.city?.toLowerCase()?.trim() || "";
-                const sCityNormalized = normalizeGermanChars(sCity);
-                const sCityWithDashes = sCity.replace(/\s+/g, "-");
-                const sCityWithSpaces = sCity.replace(/-/g, " ");
-                const sCityNormalizedWithDashes = normalizeGermanChars(
-                    sCity
-                ).replace(/\s+/g, "-");
-                const sCityNormalizedWithSpaces = normalizeGermanChars(
-                    sCity
-                ).replace(/-/g, " ");
+                const sc = s.city.toLowerCase().trim();
+                const scNorm = normalizeGermanChars(sc);
 
-                if (
-                    sCity === citySlugLower ||
-                    sCity === citySlugWithSpaces ||
-                    sCityWithDashes === citySlugLower ||
-                    sCityWithSpaces === citySlugLower ||
-                    sCityNormalized === citySlugLower ||
-                    sCityNormalized === citySlugWithSpaces ||
-                    sCityNormalizedWithDashes === citySlugLower ||
-                    sCityNormalizedWithSpaces === citySlugLower
-                ) {
-                    return true;
-                }
-
-                // Slug'da şehir adı geçiyor mu kontrol et (hem normalize edilmiş hem orijinal)
-                const sSlug = s.slug?.toLowerCase() || "";
-                const sSlugNormalized = normalizeGermanChars(sSlug);
-                if (
-                    sSlug.includes(citySlugLower) ||
-                    sSlug.includes(citySlugWithSpaces) ||
-                    sSlugNormalized.includes(citySlugLower) ||
-                    sSlugNormalized.includes(citySlugWithSpaces)
-                ) {
-                    return true;
-                }
-
-                return false;
+                return (
+                    s.id !== matchedService.id &&
+                    (sc === currentCity || scNorm === currentCityNormalized)
+                );
             })
             .map((s) => ({ ...s, ...resolveTrans(s) }));
-
-        return filtered;
     }, [remoteServices, matchedService, citySlug, locale]);
 
     // Başlık & açıklama tamamen API’den gelsin
@@ -246,14 +218,79 @@ export default function LocationShow() {
         matchedService?.image ||
         "https://images.unsplash.com/photo-1581578731117-e0a820bd4928?w=1920&auto=format&fit=crop";
 
+    // SEO Meta Tags - API'den gelen veriler
+    const seoMetaTitle = useMemo(() => {
+        if (matchedService?.meta_title) return matchedService.meta_title;
+        if (trData?.title)
+            return `${trData.title} - ${props?.global?.appName || "O&I CLEAN"}`;
+        return city
+            ? `Gebäudereinigung in ${city} - ${
+                  props?.global?.appName || "O&I CLEAN"
+              }`
+            : `Gebäudereinigung - ${props?.global?.appName || "O&I CLEAN"}`;
+    }, [matchedService, trData, city, props?.global?.appName]);
+
+    const seoDescription = useMemo(() => {
+        if (matchedService?.meta_description)
+            return matchedService.meta_description;
+        const cleanDesc = heroDesc.replace(/<[^>]+>/g, "").trim();
+        return (
+            cleanDesc.slice(0, 160) ||
+            (city
+                ? `Professionelle Gebäudereinigung in ${city}.`
+                : "Professionelle Gebäudereinigung.")
+        );
+    }, [matchedService, heroDesc, city]);
+
+    const seoKeywords = matchedService?.meta_keywords || "";
+
+    // SSR-safe URL generation
+    const canonicalUrl = useMemo(() => {
+        if (typeof window === "undefined") {
+            return currentUrlSlug ? `/${currentUrlSlug}` : "/";
+        }
+        return `${window.location.origin}${window.location.pathname}`;
+    }, [currentUrlSlug]);
+
+    // SSR-safe OG Image URL
+    const ogImageUrl = useMemo(() => {
+        if (!heroImage) return null;
+        if (typeof window === "undefined") {
+            return heroImage.startsWith("http") ? heroImage : heroImage;
+        }
+        if (heroImage.startsWith("http")) return heroImage;
+        return `${window.location.origin}${
+            heroImage.startsWith("/") ? heroImage : `/${heroImage}`
+        }`;
+    }, [heroImage]);
+
+    const appName = props?.global?.appName || "O&I CLEAN";
+
     return (
         <AppLayout>
-            <Head>
-                <title>{city}</title>
-                <meta
-                    name="description"
-                    content={heroDesc.replace(/<[^>]+>/g, "").slice(0, 160)}
-                />
+            <Head title={seoMetaTitle}>
+                <meta name="description" content={seoDescription} />
+                {seoKeywords && <meta name="keywords" content={seoKeywords} />}
+
+                {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+
+                <meta property="og:type" content="article" />
+                <meta property="og:site_name" content={appName} />
+                <meta property="og:title" content={seoMetaTitle} />
+                <meta property="og:description" content={seoDescription} />
+                {ogImageUrl && (
+                    <meta property="og:image" content={ogImageUrl} />
+                )}
+                {canonicalUrl && (
+                    <meta property="og:url" content={canonicalUrl} />
+                )}
+
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={seoMetaTitle} />
+                <meta name="twitter:description" content={seoDescription} />
+                {ogImageUrl && (
+                    <meta name="twitter:image" content={ogImageUrl} />
+                )}
             </Head>
 
             {/* HERO */}

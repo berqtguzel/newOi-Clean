@@ -12,7 +12,7 @@ import { fetchPageBySlug } from "@/services/pageService";
 import Loading from "@/Components/Common/Loading";
 
 /* -------------------------------------------------------------------------- */
-/* helpers                                                                    */
+/* helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
 function safeParse(html = "") {
@@ -41,6 +41,12 @@ function safeParse(html = "") {
             "code",
             "figure",
             "figcaption",
+            "table",
+            "thead",
+            "tbody",
+            "tr",
+            "th",
+            "td", // Tablo etiketlerini de ekledim
         ],
         ALLOWED_ATTR: [
             "href",
@@ -56,6 +62,7 @@ function safeParse(html = "") {
             "allowfullscreen",
             "class",
             "id",
+            "style",
         ],
     });
 
@@ -78,7 +85,7 @@ function safeParse(html = "") {
             node instanceof Element &&
             (node.name === "script" || node.name === "style")
         ) {
-            return <></>;
+            return <React.Fragment key={Math.random()}></React.Fragment>; // Script/Style kaldırıldı
         }
 
         return undefined;
@@ -91,6 +98,14 @@ function normalizeLang(code) {
     return String(code || "de")
         .toLowerCase()
         .split("-")[0];
+}
+
+function cleanAndTruncate(htmlContent = "", maxLength = 160) {
+    if (!htmlContent) return null;
+    const textWithoutHtml = String(htmlContent).replace(/<[^>]*>/g, "");
+    const cleanText = textWithoutHtml.replace(/\s+/g, " ").trim();
+    const truncatedText = cleanText.substring(0, maxLength);
+    return truncatedText + (cleanText.length > maxLength ? "..." : "");
 }
 
 export default function StaticPage({
@@ -109,6 +124,9 @@ export default function StaticPage({
 
     const inertiaLocale = props?.locale || props?.ziggy?.locale || "de";
     const locale = normalizeLang(inertiaLocale);
+
+    const appName = props?.global?.appName || "O&I CLEAN group GmbH";
+    const baseLocation = props?.ziggy?.location || "https://oi-clean.de";
 
     const [page, setPage] = React.useState(initialPage || null);
     const [loading, setLoading] = React.useState(false);
@@ -134,7 +152,12 @@ export default function StaticPage({
             } catch (e) {
                 if (cancelled) return;
 
-                setError(e?.message || "Page konnte nicht geladen werden.");
+                setError(
+                    e?.message ||
+                        t("staticPage.error_loading", {
+                            defaultValue: "Page could not be loaded.",
+                        })
+                );
                 setPage(null);
             } finally {
                 if (!cancelled) setLoading(false);
@@ -144,7 +167,7 @@ export default function StaticPage({
         return () => {
             cancelled = true;
         };
-    }, [slug, tenantId, locale]);
+    }, [slug, tenantId, locale, t]);
 
     const { title, content } = React.useMemo(() => {
         if (!page) {
@@ -168,21 +191,61 @@ export default function StaticPage({
             null;
 
         return {
+            // NOTE: Buradaki 'title' sadece H1 başlığı içindir, SEO başlığı değil.
             title:
                 activeTr?.name ||
                 page.title ||
                 page.raw?.name ||
                 meta?.title ||
-                "",
+                t("staticPage.fallback_h1"),
             content:
                 activeTr?.content || page.content || page.raw?.content || "",
         };
-    }, [page, locale, meta]);
+    }, [page, locale, meta, t]);
 
     const heroImage = page?.image || page?.raw?.image || null;
-    const heroAlt = title || "O&I CLEAN group GmbH";
+    const heroAlt = title || appName;
 
     const faq = page?.faq || page?.raw?.faq || null;
+
+    // SEO Meta Tags - API'den gelen veriler
+    const seoMetaTitle = React.useMemo(() => {
+        return page?.raw?.meta_title || 
+               page?.meta_title || 
+               `${title} - ${appName}`;
+    }, [page?.raw?.meta_title, page?.meta_title, title, appName]);
+
+    const seoDescription = React.useMemo(() => {
+        return page?.raw?.meta_description ||
+               page?.meta_description ||
+               page?.metaDescription ||
+               cleanAndTruncate(page?.raw?.content || page.content, 160) ||
+               "";
+    }, [page?.raw?.meta_description, page?.meta_description, page?.metaDescription, page?.raw?.content, page?.content]);
+
+    const seoKeywords = React.useMemo(() => {
+        return page?.raw?.meta_keywords || 
+               page?.meta_keywords || 
+               "";
+    }, [page?.raw?.meta_keywords, page?.meta_keywords]);
+
+    // SSR-safe URL generation
+    const canonicalUrl = React.useMemo(() => {
+        if (typeof window === "undefined") {
+            return slug ? `/${slug}` : "/";
+        }
+        return `${window.location.origin}${window.location.pathname}`;
+    }, [slug]);
+
+    // SSR-safe OG Image URL
+    const ogImageUrl = React.useMemo(() => {
+        if (!heroImage) return null;
+        if (typeof window === "undefined") {
+            return heroImage.startsWith("http") ? heroImage : heroImage;
+        }
+        if (heroImage.startsWith("http")) return heroImage;
+        return `${window.location.origin}${heroImage.startsWith("/") ? heroImage : `/${heroImage}`}`;
+    }, [heroImage]);
 
     const faqTitle = React.useMemo(() => {
         if (!faq) return null;
@@ -205,11 +268,10 @@ export default function StaticPage({
                 defaultValue: "Häufig gestellte Fragen",
             })
         );
-    }, [faq, locale, page, t, i18n.language]);
+    }, [faq, locale, page, t]);
 
     const faqItems = React.useMemo(() => {
         if (!faq || !Array.isArray(faq.items)) return [];
-
         return faq.items
             .slice()
             .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
@@ -244,197 +306,187 @@ export default function StaticPage({
     }, [faq, locale]);
 
     const hasFaq = faqItems.length > 0;
-
-    const fallbackTitle = useMemo(() => {
-        return t("staticPage.default_title", {
-            defaultValue: "Seite - O&I CLEAN group GmbH",
-        });
-    }, [t, i18n.language]);
-
-    const fallbackDescription = useMemo(() => {
-        return t("staticPage.default_description", {
-            defaultValue:
-                "Informationen zu unseren Leistungen und unserem Unternehmen.",
-        });
-    }, [t, i18n.language]);
-
-    const seoTitle = title || fallbackTitle;
-    const seoDescription =
-        page?.metaDescription ||
-        page?.meta_description ||
-        page?.raw?.meta_description ||
-        meta?.description ||
-        fallbackDescription;
-
-    const baseLocation = props?.ziggy?.location || "https://oi-clean.de";
-    const normalizedBase = String(baseLocation).replace(/\/+$/, "");
-    const path = inertiaUrl || (slug ? `/${slug}` : "/");
-    const currentUrl = meta?.canonical || `${normalizedBase}${path}`;
-
-    const schemaWebPage = {
-        "@context": "https://schema.org",
-        "@type": "WebPage",
-        name: seoTitle,
-        description: seoDescription,
-        url: currentUrl,
-    };
+    const hasContent = !!content;
 
     const homeLabel = useMemo(() => {
-        // HYDRATION FIX: i18n.language'i kaldırdık
-        return t("staticPage.breadcrumbs_home", {
-            defaultValue: "Startseite",
-        });
+        return t("staticPage.breadcrumbs_home", { defaultValue: "Startseite" });
     }, [t]);
 
     const pageLabel = useMemo(() => {
-        // HYDRATION FIX: i18n.language'i kaldırdık
-        return t("staticPage.breadcrumbs_page", {
-            defaultValue: "Seite",
-        });
+        return t("staticPage.breadcrumbs_page", { defaultValue: "Seite" });
     }, [t]);
 
     const contentComingSoon = useMemo(() => {
-        // HYDRATION FIX: i18n.language'i kaldırdık
         return t("staticPage.empty_content", {
             defaultValue: "Inhalt wird bald hinzugefügt.",
         });
     }, [t]);
 
-    const hasContent = !!content;
-
     return (
         <AppLayout>
-            <Head>
-                <title>{seoTitle}</title>
+            {/* 🚀 SEO - API'den gelen meta tag'ler - Kaynak kodunda görünecek */}
+            <Head title={seoMetaTitle}>
                 <meta name="description" content={seoDescription} />
-                <link rel="canonical" href={currentUrl} />
+                {seoKeywords && <meta name="keywords" content={seoKeywords} />}
+                
+                {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+
+                <meta property="og:type" content="website" />
+                <meta property="og:site_name" content={appName} />
+                <meta property="og:title" content={seoMetaTitle} />
+                <meta property="og:description" content={seoDescription} />
+                {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+                {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={seoMetaTitle} />
+                <meta name="twitter:description" content={seoDescription} />
+                {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
+
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{
-                        __html: JSON.stringify(schemaWebPage),
+                        __html: JSON.stringify({
+                            "@context": "https://schema.org",
+                            "@type": "WebPage",
+                            name: seoMetaTitle,
+                            description: seoDescription,
+                            url: canonicalUrl,
+                        }),
                     }}
                 />
             </Head>
 
-            <section
-                className={`sp-hero ${heroImage ? "sp-hero--has-img" : ""}`}
-            >
-                <div className="sp-hero__decor" aria-hidden="true" />
-
-                <div className="sp-hero__media">
-                    {heroImage ? (
-                        <img
-                            src={heroImage}
-                            alt={heroAlt}
-                            className="sp-hero__img"
-                            loading="eager"
-                        />
-                    ) : (
-                        <div className="sp-hero__fallback" />
-                    )}
-                    <div className="sp-hero__overlay" aria-hidden="true" />
-                </div>
-
-                <div className="sp-hero__inner container">
-                    <nav className="sp-crumbs" aria-label="Breadcrumb">
-                        <ol>
-                            <li>
-                                {/* 🚨 DÜZELTME: Anasayfa Linki Metin Uyuşmazlığını Gider */}
-                                <Link
-                                    className="sp-crumbs__link"
-                                    href="/"
-                                    suppressHydrationWarning={true}
-                                >
-                                    {homeLabel}
-                                </Link>
-                            </li>
-                            <li
-                                aria-current="page"
-                                suppressHydrationWarning={true}
-                            >
-                                {title || pageLabel}
-                            </li>
-                        </ol>
-                    </nav>
-
-                    <h1 className="sp-title" suppressHydrationWarning={true}>
-                        {title || pageLabel}
-                    </h1>
-                </div>
-            </section>
-
-            <section className="sp-content">
-                <div className="container">
-                    <article className="sp-card sp-fadeup">
-                        <div className="sp-card__body">
-                            {loading && <Loading />}
-
-                            {error && !loading && (
-                                <p
-                                    className="sp-error"
-                                    suppressHydrationWarning={true}
-                                >
-                                    {error}
-                                </p>
-                            )}
-
-                            {!loading && !error && !hasContent && !hasFaq && (
-                                <p
-                                    className="sp-muted"
-                                    suppressHydrationWarning={true}
-                                >
-                                    {contentComingSoon}
-                                </p>
-                            )}
-
-                            {!loading && !error && hasContent && (
-                                <div className="sp-prose">
-                                    {safeParse(content)}
-                                </div>
-                            )}
-                        </div>
-                    </article>
-                </div>
-            </section>
-
-            {hasFaq && (
-                <section className="sp-faq-section">
-                    <div className="container">
-                        <div className="sp-faq sp-fadeup">
-                            <h2
-                                className="sp-faq__title"
-                                suppressHydrationWarning={true}
-                            >
-                                {faqTitle}
-                            </h2>
-
-                            <div className="sp-faq__list">
-                                {faqItems.map((item, idx) => (
-                                    <details
-                                        key={item.id || idx}
-                                        className="sp-faq__item"
-                                        open={idx === 0}
-                                        // Detay etiketini korumak için, içindeki metin düğümlerini koru
-                                        suppressHydrationWarning={true}
-                                    >
-                                        <summary
-                                            className="sp-faq__question"
-                                            suppressHydrationWarning={true}
-                                        >
-                                            {item.question}
-                                        </summary>
-                                        <div className="sp-faq__answer">
-                                            {safeParse(item.answer)}
-                                        </div>
-                                    </details>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </section>
+            {loading && (
+                <Loading
+                    fullScreen={true}
+                    message={t("common.loading", {
+                        defaultValue: "Yükleniyor...",
+                    })}
+                />
             )}
 
-            <ContactSection />
+            {!loading && !error && (
+                <>
+                    <section
+                        className={`sp-hero ${
+                            heroImage ? "sp-hero--has-img" : ""
+                        }`}
+                    >
+                        <div className="sp-hero__decor" aria-hidden="true" />
+
+                        <div className="sp-hero__media">
+                            {heroImage ? (
+                                <img
+                                    src={heroImage}
+                                    alt={heroAlt}
+                                    className="sp-hero__img"
+                                    loading="eager"
+                                />
+                            ) : (
+                                <div className="sp-hero__fallback" />
+                            )}
+                            <div
+                                className="sp-hero__overlay"
+                                aria-hidden="true"
+                            />
+                        </div>
+
+                        <div className="sp-hero__inner container">
+                            <nav className="sp-crumbs" aria-label="Breadcrumb">
+                                <ol>
+                                    <li>
+                                        <Link
+                                            className="sp-crumbs__link"
+                                            href="/"
+                                            // suppressHydrationWarning gerekli değil, metin artık React tarafında stabil
+                                        >
+                                            {homeLabel}
+                                        </Link>
+                                    </li>
+                                    <li
+                                        aria-current="page"
+                                        // suppressHydrationWarning gerekli değil
+                                    >
+                                        {title || pageLabel}
+                                    </li>
+                                </ol>
+                            </nav>
+
+                            <h1 className="sp-title">{title || pageLabel}</h1>
+                        </div>
+                    </section>
+
+                    <section className="sp-content">
+                        <div className="container">
+                            <article className="sp-card sp-fadeup">
+                                <div className="sp-card__body">
+                                    {error && (
+                                        <p className="sp-error"> {error} </p>
+                                    )}
+
+                                    {!error && !hasContent && !hasFaq && (
+                                        <p className="sp-muted">
+                                            {contentComingSoon}
+                                        </p>
+                                    )}
+
+                                    {!error && hasContent && (
+                                        <div className="sp-prose">
+                                            {safeParse(content)}
+                                        </div>
+                                    )}
+                                </div>
+                            </article>
+                        </div>
+                    </section>
+
+                    {hasFaq && (
+                        <section className="sp-faq-section">
+                            <div className="container">
+                                <div className="sp-faq sp-fadeup">
+                                    <h2 className="sp-faq__title">
+                                        {faqTitle}
+                                    </h2>
+
+                                    <div className="sp-faq__list">
+                                        {faqItems.map((item, idx) => (
+                                            <details
+                                                key={item.id || idx}
+                                                className="sp-faq__item"
+                                                open={idx === 0}
+                                            >
+                                                <summary className="sp-faq__question">
+                                                    {item.question}
+                                                </summary>
+                                                <div className="sp-faq__answer">
+                                                    {safeParse(item.answer)}
+                                                </div>
+                                            </details>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    )}
+
+                    <ContactSection />
+                </>
+            )}
+
+            {/* Eğer yükleme bitti ve bir hata varsa (error state doluysa) */}
+            {!loading && error && (
+                <div className="container py-12">
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                        <strong className="font-bold">
+                            {t("common.error_occurred", {
+                                defaultValue: "Hata:",
+                            })}
+                        </strong>
+                        <span className="block sm:inline"> {error}</span>
+                    </div>
+                </div>
+            )}
         </AppLayout>
     );
 }

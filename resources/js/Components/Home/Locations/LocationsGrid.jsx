@@ -46,33 +46,17 @@ export default function LocationsGrid() {
 
     const apiLocale = useLocale("de") || "de";
 
-    const {
-        services = [],
-        loading,
-        durationMs,
-        error,
-    } = useServices({
+    const { services = [], loading } = useServices({
         tenantId,
         locale: apiLocale,
         perPage: 1000,
         locationOnly: true,
     });
 
-    // 🔥 Burada category_name'e göre filtremizi uyguluyoruz
     const filteredServices = services.filter(
         (s) =>
-            (s.category_name || "")
-                .toLowerCase()
-                .trim() === "gebäudereinigung"
+            (s.category_name || "").toLowerCase().trim() === "gebäudereinigung"
     );
-
-    // İstersen seo için de ayrı bir filtre yapabilirsin:
-    // const seoServices = services.filter(
-    //     (s) =>
-    //         (s.category_name || "")
-    //             .toLowerCase()
-    //             .trim() === "seo"
-    // );
 
     const sortedItems = [...filteredServices]
         .map((s) => ({
@@ -88,13 +72,8 @@ export default function LocationsGrid() {
 
     return (
         <section id="location" className="locations-section">
-                {durationMs}
             <Head>
-                <title>{title}</title>
-                <meta
-                    name="description"
-                    content="Professionelle Gebäudereinigung in Deutschland – wählen Sie Ihren Standort"
-                />
+                <meta name="description" content="" />
             </Head>
 
             <motion.div
