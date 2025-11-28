@@ -22,12 +22,15 @@ const CookieBanner = ({ forceVisible = false }) => {
         marketing: false,
     });
 
+    // İlk yüklemede cookie oku
     useEffect(() => {
         const consent = Cookies.get("cookie_consent");
 
         if (!consent || forceVisible) {
+            // Banner'ı göster
             setTimeout(() => setIsVisible(true), 200);
         } else {
+            // Daha önce kaydedilmiş tercihleri yükle
             try {
                 setPreferences(JSON.parse(consent));
             } catch {}
@@ -43,6 +46,7 @@ const CookieBanner = ({ forceVisible = false }) => {
 
         setIsVisible(false);
 
+        // Diğer taraflar dinlemek isterse
         window.dispatchEvent(new Event("cookie-saved"));
     };
 
@@ -71,8 +75,29 @@ const CookieBanner = ({ forceVisible = false }) => {
         setPreferences((prev) => ({ ...prev, [key]: !prev[key] }));
     };
 
-    if (!isVisible) return null;
+    const hasConsent = !!Cookies.get("cookie_consent");
 
+    // 🔹 Sadece küçük cookie butonunu göster (kullanıcı önceden karar vermiş, banner kapalı)
+    if (!forceVisible && !isVisible && hasConsent) {
+        return (
+            <button
+                className="cookie-floating-btn fixed bottom-4 left-4 z-50 w-12 h-12 rounded-full
+                           bg-white shadow-lg border flex items-center justify-center
+                           text-blue-600 cursor-pointer"
+                type="button"
+                onClick={() => setIsVisible(true)}
+            >
+                <FaCookieBite className="cookie-icon" />
+            </button>
+        );
+    }
+
+    // Hiç görünmesin (örn. henüz init olmamış durum vs.)
+    if (!isVisible && !forceVisible && !hasConsent) {
+        return null;
+    }
+
+    // 🔹 Asıl banner
     return (
         <div className="cookie-banner-container">
             <div className="cookie-card">
@@ -129,14 +154,16 @@ const CookieBanner = ({ forceVisible = false }) => {
                                 className="cookie-btn btn-secondary"
                                 onClick={handleSaveSelection}
                             >
-                                <FaCheck size={12} /> {t("cookies.save", "Kaydet")}
+                                <FaCheck size={12} />{" "}
+                                {t("cookies.save", "Kaydet")}
                             </button>
                         ) : (
                             <button
                                 className="cookie-btn btn-secondary"
                                 onClick={handleRejectAll}
                             >
-                                <FaTimes size={12} /> {t("cookies.reject", "Reddet")}
+                                <FaTimes size={12} />{" "}
+                                {t("cookies.reject", "Reddet")}
                             </button>
                         )}
 
@@ -150,7 +177,7 @@ const CookieBanner = ({ forceVisible = false }) => {
 
                     <button
                         className="btn-ghost"
-                        onClick={() => setShowDetails(!showDetails)}
+                        onClick={() => setShowDetails((s) => !s)}
                     >
                         {showDetails
                             ? t("cookies.hide_details", "Gizle")

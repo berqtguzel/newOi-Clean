@@ -138,6 +138,9 @@
   color: var(--h2-color);
   letter-spacing: -.02em;
 }
+.dark .location-card-title{
+    color: white;
+}
 
 .location-card:hover .location-card-title {
   color: var(--service-card-accent);

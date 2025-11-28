@@ -22,10 +22,7 @@ const LanguageSwitcher = ({ currentLang, languages }) => {
         if (!isLoading) return;
         const ms = performance.now() - window.__langSwitchStart;
         setSwitchDuration(ms.toFixed(0));
-        console.log(
-            `%cDil değişimi tamamlandı: ${ms.toFixed(0)} ms`,
-            "color:#4ade80;font-weight:bold"
-        );
+
         setIsLoading(false);
     }, [currentLang]);
 
@@ -59,13 +56,10 @@ const LanguageSwitcher = ({ currentLang, languages }) => {
             preserveState: true,
             replace: true,
             data: { lang: codeNorm },
-            only: ["locale"], // ⚡ SADECE locale state güncellenir
+            only: ["locale"],
             onFinish: () => {
                 const ms = performance.now() - window.__langSwitchStart;
-                console.log(
-                    `%cDil API dönüş süresi: ${ms.toFixed(0)} ms`,
-                    "color:#60a5fa;font-weight:bold"
-                );
+
                 setIsLoading(false);
             },
             onError: () => {

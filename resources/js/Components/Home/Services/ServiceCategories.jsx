@@ -7,7 +7,6 @@ import SafeHtml from "@/Components/Common/SafeHtml";
 import Aurora from "@/Components/ReactBits/Backgrounds/Aurora";
 import "./ServiceCategories.css";
 
-// 🌈 Aurora renklerini CSS değişkenlerinden oku
 const useAuroraColors = () => {
     const [colors, setColors] = useState(["#0894D7", "#2967EC", "#0284C7"]);
 
@@ -69,13 +68,12 @@ export default function ServiceCategories({ content = {} }) {
 
     return (
         <section className="svc-section">
-            {/* 🌌 Aurora Background with panel colors */}
             <div className="svc-aurora">
                 <Aurora
                     className="svc-aurora-canvas"
                     colorStops={auroraColors}
                     amplitude={0.5}
-                    speed={0.2}
+                    speed={0.8}
                     blend={0}
                 />
             </div>

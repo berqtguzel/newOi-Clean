@@ -46,10 +46,14 @@ export default function LocationsGrid() {
 
     const apiLocale = useLocale("de") || "de";
 
-    const { services = [], loading } = useServices({
+    // 🔥 cleaningOnly + locationOnly burada aktif
+    const {
+        services = [],
+        loading,
+        durationMs,
+    } = useServices({
         tenantId,
         locale: apiLocale,
-        perPage: 1000,
         locationOnly: true,
     });
 

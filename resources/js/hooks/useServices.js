@@ -3,9 +3,8 @@ import { useEffect, useState } from "react";
 
 const API_BASE = "https://omerdogan.de/api/v1/services";
 
-// Cache ayarları
 const CACHE_KEY = "services_cache_v1";
-const CACHE_EXPIRE_MS = 30 * 60 * 1000; // 30 dakika
+const CACHE_EXPIRE_MS = 24 * 60 * 60 * 1000; // 24 saat
 
 async function fetchAllPages(
     url,
@@ -41,8 +40,9 @@ async function fetchAllPages(
 export function useServices({
     tenantId,
     locale = "de",
-    categoryId = undefined,
+    categoryId,
     locationOnly = false,
+    cleaningOnly = false,
 } = {}) {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -56,21 +56,24 @@ export function useServices({
             return;
         }
 
-        // 🔥 Cache anahtarı (tenant + dil + kategori + locationOnly)
-        const cacheKey = `${CACHE_KEY}_${tenantId}_${locale}_${categoryId}_${locationOnly}`;
 
-        // 🔥 localStorage güvenli erişim
-        let cachedData = null;
-        if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+
+        const cacheKey = `${CACHE_KEY}_${tenantId}_${locale}_${categoryId}_${locationOnly}_${cleaningOnly}`;
+
+        if (typeof window !== "undefined") {
             try {
                 const raw = localStorage.getItem(cacheKey);
                 if (raw) {
-                    const parsed = JSON.parse(raw);
-                    const { data, timestamp } = parsed || {};
-                    if (data && timestamp && Date.now() - timestamp < CACHE_EXPIRE_MS) {
+                    const { data, timestamp } = JSON.parse(raw) || {};
+                    if (
+                        data &&
+                        timestamp &&
+                        Date.now() - timestamp < CACHE_EXPIRE_MS
+                    ) {
+
                         setServices(data);
                         setLoading(false);
-                        return; // ✅ Cache geçerli, API'ye gitme
+                        return;
                     }
                 }
             } catch (e) {
@@ -89,39 +92,42 @@ export function useServices({
                 params.append("locale", locale);
 
                 if (categoryId !== undefined) {
-                    categoryId === null
-                        ? params.append("category_id", "")
-                        : params.append("category_id", String(categoryId));
+                    params.append(
+                        "category_id",
+                        categoryId === null ? "" : String(categoryId)
+                    );
                 }
 
-                // 🔥 TÜM SAYFALARI ÇEK
                 let list = await fetchAllPages(params, tenantId);
 
-                // 🔥 locationOnly filtre
                 if (locationOnly) {
-                    list = list.filter((s) => {
-                        const cityOk = !!s.city;
-                        const cat = (s.category_name || "").toLowerCase();
-                        const catOk =
-                            cat === "gebäudereinigung" ||
-                            cat === "gebaudereinigung";
-                        return cityOk && catOk;
-                    });
+                    list = list.filter((s) => s.city);
+                }
+
+                if (cleaningOnly) {
+                    list = list.filter((s) =>
+                        String(s.slug || "")
+                            .toLowerCase()
+                            .includes("gebaudereinigung")
+                    );
+
+
                 }
 
                 setServices(list);
                 setDurationMs(performance.now() - start);
 
-                // 🔥 Cache’e kaydet
-                if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+
+
+
+                if (typeof window !== "undefined") {
                     try {
                         localStorage.setItem(
                             cacheKey,
-                            JSON.stringify({
-                                data: list,
-                                timestamp: Date.now(),
-                            })
+                            JSON.stringify({ data: list, timestamp: Date.now() })
                         );
+
+
                     } catch (e) {
                         console.warn("Services cache yazılamadı:", e);
                     }
@@ -136,7 +142,7 @@ export function useServices({
         };
 
         fetchData();
-    }, [tenantId, locale, categoryId, locationOnly]);
+    }, [tenantId, locale, categoryId, locationOnly, cleaningOnly]);
 
     return { services, loading, error, durationMs };
 }

@@ -48,8 +48,6 @@ export default function NotFound() {
             });
     }, [slug, tenantId, locale, is500, page]);
 
-    // 404 için: errors.notFound.*
-    // 500 için: errors.serverError.* (yoksa fallback metinler kullanılır)
     const title =
         page?.title ||
         (is500
@@ -79,9 +77,6 @@ export default function NotFound() {
 
     const content = (
         <div className="oi-404-page min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-            <Head>
-                <title>{title}</title>
-            </Head>
             <main className="oi-404__card max-w-lg w-full p-8 space-y-6 text-center rounded-lg shadow-xl dark:bg-gray-800">
                 <div className="oi-404__content space-y-4">
                     <h1 className="oi-404__title text-5xl font-extrabold text-red-600 dark:text-red-400">

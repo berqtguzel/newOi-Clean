@@ -10,7 +10,6 @@ import { createRoot } from "react-dom/client";
 import { createInertiaApp } from "@inertiajs/react";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 import { ThemeProvider } from "./Context/ThemeContext";
-import { route } from "ziggy-js";
 
 const APP_NAME = "O&I CLEAN group GmbH";
 
@@ -36,13 +35,12 @@ createInertiaApp({
     progress: {
         color: "var(--site-primary-color)",
         delay: 80,
-        showSpinner: false, // Spinner'ı kapat, sadece progress bar göster
+        showSpinner: false,
     },
 
-    // Performans optimizasyonları
     swapOptions: {
-        preserveState: true, // State'i koru
-        preserveScroll: true, // Scroll pozisyonunu koru
-        resetScroll: false, // Scroll'u resetleme
+        preserveState: true,
+        preserveScroll: true,
+        resetScroll: false,
     },
 });

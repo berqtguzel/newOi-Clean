@@ -1,4 +1,3 @@
-// resources/js/Components/Home/Services/ServicesGrid.jsx
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { usePage } from "@inertiajs/react";
@@ -36,7 +35,6 @@ const ServicesGrid = ({ content = {} }) => {
     return (
         <section id="services" className="services-section">
             <div className="services-container">
-                {/* Title */}
                 <motion.h2
                     className="services-title"
                     initial={{ opacity: 0, y: 40 }}
@@ -49,7 +47,6 @@ const ServicesGrid = ({ content = {} }) => {
                     />
                 </motion.h2>
 
-                {/* Grid Wrapper with single animation */}
                 <motion.div
                     className="services-grid"
                     initial={{ opacity: 0 }}
@@ -57,7 +54,6 @@ const ServicesGrid = ({ content = {} }) => {
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, ease: "easeOut" }}
                 >
-                    {/* Skeleton Loading */}
                     {loading &&
                         [...Array(42)].map((_, i) => (
                             <div
@@ -66,7 +62,6 @@ const ServicesGrid = ({ content = {} }) => {
                             ></div>
                         ))}
 
-                    {/* Service Cards */}
                     {!loading &&
                         services.map((s) => {
                             const tr = s.translations?.find(
@@ -88,7 +83,6 @@ const ServicesGrid = ({ content = {} }) => {
                         })}
                 </motion.div>
 
-                {/* CTA Button */}
                 <motion.div
                     className="services-cta"
                     initial={{ opacity: 0, scale: 0.8 }}

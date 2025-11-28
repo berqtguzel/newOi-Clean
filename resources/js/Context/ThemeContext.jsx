@@ -15,7 +15,6 @@ const ThemeContext = createContext({
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider = ({ children, initial = "system" }) => {
-    // SSR: DOM'a etki etmeyen nötr initial değer ("")
     const [theme, setTheme] = useState("");
 
     useEffect(() => {

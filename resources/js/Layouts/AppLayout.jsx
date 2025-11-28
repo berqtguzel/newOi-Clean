@@ -34,7 +34,6 @@ const AppLayout = memo(function AppLayout({ children }) {
         enabled: isClient,
     });
 
-    // Memoize settings to prevent unnecessary re-renders
     const settings = useMemo(() => {
         return isClient
             ? asyncSettings || layoutData.settings || {}
@@ -67,7 +66,6 @@ const AppLayout = memo(function AppLayout({ children }) {
         [branding.favicon?.url, general.favicon?.url, layoutData.favicon]
     );
 
-    // Memoize callbacks
     const handleCookieClick = useMemo(
         () => () => setShowCookieSettings(true),
         []
@@ -86,7 +84,7 @@ const AppLayout = memo(function AppLayout({ children }) {
             {isClient && (
                 <>
                     <Loading />
-                    {!showCookieSettings && (
+                    {Cookies.get("cookie_consent") && !showCookieSettings && (
                         <button
                             className="fixed bottom-4 left-4 z-50 w-12 h-12 rounded-full
                             bg-white shadow-lg border flex items-center justify-center

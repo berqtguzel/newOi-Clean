@@ -48,6 +48,7 @@
   overflow: hidden;
   box-shadow: var(--service-card-shadow);
   height: 100%;
+  width: 350px;
   text-decoration: none;
   color: inherit;
   cursor: pointer;
